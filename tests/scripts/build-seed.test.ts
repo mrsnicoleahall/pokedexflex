@@ -27,4 +27,23 @@ describe("snapshotToSql", () => {
     expect(sql).toContain("INSERT OR REPLACE INTO forms");
     expect(sql).toContain("mega");
   });
+
+  it("escapes single quotes in text values (SQL-safe)", () => {
+    const sql = snapshotToSql({
+      species: [],
+      forms: [{ speciesId: 83, name: "farfetch'd-test", formType: "other", spriteUrl: null }],
+    });
+    // A literal apostrophe must be doubled so the statement stays valid SQL.
+    expect(sql).toContain("farfetch''d-test");
+    expect(sql).not.toContain("farfetch'd-test'"); // unescaped form must not appear
+  });
+
+  it("emits null sprite URLs as a bare NULL literal, not the string 'null'", () => {
+    const sql = snapshotToSql({
+      species: [{ id: 1, name: "bulbasaur", generation: 1, types: ["grass"], spriteUrl: null }],
+      forms: [],
+    });
+    expect(sql).toMatch(/,NULL\);/);      // trailing NULL column emitted as a literal
+    expect(sql).not.toContain("'null'");  // never the quoted string
+  });
 });

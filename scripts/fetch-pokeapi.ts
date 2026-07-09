@@ -6,6 +6,14 @@
 // seeding the D1 database is reproducible without re-hitting the network.
 //
 // Run with: npx tsx scripts/fetch-pokeapi.ts
+//
+// `classifyForm` is imported by tests/scripts/build-seed.test.ts, which is
+// type-checked under tests/tsconfig.json (its own "types" array, scoped to
+// the Worker/vitest-pool-workers runtime, does not include "node"). The
+// triple-slash directive below guarantees Node ambient globals (process,
+// fetch, etc.) resolve for THIS file no matter which project transitively
+// pulls it in, without widening any other project's "types" option.
+/// <reference types="node" />
 
 import { writeFile, mkdir } from "node:fs/promises";
 import path from "node:path";
@@ -48,7 +56,7 @@ export function classifyForm(name: string): FormType {
   if (n.includes("mega")) return "mega";
   if (n.includes("gmax") || n.includes("gigantamax")) return "gigantamax";
   if (/-(alola|galar|hisui|paldea)/.test(n)) return "regional";
-  if (/-(male|female|-m$|-f$)/.test(n)) return "gender";
+  if (/-(male|female)$/.test(n)) return "gender";
   if (n.includes("-")) return "alternate";
   return "other";
 }

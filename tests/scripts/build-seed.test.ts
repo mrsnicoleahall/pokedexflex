@@ -9,4 +9,8 @@ describe("classifyForm", () => {
     expect(classifyForm("darmanitan-galar")).toBe("regional");
     expect(classifyForm("deoxys-attack")).toBe("alternate");
   });
+
+  it("classifies gender forms via the anchored -male/-female suffix", () => {
+    expect(classifyForm("meowstic-female")).toBe("gender");
+  });
 });

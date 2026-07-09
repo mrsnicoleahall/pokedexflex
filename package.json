@@ -41,6 +41,7 @@
     "build": "tsc -b && vite build",
     "cf-typegen": "wrangler types",
     "check": "tsc && vite build && wrangler deploy --dry-run",
+    "db:local": "wrangler d1 migrations apply pokeflexbank --local && wrangler d1 execute pokeflexbank --local --file=data/seed.sql",
     "deploy": "wrangler deploy",
     "dev": "vite",
     "lint": "eslint .",

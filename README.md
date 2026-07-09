@@ -56,6 +56,20 @@ npm run dev
 
 Your application will be available at [http://localhost:5173](http://localhost:5173).
 
+### Local setup (database)
+
+The dev server runs against a local D1 database (SQLite under `.wrangler/`, which is gitignored),
+so each fresh checkout needs its schema and seed data applied once:
+
+```bash
+npm install
+npm run db:local   # applies migrations, then loads data/seed.sql (species + forms)
+npm run dev
+```
+
+`npm run db:local` is idempotent (migrations only apply what's missing; the seed uses
+`INSERT OR REPLACE`), so it's safe to re-run any time the local DB needs to be reset or refreshed.
+
 ## Production
 
 Build your project for production:

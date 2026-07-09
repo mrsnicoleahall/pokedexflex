@@ -8,6 +8,13 @@
       "when": 1783632151382,
       "tag": "0000_nifty_ronan",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1783632653668,
+      "tag": "0001_striped_black_tom",
+      "breakpoints": true
     }
   ]
 }

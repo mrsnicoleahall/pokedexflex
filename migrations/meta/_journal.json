@@ -15,6 +15,13 @@
       "when": 1783632653668,
       "tag": "0001_striped_black_tom",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1783635390168,
+      "tag": "0002_conscious_preak",
+      "breakpoints": true
     }
   ]
 }

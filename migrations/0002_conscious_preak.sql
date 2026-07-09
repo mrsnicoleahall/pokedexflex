@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX `forms_species_id_name_unique` ON `forms` (`species_id`,`name`);

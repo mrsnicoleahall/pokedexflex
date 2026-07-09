@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { eq, like, and } from "drizzle-orm";
+import { eq, like, and, count, inArray } from "drizzle-orm";
 import { getDb } from "../db";
 import { species, forms } from "../../db/schema";
 
@@ -23,10 +23,11 @@ speciesRoutes.get("/species", async (c) => {
   if (gen) conds.push(eq(species.generation, Number(gen)));
   const where = conds.length ? and(...conds) : undefined;
   const rows = await db.select().from(species).where(where).limit(limit).offset(offset);
+  const [{ value: total }] = await db.select({ value: count() }).from(species).where(where);
   const ids = rows.map(r => r.id);
-  const allForms = ids.length ? await db.select().from(forms) : [];
+  const allForms = ids.length ? await db.select().from(forms).where(inArray(forms.speciesId, ids)) : [];
   const items = rows.map(s => shape(s, allForms.filter(f => f.speciesId === s.id)));
-  return c.json({ items, total: items.length });
+  return c.json({ items, total });
 });
 
 speciesRoutes.get("/species/:id", async (c) => {

@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { and, count, eq, like, or } from "drizzle-orm";
+import { and, count, desc, eq, like, or, sql } from "drizzle-orm";
 import { getDb } from "../db";
 import { events, species, specimens } from "../../db/schema";
 
@@ -46,6 +46,7 @@ eventRoutes.get("/events", async (c) => {
     .from(events)
     .innerJoin(species, eq(events.speciesId, species.id))
     .where(where)
+    .orderBy(sql`${events.year} is null`, desc(events.year), events.speciesId, events.id)
     .limit(limit)
     .offset(offset);
 

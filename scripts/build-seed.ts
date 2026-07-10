@@ -19,8 +19,21 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 // ---------------------------------------------------------------------------
 
 type Snapshot = {
-  species: { id: number; name: string; generation: number; types: string[]; spriteUrl: string | null }[];
-  forms: { speciesId: number; name: string; formType: string; spriteUrl: string | null }[];
+  species: {
+    id: number;
+    name: string;
+    generation: number;
+    types: string[];
+    spriteUrl: string | null;
+    homeId?: number | null;
+  }[];
+  forms: {
+    speciesId: number;
+    name: string;
+    formType: string;
+    spriteUrl: string | null;
+    homeId?: number | null;
+  }[];
 };
 
 // ---------------------------------------------------------------------------
@@ -28,17 +41,18 @@ type Snapshot = {
 // ---------------------------------------------------------------------------
 
 const q = (v: string | null) => (v === null ? "NULL" : `'${v.replace(/'/g, "''")}'`);
+const n = (v: number | null | undefined) => (v === null || v === undefined ? "NULL" : String(v));
 
 export function snapshotToSql(s: Snapshot): string {
   const sp = s.species.map(
     (x) =>
-      `INSERT OR REPLACE INTO species (id,name,generation,types,sprite_url) VALUES ` +
-      `(${x.id},${q(x.name)},${x.generation},${q(JSON.stringify(x.types))},${q(x.spriteUrl)});`,
+      `INSERT OR REPLACE INTO species (id,name,generation,types,sprite_url,home_id) VALUES ` +
+      `(${x.id},${q(x.name)},${x.generation},${q(JSON.stringify(x.types))},${q(x.spriteUrl)},${n(x.homeId ?? null)});`,
   );
   const fm = s.forms.map(
     (x) =>
-      `INSERT OR REPLACE INTO forms (species_id,name,form_type,sprite_url) VALUES ` +
-      `(${x.speciesId},${q(x.name)},${q(x.formType)},${q(x.spriteUrl)});`,
+      `INSERT OR REPLACE INTO forms (species_id,name,form_type,sprite_url,home_id) VALUES ` +
+      `(${x.speciesId},${q(x.name)},${q(x.formType)},${q(x.spriteUrl)},${n(x.homeId ?? null)});`,
   );
   return [...sp, ...fm].join("\n");
 }

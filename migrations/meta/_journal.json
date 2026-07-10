@@ -29,6 +29,13 @@
       "when": 1783683027298,
       "tag": "0003_grey_penance",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1783684079550,
+      "tag": "0004_overconfident_pyro",
+      "breakpoints": true
     }
   ]
 }

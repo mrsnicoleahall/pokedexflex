@@ -6,6 +6,7 @@ export const species = sqliteTable("species", {
   generation: integer("generation").notNull(),
   types: text("types").notNull(), // JSON array string
   spriteUrl: text("sprite_url"),
+  homeId: integer("home_id"),
 });
 
 export const forms = sqliteTable(
@@ -18,6 +19,7 @@ export const forms = sqliteTable(
     name: text("name").notNull(),
     formType: text("form_type").notNull(),
     spriteUrl: text("sprite_url"),
+    homeId: integer("home_id"),
   },
   (t) => [unique("forms_species_id_name_unique").on(t.speciesId, t.name)],
 );

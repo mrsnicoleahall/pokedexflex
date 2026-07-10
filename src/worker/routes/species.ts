@@ -8,8 +8,8 @@ export const speciesRoutes = new Hono<Env>();
 
 const shape = (s: any, f: any[]) => ({
   id: s.id, name: s.name, generation: s.generation,
-  types: JSON.parse(s.types), spriteUrl: s.spriteUrl,
-  forms: f.map(x => ({ id: x.id, name: x.name, formType: x.formType, spriteUrl: x.spriteUrl })),
+  types: JSON.parse(s.types), spriteUrl: s.spriteUrl, homeId: s.homeId,
+  forms: f.map(x => ({ id: x.id, name: x.name, formType: x.formType, spriteUrl: x.spriteUrl, homeId: x.homeId })),
 });
 
 speciesRoutes.get("/species", async (c) => {

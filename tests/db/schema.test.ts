@@ -11,13 +11,19 @@ describe("reference schema", () => {
       id: 6, name: "charizard", generation: 1,
       types: JSON.stringify(["fire", "flying"]),
       spriteUrl: "http://x/6.png",
+      homeId: 6,
     });
     await db.insert(forms).values({
       speciesId: 6, name: "charizard-mega-x", formType: "mega", spriteUrl: "http://x/6mx.png",
+      homeId: 10034,
     });
     const rows = await db.select().from(forms);
     expect(rows).toHaveLength(1);
     expect(rows[0].formType).toBe("mega");
+    expect(rows[0].homeId).toBe(10034);
+
+    const speciesRows = await db.select().from(species).where(eq(species.id, 6));
+    expect(speciesRows[0].homeId).toBe(6);
   });
 
   it("re-seeding a form with INSERT OR REPLACE replaces instead of duplicating (UNIQUE(species_id, name))", async () => {

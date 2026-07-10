@@ -33,6 +33,7 @@ export interface SpeciesRow {
   generation: number;
   types: string[];
   spriteUrl: string | null;
+  homeId: number | null;
 }
 
 export interface FormRow {
@@ -40,6 +41,7 @@ export interface FormRow {
   name: string;
   formType: FormType;
   spriteUrl: string | null;
+  homeId: number | null;
 }
 
 export interface Snapshot {
@@ -217,6 +219,8 @@ async function main(): Promise<void> {
     const extraVarieties = detail.varieties.filter((v) => v !== defaultVariety);
 
     // Default variety -> species row (types + sprite come from /pokemon).
+    // homeId is the pokemon id backing the default variety's HOME render
+    // (normally equal to the species id, but not guaranteed by the API).
     const defaultPokemon = await fetchJson<PokemonDetail>(defaultVariety.pokemon.url);
     species.push({
       id: detail.id,
@@ -224,9 +228,13 @@ async function main(): Promise<void> {
       generation,
       types: defaultPokemon.types.sort((a, b) => a.slot - b.slot).map((t) => t.type.name),
       spriteUrl: defaultPokemon.sprites.front_default ?? null,
+      homeId: defaultPokemon.id ?? null,
     });
 
     // Non-default varieties -> forms (mega, gmax, regional, alternate, gender...).
+    // homeId is that variety's own pokemon id, so the UI can request its own
+    // HOME render; null only if the API ever omits an id (UI falls back to
+    // the species sprite in that case).
     for (const variety of extraVarieties) {
       const formPokemon = await fetchJson<PokemonDetail>(variety.pokemon.url);
       forms.push({
@@ -234,6 +242,7 @@ async function main(): Promise<void> {
         name: variety.pokemon.name,
         formType: classifyForm(variety.pokemon.name),
         spriteUrl: formPokemon.sprites.front_default ?? null,
+        homeId: formPokemon.id ?? null,
       });
     }
 

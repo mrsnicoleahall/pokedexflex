@@ -5,6 +5,7 @@ export type FormDto = {
 	name: string;
 	formType: string;
 	spriteUrl: string | null;
+	homeId: number | null;
 };
 
 export type SpeciesDto = {
@@ -13,6 +14,7 @@ export type SpeciesDto = {
 	generation: number;
 	types: string[];
 	spriteUrl: string | null;
+	homeId: number | null;
 	forms: FormDto[];
 };
 

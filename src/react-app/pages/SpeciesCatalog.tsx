@@ -26,7 +26,7 @@ export function SpeciesCatalog() {
 
 	return (
 		<div>
-			<h1>PokéFlexBank — Catalog</h1>
+			<h1>PokeFlexDex — Catalog</h1>
 			<input
 				placeholder="Search species…"
 				value={q}

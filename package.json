@@ -1,6 +1,6 @@
 {
-  "name": "pokeflexbank",
-  "description": "PokéFlexBank: a Vite + React + Hono app on Cloudflare Workers, with D1 and R2.",
+  "name": "pokeflexdex",
+  "description": "PokeFlexDex: a Vite + React + Hono app on Cloudflare Workers, with D1 and R2.",
   "cloudflare": {
     "label": "Vite React Template",
     "products": [
@@ -41,7 +41,7 @@
     "build": "tsc -b && vite build",
     "cf-typegen": "wrangler types",
     "check": "tsc && vite build && wrangler deploy --dry-run",
-    "db:local": "wrangler d1 migrations apply pokeflexbank --local && wrangler d1 execute pokeflexbank --local --file=data/seed.sql",
+    "db:local": "wrangler d1 migrations apply pokeflexdex --local && wrangler d1 execute pokeflexdex --local --file=data/seed.sql",
     "deploy": "wrangler deploy",
     "dev": "vite",
     "lint": "eslint .",

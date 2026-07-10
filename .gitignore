@@ -198,5 +198,5 @@ dist
 .dev.vars*
 !.dev.vars.example
 
-### PokeFlexBank ###
+### PokeFlexDex ###
 data/*.tmp

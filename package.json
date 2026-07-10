@@ -12,6 +12,9 @@
     "publish": true
   },
   "dependencies": {
+    "@fontsource/inter": "^5.2.8",
+    "@fontsource/jetbrains-mono": "^5.2.8",
+    "@fontsource/sora": "^5.2.8",
     "drizzle-orm": "^0.45.2",
     "hono": "4.11.1",
     "react": "19.2.1",

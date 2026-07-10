@@ -200,3 +200,6 @@ dist
 
 ### PokeFlexDex ###
 data/*.tmp
+
+# Superpowers internal scratch (ledger, task briefs, review diffs) — never commit
+.superpowers/

@@ -21,3 +21,26 @@ export const forms = sqliteTable(
   },
   (t) => [unique("forms_species_id_name_unique").on(t.speciesId, t.name)],
 );
+
+export const events = sqliteTable(
+  "events",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    slug: text("slug").notNull(),
+    name: text("name").notNull(),
+    speciesId: integer("species_id")
+      .notNull()
+      .references(() => species.id),
+    formId: integer("form_id").references(() => forms.id),
+    year: integer("year"),
+    games: text("games"),
+    region: text("region"),
+    method: text("method"),
+    otName: text("ot_name"),
+    otId: text("ot_id"),
+    ribbon: text("ribbon"),
+    isShiny: integer("is_shiny").notNull().default(0),
+    notes: text("notes"),
+  },
+  (t) => [unique("events_slug_unique").on(t.slug)],
+);

@@ -2,7 +2,7 @@ import { env } from "cloudflare:test";
 import { describe, it, expect } from "vitest";
 import { eq } from "drizzle-orm";
 import { getDb } from "../../src/worker/db";
-import { species, forms, users, boxes, specimens } from "../../src/db/schema";
+import { species, forms, users, boxes, specimens, events } from "../../src/db/schema";
 
 describe("reference schema", () => {
   it("inserts a species with a form", async () => {
@@ -46,6 +46,31 @@ describe("reference schema", () => {
     expect(rows).toHaveLength(1);
     // The row was replaced (new id, new sprite_url), not duplicated.
     expect(rows[0].spriteUrl).toBe("http://x/150mx-v2.png");
+  });
+
+  it("events: insert, read, and slug is unique (idempotent upsert)", async () => {
+    const db = getDb(env.DB);
+    await db.insert(species).values({ id: 801, name: "magearna", generation: 7, types: "[]" });
+    await db.insert(events).values({
+      slug: "magearna-qr-2016",
+      name: "Magearna (QR Code)",
+      speciesId: 801,
+      method: "QR Code",
+      isShiny: 0,
+    });
+    await db
+      .insert(events)
+      .values({
+        slug: "magearna-qr-2016",
+        name: "Magearna (QR Code) v2",
+        speciesId: 801,
+        method: "QR Code",
+        isShiny: 0,
+      })
+      .onConflictDoUpdate({ target: events.slug, set: { name: "Magearna (QR Code) v2" } });
+    const rows = await db.select().from(events).where(eq(events.slug, "magearna-qr-2016"));
+    expect(rows).toHaveLength(1);
+    expect(rows[0].name).toBe("Magearna (QR Code) v2");
   });
 });
 

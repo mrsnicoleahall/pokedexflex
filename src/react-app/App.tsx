@@ -3,17 +3,7 @@
 import { useState } from "react";
 import { TopBar, type Tab } from "./components/TopBar";
 import { SpeciesCatalog } from "./pages/SpeciesCatalog";
-
-function EventsPlaceholder() {
-	return (
-		<div className="container page">
-			<div className="placeholder-panel">
-				<span className="placeholder-panel__title">Events — coming soon</span>
-				<p>The events catalog will live here, sharing this same design system.</p>
-			</div>
-		</div>
-	);
-}
+import { EventsCatalog } from "./pages/EventsCatalog";
 
 function App() {
 	const [tab, setTab] = useState<Tab>("species");
@@ -29,9 +19,9 @@ function App() {
 				onSearchChange={setQ}
 				gen={gen}
 				onGenChange={setGen}
-				showFilters={tab === "species"}
+				showFilters
 			/>
-			{tab === "species" ? <SpeciesCatalog q={q} gen={gen} /> : <EventsPlaceholder />}
+			{tab === "species" ? <SpeciesCatalog q={q} gen={gen} /> : <EventsCatalog q={q} gen={gen} />}
 		</div>
 	);
 }

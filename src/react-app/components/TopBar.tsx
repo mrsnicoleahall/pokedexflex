@@ -57,10 +57,10 @@ export function TopBar({
 							<input
 								className="input"
 								type="search"
-								placeholder="Search species…"
+								placeholder={tab === "species" ? "Search species…" : "Search events…"}
 								value={search}
 								onChange={(e) => onSearchChange(e.target.value)}
-								aria-label="Search species"
+								aria-label={tab === "species" ? "Search species" : "Search events"}
 							/>
 							<select
 								className="select"

@@ -438,26 +438,111 @@ a {
 	font-size: 0.9rem;
 }
 
-/* ---------- Placeholder panel (Events tab) ---------- */
+/* ---------- Event card ---------- */
 
-.placeholder-panel {
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	justify-content: center;
-	gap: 6px;
-	padding: 96px 16px;
-	text-align: center;
-	color: var(--muted);
-	border: 1px dashed var(--hairline);
-	border-radius: var(--radius-card);
+.card--event {
+	padding-top: 20px;
 }
 
-.placeholder-panel__title {
-	font-family: var(--font-display);
+.card__owned-badge {
+	position: absolute;
+	top: 12px;
+	right: 14px;
+	font-family: var(--font-body);
 	font-weight: 600;
+	font-size: 0.7rem;
+	letter-spacing: 0.02em;
+	color: #1f9d55;
+	background: color-mix(in srgb, #3fbf6f 18%, var(--surface));
+	border: 1px solid color-mix(in srgb, #3fbf6f 40%, var(--hairline));
+	padding: 3px 8px;
+	border-radius: 999px;
+}
+
+.card__shiny-badge {
+	position: absolute;
+	top: 10px;
+	left: 14px;
+	font-size: 1rem;
+	line-height: 1;
+}
+
+.card__species-line {
+	display: flex;
+	align-items: baseline;
+	justify-content: center;
+	gap: 6px;
+	margin: -2px 0 10px;
+	font-size: 0.85rem;
+	color: var(--muted);
+}
+
+.card__species-line .mono {
+	font-family: var(--font-mono);
+}
+
+.card__meta-line {
+	font-size: 0.78rem;
+	color: var(--muted);
+	margin: 6px 0 0;
+}
+
+.card__ot {
+	font-family: var(--font-mono);
+	font-size: 0.72rem;
+	color: var(--muted);
+	margin: 6px 0 0;
+}
+
+.card__ribbon-chip {
+	display: inline-block;
+	margin-top: 8px;
+	font-family: var(--font-body);
+	font-weight: 500;
+	font-size: 0.7rem;
+	letter-spacing: 0.02em;
+	text-transform: uppercase;
+	padding: 3px 9px;
+	border-radius: 999px;
+	background: color-mix(in srgb, #f6c64b 22%, var(--surface));
 	color: var(--ink);
-	font-size: 1.2rem;
+	border: 1px solid color-mix(in srgb, #f6c64b 45%, var(--hairline));
+}
+
+/* ---------- Load more ---------- */
+
+.load-more {
+	display: flex;
+	justify-content: center;
+	margin-top: 24px;
+}
+
+.button {
+	appearance: none;
+	border: 1px solid var(--hairline);
+	background: var(--surface);
+	color: var(--ink);
+	border-radius: var(--radius-control);
+	padding: 9px 20px;
+	font-size: 0.9rem;
+	font-weight: 500;
+	cursor: pointer;
+	transition: background-color 0.15s ease, transform 0.15s ease;
+}
+
+.button:hover:not(:disabled) {
+	background: var(--canvas);
+}
+
+.button:disabled {
+	cursor: not-allowed;
+	opacity: 0.6;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+	.button:active:not(:disabled) {
+		transform: scale(0.97);
+	}
 }
 
 /* ---------- Responsive ---------- */

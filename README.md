@@ -102,3 +102,15 @@ npx wrangler tail
 - [Vite Documentation](https://vitejs.dev/guide/)
 - [React Documentation](https://reactjs.org/)
 - [Hono Documentation](https://hono.dev/)
+
+## Data sources & attribution
+
+- **Species, forms, and sprites:** [PokéAPI](https://pokeapi.co) and the
+  [PokéAPI/sprites](https://github.com/PokeAPI/sprites) repository (Pokémon HOME
+  renders), served via our own R2 cache.
+- **Event Pokémon distributions:** compiled from
+  [Bulbapedia](https://bulbapedia.bulbagarden.net/wiki/Event_Pok%C3%A9mon),
+  which is licensed **CC BY-NC-SA 2.5**. Event data is used under that license
+  (attribution + non-commercial). Pokémon and Pokémon character names are
+  trademarks of Nintendo/Game Freak/The Pokémon Company; this is an unofficial
+  fan project.

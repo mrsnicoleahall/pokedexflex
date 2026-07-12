@@ -3,9 +3,14 @@ import {
   buildSpeciesResolver,
   cleanWikitext,
   extractTopLevelTemplates,
+  extractRecruitedSpeciesFromReward,
+  deriveMysteryDungeonGames,
+  deriveWonderMailMethod,
   parsePage,
   parseTemplateArgs,
   splitTopLevel,
+  splitTopLevelOn,
+  stripWikitableCellAttrs,
   toPokeApiSlug,
   baseSpeciesNameForLookup,
   deriveRegionFromTitle,
@@ -100,6 +105,40 @@ describe("deriveRegionFromTitle / gameLabel / extractYear", () => {
     expect(extractYear("September 16 to November 17, 2022")).toBe(2022);
     expect(extractYear("no year here")).toBeNull();
     expect(extractYear(null)).toBeNull();
+  });
+});
+
+describe("splitTopLevelOn / stripWikitableCellAttrs", () => {
+  it("splits on a literal multi-char separator, treating [[..]] and {{..}} as opaque", () => {
+    expect(splitTopLevelOn("a||b||c", "||")).toEqual(["a", "b", "c"]);
+    expect(splitTopLevelOn("{{tt|x||y}}||c", "||")).toEqual(["{{tt|x||y}}", "c"]);
+  });
+
+  it("strips a leading `attr=... | content` prefix but leaves plain content alone", () => {
+    expect(stripWikitableCellAttrs('style="text-align:center" | {{p|Mew}}')).toBe("{{p|Mew}}");
+    expect(stripWikitableCellAttrs("{{p|Pikachu}}")).toBe("{{p|Pikachu}}");
+    expect(stripWikitableCellAttrs("Tokyo")).toBe("Tokyo");
+  });
+});
+
+describe("extractRecruitedSpeciesFromReward / Mystery Dungeon title derivation", () => {
+  it("matches a recruit-Pokémon reward cell but not an item/TM reward cell", () => {
+    expect(extractRecruitedSpeciesFromReward("{{p|Venonat}}♂ joins")).toBe("Venonat");
+    expect(extractRecruitedSpeciesFromReward("{{p|Metagross}} joins")).toBe("Metagross");
+    expect(extractRecruitedSpeciesFromReward("250 [[Poké]] + [[Insomniscope]]")).toBeNull();
+    expect(extractRecruitedSpeciesFromReward("{{m|Poison Jab}} TM")).toBeNull();
+  });
+
+  it("derives the Mystery Dungeon game and Wonder Mail variant from a page title", () => {
+    expect(deriveMysteryDungeonGames("List of Japanese Wonder Mail S distributions in Pokémon Mystery Dungeon: Explorers of Sky")).toBe(
+      "Mystery Dungeon: Explorers of Sky",
+    );
+    expect(
+      deriveWonderMailMethod("List of Japanese Wonder Mail S distributions in Pokémon Mystery Dungeon: Explorers of Sky"),
+    ).toBe("Wonder Mail S");
+    expect(
+      deriveWonderMailMethod("List of Wonder Mail distributions in Pokémon Mystery Dungeon: Explorers of Time and Explorers of Darkness"),
+    ).toBe("Wonder Mail");
   });
 });
 
@@ -231,5 +270,111 @@ This page has no event templates, only a plain wikitable.
     expect(rows[0].region).toBe("Japan");
     expect(rows[0].method).toBeNull();
     expect(rows[0].games).toBeNull();
+  });
+});
+
+describe("parsePage: wikitable fallback with structured columns", () => {
+  const wikitext = `
+{| class="wikitable"
+! Pokémon
+! Ndex
+! Level
+! OT
+! ID
+! Ribbon
+! Games
+! Method
+! Date
+! Region
+! Notes
+|-
+| style="text-align:center" | {{p|Mew}}
+| 151
+| 5
+| GF
+| 22796
+| Classic
+| Yellow
+| Serial Code
+| March 2016
+| Japan
+| Distributed at select stores
+|}
+`;
+
+  it("pulls level/OT/ID/ribbon/games/method/date/region into their own fields instead of dumping everything into notes", () => {
+    const resolver = buildSpeciesResolver(SNAPSHOT);
+    const { rows, stats } = parsePage(wikitext, "List of some event Pokémon distributions", resolver, new Set());
+
+    expect(stats.usedFallback).toBe(true);
+    expect(rows).toHaveLength(1);
+    const row = rows[0];
+    expect(row.speciesId).toBe(151);
+    expect(row.otName).toBe("GF");
+    expect(row.otId).toBe("22796");
+    expect(row.ribbon).toBe("Classic");
+    expect(row.games).toBe("Yellow");
+    expect(row.method).toBe("Serial Code");
+    expect(row.year).toBe(2016);
+    expect(row.region).toBe("Japan");
+    expect(row.notes).toContain("Distributed at select stores");
+    // recognized columns shouldn't leak into the notes fallback text
+    expect(row.notes).not.toContain("Serial Code");
+    expect(row.notes).not.toContain("Classic");
+  });
+});
+
+describe("parsePage: Mystery Dungeon Wonder Mail reward-join wikitable", () => {
+  const wikitext = `
+This is a reverse-chronological list of Wonder Mail distributed for the game.
+
+===April 2009===
+{| class="roundy"
+! Password
+! Client
+! Objective
+! Place
+! Difficulty
+! Reward
+|-
+| style="text-align:center" | <code>ABCDE</code>
+| style="text-align:center" | [[File:Client.png]]<br>{{pcolor|Absol|000}}
+| Find [[Rawst Berry]].
+| [[Waterfall Cave]] B8F
+| style="text-align:center" | B
+| 250 [[Poké]] + [[Insomniscope]]
+|-
+| style="text-align:center" | <code>FGHIJ</code>
+| style="text-align:center" | [[File:Client2.png]]<br>{{pcolor|Magnezone|000}}
+| Rescue {{p|Pikachu}}.
+| [[Foggy Forest]] 10F
+| style="text-align:center" | A
+| {{p|Pikachu}}♂ joins
+|}
+`;
+
+  it("extracts a recruit-Pokémon row from the Reward column, skipping item/TM reward rows", () => {
+    const resolver = buildSpeciesResolver(SNAPSHOT);
+    const { rows, stats } = parsePage(
+      wikitext,
+      "List of Japanese Wonder Mail S distributions in Pokémon Mystery Dungeon: Explorers of Sky",
+      resolver,
+      new Set(),
+    );
+
+    expect(stats.usedFallback).toBe(true);
+    expect(rows).toHaveLength(1);
+    const row = rows[0];
+    expect(row.speciesId).toBe(25);
+    expect(row.year).toBe(2009);
+    expect(row.method).toBe("Wonder Mail S");
+    expect(row.games).toBe("Mystery Dungeon: Explorers of Sky");
+    expect(row.region).toBe("Japan");
+    expect(row.notes).toContain("Recruited via Wonder Mail mission");
+    expect(row.notes).toContain("Foggy Forest");
+    expect(row.otName).toBeNull();
+    expect(row.isShiny).toBe(0);
+    // the item/TM reward row (no "joins") must not be fabricated into a row
+    expect(stats.skippedNoSpecies).toBeGreaterThanOrEqual(1);
   });
 });

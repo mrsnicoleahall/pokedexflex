@@ -746,12 +746,315 @@ export function parseEventTemplates(
 // ---------------------------------------------------------------------------
 
 /**
- * Very lightweight fallback for pages that yield zero events from the
- * template parser: scans `{| ... |}` wikitables for a species-ish column and
- * emits one row per data row found, folding any location/date columns into
- * `notes`. Cannot recover most structured fields (level, OT, id, ...) since
- * plain wikitables rarely carry them consistently -- this exists purely to
- * avoid a hard zero on prose/table-only pages.
+ * Like `splitTopLevel`, but splits on an arbitrary literal separator (e.g.
+ * `"||"`, MediaWiki's same-line table-cell separator) instead of a single
+ * `"|"`, still treating `{{...}}` / `[[...]]` spans as opaque.
+ */
+export function splitTopLevelOn(s: string, sep: string): string[] {
+  const parts: string[] = [];
+  let depth = 0;
+  let cur = "";
+  let i = 0;
+  while (i < s.length) {
+    const two = s.slice(i, i + 2);
+    if (two === "{{" || two === "[[") {
+      depth++;
+      cur += two;
+      i += 2;
+      continue;
+    }
+    if (two === "}}" || two === "]]") {
+      depth = Math.max(0, depth - 1);
+      cur += two;
+      i += 2;
+      continue;
+    }
+    if (depth === 0 && s.slice(i, i + sep.length) === sep) {
+      parts.push(cur);
+      cur = "";
+      i += sep.length;
+      continue;
+    }
+    cur += s[i];
+    i++;
+  }
+  parts.push(cur);
+  return parts;
+}
+
+/**
+ * MediaWiki table cells may be written as `attr="..." | content` on a single
+ * line/segment (attributes and content sharing one leading "|"). Strips that
+ * attribute prefix off, if present, so downstream parsing sees just the cell
+ * content instead of e.g. `style="text-align:center" | {{p|Mew}}`.
+ */
+export function stripWikitableCellAttrs(raw: string): string {
+  const trimmed = raw.trim();
+  const parts = splitTopLevel(trimmed);
+  if (parts.length >= 2) {
+    const attrCandidate = parts[0].trim();
+    if (/^[A-Za-z][\w-]*\s*=/.test(attrCandidate) && !/^\{\{|^\[\[/.test(attrCandidate)) {
+      return parts.slice(1).join("|").trim();
+    }
+  }
+  return trimmed;
+}
+
+/**
+ * Parses a `{| ... |}` wikitable body into header cells + data rows, honoring
+ * both `||`-separated cells on one line and `attr | content` cell attributes.
+ */
+function parseWikitableGrid(table: string): { headerCells: string[]; dataRows: string[][] } {
+  const lines = table.split("\n");
+  let headerCells: string[] = [];
+  let curRowCells: string[] = [];
+  const dataRows: string[][] = [];
+  let inHeader = true;
+
+  const flushRow = () => {
+    if (inHeader) {
+      if (headerCells.length === 0) headerCells = curRowCells;
+      inHeader = false;
+    } else if (curRowCells.length > 0) {
+      dataRows.push(curRowCells);
+    }
+    curRowCells = [];
+  };
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (trimmed.startsWith("|-")) {
+      flushRow();
+    } else if (trimmed.startsWith("!")) {
+      for (const cell of splitTopLevelOn(trimmed.slice(1), "!!")) headerCells.push(stripWikitableCellAttrs(cell));
+    } else if (trimmed.startsWith("|") && !trimmed.startsWith("|}") && !trimmed.startsWith("|+")) {
+      for (const cell of splitTopLevelOn(trimmed.slice(1), "||")) curRowCells.push(stripWikitableCellAttrs(cell));
+    }
+  }
+  flushRow();
+  return { headerCells, dataRows };
+}
+
+/**
+ * Finds a `{{p|Name}}` / `{{pkmn|Name}}` template in a "Reward" table cell
+ * that is immediately followed by "joins" (optionally with a gender symbol
+ * in between), e.g. `{{p|Venonat}}♂ joins` -- the pattern Bulbapedia's
+ * Pokémon Mystery Dungeon Wonder Mail tables use to mark a recruit-Pokémon
+ * reward (as opposed to an item/TM reward, which this deliberately does not
+ * match). Returns the raw species text, or null if the cell isn't a
+ * recruit-Pokémon reward.
+ */
+export function extractRecruitedSpeciesFromReward(rewardRaw: string): string | null {
+  const templates = extractTopLevelTemplates(rewardRaw);
+  for (const t of templates) {
+    const name = t.name.trim().toLowerCase();
+    if (name !== "p" && name !== "pkmn") continue;
+    const after = rewardRaw.slice(t.end);
+    if (/^\s*[♀♂]?\s*joins\b/i.test(after)) {
+      const positional = splitTopLevel(t.args).map((p) => p.trim());
+      return positional[0] || null;
+    }
+  }
+  return null;
+}
+
+/** Derives the Mystery Dungeon game label a Wonder Mail page's title names, if any. */
+export function deriveMysteryDungeonGames(title: string): string | null {
+  if (/explorers of sky/i.test(title)) return "Mystery Dungeon: Explorers of Sky";
+  if (/explorers of time and explorers of darkness/i.test(title))
+    return "Mystery Dungeon: Explorers of Time/Explorers of Darkness";
+  return null;
+}
+
+/** Derives the Wonder Mail variant ("Wonder Mail" vs "Wonder Mail S") a page's title names, if any. */
+export function deriveWonderMailMethod(title: string): string | null {
+  if (/wonder mail s/i.test(title)) return "Wonder Mail S";
+  if (/wonder mail/i.test(title)) return "Wonder Mail";
+  return null;
+}
+
+interface WikitableColumns {
+  species: number;
+  ndex: number;
+  level: number;
+  ot: number;
+  otId: number;
+  ribbon: number;
+  games: number;
+  method: number;
+  date: number;
+  region: number;
+  reward: number;
+  objective: number;
+  place: number;
+  difficulty: number;
+}
+
+function findWikitableColumns(headerCells: string[]): WikitableColumns {
+  const find = (re: RegExp) => headerCells.findIndex((h) => re.test(h));
+  return {
+    species: find(/pok[eé]mon|species/i),
+    ndex: find(/ndex|dex\s*no|national\s*(no\.?|dex)|^no\.?$/i),
+    level: find(/\blevel\b|\blv\.?\b/i),
+    ot: find(/\bot\b|original trainer/i),
+    otId: find(/\bid\b|trainer id|\btid\b/i),
+    ribbon: find(/ribbon/i),
+    games: find(/\bgames?\b|\bversions?\b/i),
+    method: find(/\bmethod\b|\bobtain(ed)?\b|distribution method/i),
+    date: find(/\bdate\b|\bperiod\b/i),
+    region: find(/\bregion\b|\bcountr(y|ies)\b/i),
+    reward: find(/\breward\b/i),
+    objective: find(/\bobjective\b/i),
+    place: find(/\bplace\b|\blocation\b/i),
+    difficulty: find(/\bdifficulty\b/i),
+  };
+}
+
+/**
+ * Extracts one EventRow per data row from a wikitable that has a species-ish
+ * column, pulling out any recognized level/OT/ID/ribbon/games/method/date/
+ * region columns into their proper EventRow fields (rather than dumping
+ * everything into `notes`, as a plain species-only table would need).
+ * Columns that aren't recognized are folded into `notes`.
+ */
+function parseSpeciesWikitable(
+  dataRows: string[][],
+  cols: WikitableColumns,
+  title: string,
+  resolver: SpeciesResolver,
+  usedSlugs: Set<string>,
+  stats: PageParseStats,
+): EventRow[] {
+  const rows: EventRow[] = [];
+  const titleRegion = deriveRegionFromTitle(title);
+  const recognizedIdx = new Set(
+    [cols.species, cols.ndex, cols.level, cols.ot, cols.otId, cols.ribbon, cols.games, cols.method, cols.date, cols.region].filter(
+      (i) => i >= 0,
+    ),
+  );
+
+  for (const cells of dataRows) {
+    const speciesCellRaw = cells[cols.species];
+    if (!speciesCellRaw) continue;
+    const speciesClean = cleanWikitext(speciesCellRaw);
+    if (!speciesClean) continue;
+    const ndexText = cols.ndex >= 0 ? cleanWikitext(cells[cols.ndex]) : null;
+    const ndexDigits = ndexText ? /\d+/.exec(ndexText)?.[0] : undefined;
+    const speciesId = resolver.resolve(speciesCellRaw, ndexDigits);
+    if (speciesId === null) {
+      stats.skippedUnresolved++;
+      continue;
+    }
+
+    const dateText = cols.date >= 0 ? cleanWikitext(cells[cols.date]) : null;
+    const leftoverText = cells.filter((_, i) => !recognizedIdx.has(i)).join(" ");
+    const year = extractYear(dateText) ?? extractYear(leftoverText);
+    const rowRegion = cols.region >= 0 ? cleanWikitext(cells[cols.region]) : null;
+    const notes = cleanWikitext(leftoverText);
+    const slug = makeUniqueSlug([speciesClean, title, year], usedSlugs);
+
+    rows.push({
+      slug,
+      name: `${speciesClean} — ${title}`,
+      speciesId,
+      formId: null,
+      year,
+      games: cols.games >= 0 ? cleanWikitext(cells[cols.games]) : null,
+      region: rowRegion ?? titleRegion,
+      method: cols.method >= 0 ? cleanWikitext(cells[cols.method]) : null,
+      otName: cols.ot >= 0 ? cleanWikitext(cells[cols.ot]) : null,
+      otId: cols.otId >= 0 ? cleanWikitext(cells[cols.otId]) : null,
+      ribbon: cols.ribbon >= 0 ? cleanWikitext(cells[cols.ribbon]) : null,
+      isShiny: 0,
+      notes,
+      sourcePage: title,
+    });
+    stats.eventsExtracted++;
+  }
+  return rows;
+}
+
+/**
+ * Extracts one EventRow per recruit-Pokémon reward row from a Mystery
+ * Dungeon Wonder Mail mission table (Password/Client/Objective/Place/
+ * Difficulty/Reward-style columns, no species column of its own -- the
+ * distributed Pokémon is named inside the Reward cell, e.g.
+ * `{{p|Venonat}}♂ joins`). Rows whose reward is an item/TM (no "joins"
+ * match) are skipped, not fabricated.
+ */
+function parseRewardJoinWikitable(
+  dataRows: string[][],
+  cols: WikitableColumns,
+  title: string,
+  headingText: string | null,
+  resolver: SpeciesResolver,
+  usedSlugs: Set<string>,
+  stats: PageParseStats,
+): EventRow[] {
+  const rows: EventRow[] = [];
+  const region = deriveRegionFromTitle(title);
+  const games = deriveMysteryDungeonGames(title);
+  const method = deriveWonderMailMethod(title);
+  const year = extractYear(headingText);
+
+  for (const cells of dataRows) {
+    const rewardRaw = cells[cols.reward];
+    if (!rewardRaw) continue;
+    const speciesRaw = extractRecruitedSpeciesFromReward(rewardRaw);
+    if (!speciesRaw) {
+      stats.skippedNoSpecies++;
+      continue;
+    }
+    const speciesClean = cleanWikitext(speciesRaw);
+    if (!speciesClean) {
+      stats.skippedNoSpecies++;
+      continue;
+    }
+    const speciesId = resolver.resolve(speciesRaw, undefined);
+    if (speciesId === null) {
+      stats.skippedUnresolved++;
+      continue;
+    }
+
+    const objective = cols.objective >= 0 ? cleanWikitext(cells[cols.objective]) : null;
+    const place = cols.place >= 0 ? cleanWikitext(cells[cols.place]) : null;
+    const difficulty = cols.difficulty >= 0 ? cleanWikitext(cells[cols.difficulty]) : null;
+    const detailParts = [objective, place ? `at ${place}` : null, difficulty ? `(difficulty ${difficulty})` : null].filter(
+      (p): p is string => !!p,
+    );
+    const notes = detailParts.length > 0 ? `Recruited via Wonder Mail mission: ${detailParts.join(" ")}` : "Recruited via Wonder Mail mission";
+
+    const slug = makeUniqueSlug([speciesClean, title, year], usedSlugs);
+    rows.push({
+      slug,
+      name: `${speciesClean} — ${title}`,
+      speciesId,
+      formId: null,
+      year,
+      games,
+      region,
+      method,
+      otName: null,
+      otId: null,
+      ribbon: null,
+      isShiny: 0,
+      notes,
+      sourcePage: title,
+    });
+    stats.eventsExtracted++;
+  }
+  return rows;
+}
+
+/**
+ * Fallback for pages that yield zero events from the template parser: scans
+ * `{| ... |}` wikitables for either (a) a species-ish column, extracting any
+ * recognized level/OT/ID/ribbon/games/method/date/region columns alongside
+ * it, or (b) a Mystery Dungeon Wonder Mail "Reward" column naming a
+ * recruit-Pokémon (no species column of its own). Folds any unrecognized
+ * columns into `notes`. Cannot recover fields the source table simply
+ * doesn't carry -- this exists to avoid a hard zero on prose/table-only
+ * pages, not to guess.
  */
 export function parseEventWikitables(
   wikitext: string,
@@ -764,72 +1067,17 @@ export function parseEventWikitables(
   const rows: EventRow[] = [];
   const tableRe = /\{\|[\s\S]*?\n\|\}/g;
   let tableMatch: RegExpExecArray | null;
-  const region = deriveRegionFromTitle(title);
+  const headings = collectHeadings(text);
 
   while ((tableMatch = tableRe.exec(text)) !== null) {
-    const table = tableMatch[0];
-    const lines = table.split("\n");
-    let headerCells: string[] = [];
-    let curRowCells: string[] = [];
-    const dataRows: string[][] = [];
-    let inHeader = true;
+    const { headerCells, dataRows } = parseWikitableGrid(tableMatch[0]);
+    const cols = findWikitableColumns(headerCells);
 
-    const flushRow = () => {
-      if (inHeader) {
-        if (headerCells.length === 0) headerCells = curRowCells;
-        inHeader = false;
-      } else if (curRowCells.length > 0) {
-        dataRows.push(curRowCells);
-      }
-      curRowCells = [];
-    };
-
-    for (const line of lines) {
-      const trimmed = line.trim();
-      if (trimmed.startsWith("|-")) {
-        flushRow();
-      } else if (trimmed.startsWith("!")) {
-        for (const cell of trimmed.slice(1).split("!!")) headerCells.push(cell.trim());
-      } else if (trimmed.startsWith("|") && !trimmed.startsWith("|}") && !trimmed.startsWith("|+")) {
-        for (const cell of trimmed.slice(1).split("||")) curRowCells.push(cell.trim());
-      }
-    }
-    flushRow();
-
-    const speciesColIdx = headerCells.findIndex((h) => /pok[eé]mon|species/i.test(h));
-    if (speciesColIdx === -1) continue;
-
-    for (const cells of dataRows) {
-      const speciesCellRaw = cells[speciesColIdx];
-      if (!speciesCellRaw) continue;
-      const speciesClean = cleanWikitext(speciesCellRaw);
-      if (!speciesClean) continue;
-      const speciesId = resolver.resolve(speciesCellRaw, undefined);
-      if (speciesId === null) {
-        stats.skippedUnresolved++;
-        continue;
-      }
-      const restText = cells.filter((_, i) => i !== speciesColIdx).join(" ");
-      const year = extractYear(restText);
-      const notes = cleanWikitext(restText);
-      const slug = makeUniqueSlug([speciesClean, title, year], usedSlugs);
-      rows.push({
-        slug,
-        name: `${speciesClean} — ${title}`,
-        speciesId,
-        formId: null,
-        year,
-        games: null,
-        region,
-        method: null,
-        otName: null,
-        otId: null,
-        ribbon: null,
-        isShiny: 0,
-        notes,
-        sourcePage: title,
-      });
-      stats.eventsExtracted++;
+    if (cols.species !== -1) {
+      rows.push(...parseSpeciesWikitable(dataRows, cols, title, resolver, usedSlugs, stats));
+    } else if (cols.reward !== -1) {
+      const headingText = nearestHeading(headings, tableMatch.index);
+      rows.push(...parseRewardJoinWikitable(dataRows, cols, title, headingText, resolver, usedSlugs, stats));
     }
   }
   return rows;

@@ -14,6 +14,23 @@ describe("classifyForm", () => {
   it("classifies gender forms via the anchored -male/-female suffix", () => {
     expect(classifyForm("meowstic-female")).toBe("gender");
   });
+
+  it("classifies cosmetic pattern/color/letter forms for known cosmetic-only species", () => {
+    expect(classifyForm("vivillon-meadow")).toBe("cosmetic");
+    expect(classifyForm("furfrou-heart")).toBe("cosmetic");
+    expect(classifyForm("unown-b")).toBe("cosmetic");
+    expect(classifyForm("alcremie-ruby-cream-strawberry-sweet")).toBe("cosmetic");
+    expect(classifyForm("flabebe-yellow")).toBe("cosmetic");
+  });
+
+  it("does not misclassify Floette's real alternate-variety forms as cosmetic", () => {
+    // Floette has genuine, non-cosmetic varieties (floette-eternal, floette-mega)
+    // alongside its cosmetic color forms (handled via a different code path in
+    // fetch-pokeapi.ts's main()); classifyForm must keep classifying these two
+    // as before even though "floette-<color>" forms are cosmetic in practice.
+    expect(classifyForm("floette-eternal")).toBe("alternate");
+    expect(classifyForm("floette-mega")).toBe("mega");
+  });
 });
 
 describe("snapshotToSql", () => {

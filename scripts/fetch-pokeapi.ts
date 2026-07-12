@@ -25,7 +25,7 @@ const API_BASE = "https://pokeapi.co/api/v2";
 // Types (mirrors the D1 `species` / `forms` tables from src/db/schema).
 // ---------------------------------------------------------------------------
 
-export type FormType = "regional" | "mega" | "gigantamax" | "alternate" | "gender" | "other";
+export type FormType = "regional" | "mega" | "gigantamax" | "alternate" | "gender" | "cosmetic" | "other";
 
 export interface SpeciesRow {
   id: number;
@@ -53,12 +53,36 @@ export interface Snapshot {
 // classifyForm: pure, no I/O, exported for testing.
 // ---------------------------------------------------------------------------
 
+// Base species names whose extra `pokemon-form` entries (see
+// COSMETIC_FORM_SOURCE below) are purely cosmetic pattern/color/letter
+// variants with no stat/type/ability differences — Vivillon wing patterns,
+// Furfrou trims, Unown letters, Alcremie cream/sweet combos, Deerling/
+// Sawsbuck seasons, Flabébé/Florges colors. Deliberately excludes "floette":
+// Floette also has real (non-cosmetic) alternate-variety forms named
+// "floette-eternal" and "floette-mega" that must keep classifying as
+// "alternate"/"mega" respectively, so folding "floette" in here would
+// misclassify those two existing forms. main() does not actually depend on
+// this list — it detects cosmetic forms structurally via the pokemon-form
+// `is_default` flag — this allowlist only backs classifyForm() as a
+// standalone, name-only classifier (e.g. for direct unit testing).
+const COSMETIC_FORM_BASE_NAMES = new Set([
+  "vivillon",
+  "furfrou",
+  "unown",
+  "alcremie",
+  "deerling",
+  "sawsbuck",
+  "flabebe",
+  "florges",
+]);
+
 export function classifyForm(name: string): FormType {
   const n = name.toLowerCase();
   if (n.includes("mega")) return "mega";
   if (n.includes("gmax") || n.includes("gigantamax")) return "gigantamax";
   if (/-(alola|galar|hisui|paldea)/.test(n)) return "regional";
   if (/-(male|female)$/.test(n)) return "gender";
+  if (n.includes("-") && COSMETIC_FORM_BASE_NAMES.has(n.slice(0, n.indexOf("-")))) return "cosmetic";
   if (n.includes("-")) return "alternate";
   return "other";
 }
@@ -157,6 +181,21 @@ interface PokemonDetail {
   name: string;
   types: { slot: number; type: NamedApiResource }[];
   sprites: { front_default: string | null };
+  // Every /pokemon/{id} lists its own `pokemon-form` entries. For most
+  // species this is a single self-referencing entry (the default form). A
+  // handful of species (Vivillon, Furfrou, Unown, Alcremie, ...) list
+  // several — those extra entries are purely cosmetic pattern/color/letter
+  // variants of the SAME pokemon (as opposed to `varieties`, which are
+  // distinct /pokemon resources for mega/regional/gmax/alternate forms with
+  // real stat/type/ability differences).
+  forms: NamedApiResource[];
+}
+
+interface PokemonFormDetail {
+  id: number;
+  name: string;
+  is_default: boolean;
+  sprites: { front_default: string | null };
 }
 
 const GENERATION_NAME_TO_NUMBER: Record<string, number> = {
@@ -246,23 +285,69 @@ async function main(): Promise<void> {
       });
     }
 
+    // Cosmetic pattern/color/letter forms (Vivillon, Furfrou, Unown,
+    // Alcremie, Deerling/Sawsbuck, Flabébé/Floette/Florges, ...): these live
+    // on the DEFAULT variety's own `forms` list, not as separate varieties.
+    // Most species just self-reference (a single entry), so this only fires
+    // extra requests for the handful of species that actually have a
+    // cosmetic form set. `is_default` (from the pokemon-form detail, fetched
+    // below) is the authoritative signal for "this is the same variant
+    // already represented by the species row" — unlike the varieties path
+    // above, form *names* don't reliably equal the base pokemon's name (e.g.
+    // Vivillon's default pattern is still named "vivillon-meadow", not
+    // "vivillon"), so we can't filter by name equality here.
+    if (defaultPokemon.forms.length > 1) {
+      const cosmeticFormDetails = await politePool(
+        defaultPokemon.forms,
+        Math.min(3, CONCURRENCY),
+        DELAY_MS_PER_WORKER,
+        (formRef) => fetchJson<PokemonFormDetail>(formRef.url),
+      );
+      for (const formDetail of cosmeticFormDetails) {
+        if (formDetail.is_default) continue; // already represented by the species row
+        forms.push({
+          speciesId: detail.id,
+          name: formDetail.name,
+          formType: "cosmetic",
+          spriteUrl: formDetail.sprites.front_default ?? null,
+          // These forms share the base pokemon's id (no distinct /pokemon
+          // resource), so there's no per-form HOME render to point at; the
+          // sprite route falls back to the species/base sprite.
+          homeId: null,
+        });
+      }
+    }
+
     completed++;
     if (completed % 50 === 0 || completed === speciesStubs.length) {
       console.log(`  ...${completed}/${speciesStubs.length} species processed`);
     }
   });
 
-  species.sort((a, b) => a.id - b.id);
-  forms.sort((a, b) => a.speciesId - b.speciesId || a.name.localeCompare(b.name));
+  // De-dupe by (speciesId, name): the varieties path and the cosmetic-forms
+  // path are structurally disjoint (verified against PokéAPI's data model),
+  // but de-dupe defensively in case the API ever double-lists an entry
+  // through both mechanisms.
+  const seenForms = new Set<string>();
+  const dedupedForms: FormRow[] = [];
+  for (const f of forms) {
+    const key = `${f.speciesId}::${f.name}`;
+    if (seenForms.has(key)) continue;
+    seenForms.add(key);
+    dedupedForms.push(f);
+  }
 
-  const snapshot: Snapshot = { species, forms };
+  species.sort((a, b) => a.id - b.id);
+  dedupedForms.sort((a, b) => a.speciesId - b.speciesId || a.name.localeCompare(b.name));
+
+  const snapshot: Snapshot = { species, forms: dedupedForms };
 
   const outDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "data");
   await mkdir(outDir, { recursive: true });
   const outPath = path.join(outDir, "pokeapi-snapshot.json");
   await writeFile(outPath, JSON.stringify(snapshot, null, 2), "utf8");
 
-  console.log(`Wrote ${species.length} species and ${forms.length} forms to ${outPath}`);
+  console.log(`Wrote ${species.length} species and ${dedupedForms.length} forms to ${outPath}`);
 }
 
 // Guard main() so importing this module (e.g. from tests) triggers no network

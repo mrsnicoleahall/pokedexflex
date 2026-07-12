@@ -11409,6 +11409,13 @@
       "homeId": 10283
     },
     {
+      "speciesId": 172,
+      "name": "pichu-spiky-eared",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/172-spiky-eared.png",
+      "homeId": null
+    },
+    {
       "speciesId": 181,
       "name": "ampharos-mega",
       "formType": "mega",
@@ -11428,6 +11435,195 @@
       "formType": "regional",
       "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/10172.png",
       "homeId": 10172
+    },
+    {
+      "speciesId": 201,
+      "name": "unown-b",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/201-b.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 201,
+      "name": "unown-c",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/201-c.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 201,
+      "name": "unown-d",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/201-d.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 201,
+      "name": "unown-e",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/201-e.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 201,
+      "name": "unown-exclamation",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/201-exclamation.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 201,
+      "name": "unown-f",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/201-f.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 201,
+      "name": "unown-g",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/201-g.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 201,
+      "name": "unown-h",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/201-h.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 201,
+      "name": "unown-i",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/201-i.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 201,
+      "name": "unown-j",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/201-j.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 201,
+      "name": "unown-k",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/201-k.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 201,
+      "name": "unown-l",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/201-l.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 201,
+      "name": "unown-m",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/201-m.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 201,
+      "name": "unown-n",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/201-n.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 201,
+      "name": "unown-o",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/201-o.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 201,
+      "name": "unown-p",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/201-p.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 201,
+      "name": "unown-q",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/201-q.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 201,
+      "name": "unown-question",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/201-question.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 201,
+      "name": "unown-r",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/201-r.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 201,
+      "name": "unown-s",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/201-s.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 201,
+      "name": "unown-t",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/201-t.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 201,
+      "name": "unown-u",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/201-u.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 201,
+      "name": "unown-v",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/201-v.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 201,
+      "name": "unown-w",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/201-w.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 201,
+      "name": "unown-x",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/201-x.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 201,
+      "name": "unown-y",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/201-y.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 201,
+      "name": "unown-z",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/201-z.png",
+      "homeId": null
     },
     {
       "speciesId": 208,
@@ -11724,6 +11920,20 @@
       "homeId": 10308
     },
     {
+      "speciesId": 412,
+      "name": "burmy-sandy",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/412-sandy.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 412,
+      "name": "burmy-trash",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/412-trash.png",
+      "homeId": null
+    },
+    {
       "speciesId": 413,
       "name": "wormadam-sandy",
       "formType": "alternate",
@@ -11736,6 +11946,41 @@
       "formType": "alternate",
       "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/10005.png",
       "homeId": 10005
+    },
+    {
+      "speciesId": 414,
+      "name": "mothim-sandy",
+      "formType": "cosmetic",
+      "spriteUrl": null,
+      "homeId": null
+    },
+    {
+      "speciesId": 414,
+      "name": "mothim-trash",
+      "formType": "cosmetic",
+      "spriteUrl": null,
+      "homeId": null
+    },
+    {
+      "speciesId": 421,
+      "name": "cherrim-sunshine",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/421-sunshine.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 422,
+      "name": "shellos-east",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/422-east.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 423,
+      "name": "gastrodon-east",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/423-east.png",
+      "homeId": null
     },
     {
       "speciesId": 428,
@@ -11871,6 +12116,132 @@
       "homeId": 10006
     },
     {
+      "speciesId": 493,
+      "name": "arceus-bug",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/493-bug.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 493,
+      "name": "arceus-dark",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/493-dark.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 493,
+      "name": "arceus-dragon",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/493-dragon.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 493,
+      "name": "arceus-electric",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/493-electric.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 493,
+      "name": "arceus-fairy",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/493-fairy.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 493,
+      "name": "arceus-fighting",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/493-fighting.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 493,
+      "name": "arceus-fire",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/493-fire.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 493,
+      "name": "arceus-flying",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/493-flying.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 493,
+      "name": "arceus-ghost",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/493-ghost.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 493,
+      "name": "arceus-grass",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/493-grass.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 493,
+      "name": "arceus-ground",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/493-ground.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 493,
+      "name": "arceus-ice",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/493-ice.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 493,
+      "name": "arceus-poison",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/493-poison.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 493,
+      "name": "arceus-psychic",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/493-psychic.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 493,
+      "name": "arceus-rock",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/493-rock.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 493,
+      "name": "arceus-steel",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/493-steel.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 493,
+      "name": "arceus-unknown",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/493-unknown.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 493,
+      "name": "arceus-water",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/493-water.png",
+      "homeId": null
+    },
+    {
       "speciesId": 500,
       "name": "emboar-mega",
       "formType": "mega",
@@ -11990,6 +12361,62 @@
       "homeId": 10239
     },
     {
+      "speciesId": 585,
+      "name": "deerling-autumn",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/585-autumn.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 585,
+      "name": "deerling-summer",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/585-summer.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 585,
+      "name": "deerling-winter",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/585-winter.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 586,
+      "name": "sawsbuck-autumn",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/586-autumn.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 586,
+      "name": "sawsbuck-summer",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/586-summer.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 586,
+      "name": "sawsbuck-winter",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/586-winter.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 592,
+      "name": "frillish-female",
+      "formType": "cosmetic",
+      "spriteUrl": null,
+      "homeId": null
+    },
+    {
+      "speciesId": 593,
+      "name": "jellicent-female",
+      "formType": "cosmetic",
+      "spriteUrl": null,
+      "homeId": null
+    },
+    {
       "speciesId": 604,
       "name": "eelektross-mega",
       "formType": "mega",
@@ -12074,6 +12501,34 @@
       "homeId": 10018
     },
     {
+      "speciesId": 649,
+      "name": "genesect-burn",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/649-burn.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 649,
+      "name": "genesect-chill",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/649-chill.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 649,
+      "name": "genesect-douse",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/649-douse.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 649,
+      "name": "genesect-shock",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/649-shock.png",
+      "homeId": null
+    },
+    {
       "speciesId": 652,
       "name": "chesnaught-mega",
       "formType": "mega",
@@ -12109,11 +12564,452 @@
       "homeId": 10294
     },
     {
+      "speciesId": 664,
+      "name": "scatterbug-archipelago",
+      "formType": "cosmetic",
+      "spriteUrl": null,
+      "homeId": null
+    },
+    {
+      "speciesId": 664,
+      "name": "scatterbug-continental",
+      "formType": "cosmetic",
+      "spriteUrl": null,
+      "homeId": null
+    },
+    {
+      "speciesId": 664,
+      "name": "scatterbug-elegant",
+      "formType": "cosmetic",
+      "spriteUrl": null,
+      "homeId": null
+    },
+    {
+      "speciesId": 664,
+      "name": "scatterbug-fancy",
+      "formType": "cosmetic",
+      "spriteUrl": null,
+      "homeId": null
+    },
+    {
+      "speciesId": 664,
+      "name": "scatterbug-garden",
+      "formType": "cosmetic",
+      "spriteUrl": null,
+      "homeId": null
+    },
+    {
+      "speciesId": 664,
+      "name": "scatterbug-high-plains",
+      "formType": "cosmetic",
+      "spriteUrl": null,
+      "homeId": null
+    },
+    {
+      "speciesId": 664,
+      "name": "scatterbug-jungle",
+      "formType": "cosmetic",
+      "spriteUrl": null,
+      "homeId": null
+    },
+    {
+      "speciesId": 664,
+      "name": "scatterbug-marine",
+      "formType": "cosmetic",
+      "spriteUrl": null,
+      "homeId": null
+    },
+    {
+      "speciesId": 664,
+      "name": "scatterbug-meadow",
+      "formType": "cosmetic",
+      "spriteUrl": null,
+      "homeId": null
+    },
+    {
+      "speciesId": 664,
+      "name": "scatterbug-modern",
+      "formType": "cosmetic",
+      "spriteUrl": null,
+      "homeId": null
+    },
+    {
+      "speciesId": 664,
+      "name": "scatterbug-monsoon",
+      "formType": "cosmetic",
+      "spriteUrl": null,
+      "homeId": null
+    },
+    {
+      "speciesId": 664,
+      "name": "scatterbug-ocean",
+      "formType": "cosmetic",
+      "spriteUrl": null,
+      "homeId": null
+    },
+    {
+      "speciesId": 664,
+      "name": "scatterbug-poke-ball",
+      "formType": "cosmetic",
+      "spriteUrl": null,
+      "homeId": null
+    },
+    {
+      "speciesId": 664,
+      "name": "scatterbug-polar",
+      "formType": "cosmetic",
+      "spriteUrl": null,
+      "homeId": null
+    },
+    {
+      "speciesId": 664,
+      "name": "scatterbug-river",
+      "formType": "cosmetic",
+      "spriteUrl": null,
+      "homeId": null
+    },
+    {
+      "speciesId": 664,
+      "name": "scatterbug-sandstorm",
+      "formType": "cosmetic",
+      "spriteUrl": null,
+      "homeId": null
+    },
+    {
+      "speciesId": 664,
+      "name": "scatterbug-savanna",
+      "formType": "cosmetic",
+      "spriteUrl": null,
+      "homeId": null
+    },
+    {
+      "speciesId": 664,
+      "name": "scatterbug-sun",
+      "formType": "cosmetic",
+      "spriteUrl": null,
+      "homeId": null
+    },
+    {
+      "speciesId": 664,
+      "name": "scatterbug-tundra",
+      "formType": "cosmetic",
+      "spriteUrl": null,
+      "homeId": null
+    },
+    {
+      "speciesId": 665,
+      "name": "spewpa-archipelago",
+      "formType": "cosmetic",
+      "spriteUrl": null,
+      "homeId": null
+    },
+    {
+      "speciesId": 665,
+      "name": "spewpa-continental",
+      "formType": "cosmetic",
+      "spriteUrl": null,
+      "homeId": null
+    },
+    {
+      "speciesId": 665,
+      "name": "spewpa-elegant",
+      "formType": "cosmetic",
+      "spriteUrl": null,
+      "homeId": null
+    },
+    {
+      "speciesId": 665,
+      "name": "spewpa-fancy",
+      "formType": "cosmetic",
+      "spriteUrl": null,
+      "homeId": null
+    },
+    {
+      "speciesId": 665,
+      "name": "spewpa-garden",
+      "formType": "cosmetic",
+      "spriteUrl": null,
+      "homeId": null
+    },
+    {
+      "speciesId": 665,
+      "name": "spewpa-high-plains",
+      "formType": "cosmetic",
+      "spriteUrl": null,
+      "homeId": null
+    },
+    {
+      "speciesId": 665,
+      "name": "spewpa-jungle",
+      "formType": "cosmetic",
+      "spriteUrl": null,
+      "homeId": null
+    },
+    {
+      "speciesId": 665,
+      "name": "spewpa-marine",
+      "formType": "cosmetic",
+      "spriteUrl": null,
+      "homeId": null
+    },
+    {
+      "speciesId": 665,
+      "name": "spewpa-meadow",
+      "formType": "cosmetic",
+      "spriteUrl": null,
+      "homeId": null
+    },
+    {
+      "speciesId": 665,
+      "name": "spewpa-modern",
+      "formType": "cosmetic",
+      "spriteUrl": null,
+      "homeId": null
+    },
+    {
+      "speciesId": 665,
+      "name": "spewpa-monsoon",
+      "formType": "cosmetic",
+      "spriteUrl": null,
+      "homeId": null
+    },
+    {
+      "speciesId": 665,
+      "name": "spewpa-ocean",
+      "formType": "cosmetic",
+      "spriteUrl": null,
+      "homeId": null
+    },
+    {
+      "speciesId": 665,
+      "name": "spewpa-poke-ball",
+      "formType": "cosmetic",
+      "spriteUrl": null,
+      "homeId": null
+    },
+    {
+      "speciesId": 665,
+      "name": "spewpa-polar",
+      "formType": "cosmetic",
+      "spriteUrl": null,
+      "homeId": null
+    },
+    {
+      "speciesId": 665,
+      "name": "spewpa-river",
+      "formType": "cosmetic",
+      "spriteUrl": null,
+      "homeId": null
+    },
+    {
+      "speciesId": 665,
+      "name": "spewpa-sandstorm",
+      "formType": "cosmetic",
+      "spriteUrl": null,
+      "homeId": null
+    },
+    {
+      "speciesId": 665,
+      "name": "spewpa-savanna",
+      "formType": "cosmetic",
+      "spriteUrl": null,
+      "homeId": null
+    },
+    {
+      "speciesId": 665,
+      "name": "spewpa-sun",
+      "formType": "cosmetic",
+      "spriteUrl": null,
+      "homeId": null
+    },
+    {
+      "speciesId": 665,
+      "name": "spewpa-tundra",
+      "formType": "cosmetic",
+      "spriteUrl": null,
+      "homeId": null
+    },
+    {
+      "speciesId": 666,
+      "name": "vivillon-archipelago",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/666-archipelago.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 666,
+      "name": "vivillon-continental",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/666-continental.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 666,
+      "name": "vivillon-elegant",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/666-elegant.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 666,
+      "name": "vivillon-fancy",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/666-fancy.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 666,
+      "name": "vivillon-garden",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/666-garden.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 666,
+      "name": "vivillon-high-plains",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/666-high-plains.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 666,
+      "name": "vivillon-icy-snow",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/666-icy-snow.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 666,
+      "name": "vivillon-jungle",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/666-jungle.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 666,
+      "name": "vivillon-marine",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/666-marine.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 666,
+      "name": "vivillon-modern",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/666-modern.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 666,
+      "name": "vivillon-monsoon",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/666-monsoon.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 666,
+      "name": "vivillon-ocean",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/666-ocean.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 666,
+      "name": "vivillon-poke-ball",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/666-poke-ball.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 666,
+      "name": "vivillon-polar",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/666-polar.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 666,
+      "name": "vivillon-river",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/666-river.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 666,
+      "name": "vivillon-sandstorm",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/666-sandstorm.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 666,
+      "name": "vivillon-savanna",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/666-savanna.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 666,
+      "name": "vivillon-sun",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/666-sun.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 666,
+      "name": "vivillon-tundra",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/666-tundra.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 668,
+      "name": "pyroar-female",
+      "formType": "cosmetic",
+      "spriteUrl": null,
+      "homeId": null
+    },
+    {
       "speciesId": 668,
       "name": "pyroar-mega",
       "formType": "mega",
       "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/10295.png",
       "homeId": 10295
+    },
+    {
+      "speciesId": 669,
+      "name": "flabebe-blue",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/669-blue.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 669,
+      "name": "flabebe-orange",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/669-orange.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 669,
+      "name": "flabebe-white",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/669-white.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 669,
+      "name": "flabebe-yellow",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/669-yellow.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 670,
+      "name": "floette-blue",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/670-blue.png",
+      "homeId": null
     },
     {
       "speciesId": 670,
@@ -12128,6 +13024,118 @@
       "formType": "mega",
       "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/10296.png",
       "homeId": 10296
+    },
+    {
+      "speciesId": 670,
+      "name": "floette-orange",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/670-orange.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 670,
+      "name": "floette-white",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/670-white.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 670,
+      "name": "floette-yellow",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/670-yellow.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 671,
+      "name": "florges-blue",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/671-blue.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 671,
+      "name": "florges-orange",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/671-orange.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 671,
+      "name": "florges-white",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/671-white.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 671,
+      "name": "florges-yellow",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/671-yellow.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 676,
+      "name": "furfrou-dandy",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/676-dandy.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 676,
+      "name": "furfrou-debutante",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/676-debutante.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 676,
+      "name": "furfrou-diamond",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/676-diamond.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 676,
+      "name": "furfrou-heart",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/676-heart.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 676,
+      "name": "furfrou-kabuki",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/676-kabuki.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 676,
+      "name": "furfrou-la-reine",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/676-la-reine.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 676,
+      "name": "furfrou-matron",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/676-matron.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 676,
+      "name": "furfrou-pharaoh",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/676-pharaoh.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 676,
+      "name": "furfrou-star",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/676-star.png",
+      "homeId": null
     },
     {
       "speciesId": 678,
@@ -12247,6 +13255,13 @@
       "formType": "regional",
       "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/10243.png",
       "homeId": 10243
+    },
+    {
+      "speciesId": 716,
+      "name": "xerneas-active",
+      "formType": "cosmetic",
+      "spriteUrl": null,
+      "homeId": null
     },
     {
       "speciesId": 718,
@@ -12408,6 +13423,125 @@
       "formType": "mega",
       "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/10316.png",
       "homeId": 10316
+    },
+    {
+      "speciesId": 773,
+      "name": "silvally-bug",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/773-bug.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 773,
+      "name": "silvally-dark",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/773-dark.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 773,
+      "name": "silvally-dragon",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/773-dragon.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 773,
+      "name": "silvally-electric",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/773-electric.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 773,
+      "name": "silvally-fairy",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/773-fairy.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 773,
+      "name": "silvally-fighting",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/773-fighting.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 773,
+      "name": "silvally-fire",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/773-fire.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 773,
+      "name": "silvally-flying",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/773-flying.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 773,
+      "name": "silvally-ghost",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/773-ghost.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 773,
+      "name": "silvally-grass",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/773-grass.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 773,
+      "name": "silvally-ground",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/773-ground.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 773,
+      "name": "silvally-ice",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/773-ice.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 773,
+      "name": "silvally-poison",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/773-poison.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 773,
+      "name": "silvally-psychic",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/773-psychic.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 773,
+      "name": "silvally-rock",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/773-rock.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 773,
+      "name": "silvally-steel",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/773-steel.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 773,
+      "name": "silvally-water",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/773-water.png",
+      "homeId": null
     },
     {
       "speciesId": 774,
@@ -12711,6 +13845,20 @@
       "homeId": 10220
     },
     {
+      "speciesId": 854,
+      "name": "sinistea-antique",
+      "formType": "cosmetic",
+      "spriteUrl": null,
+      "homeId": null
+    },
+    {
+      "speciesId": 855,
+      "name": "polteageist-antique",
+      "formType": "cosmetic",
+      "spriteUrl": null,
+      "homeId": null
+    },
+    {
       "speciesId": 858,
       "name": "hatterene-gmax",
       "formType": "gigantamax",
@@ -12726,10 +13874,444 @@
     },
     {
       "speciesId": 869,
+      "name": "alcremie-caramel-swirl-berry-sweet",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/869-caramel-swirl-berry-sweet.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 869,
+      "name": "alcremie-caramel-swirl-clover-sweet",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/869-caramel-swirl-clover-sweet.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 869,
+      "name": "alcremie-caramel-swirl-flower-sweet",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/869-caramel-swirl-flower-sweet.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 869,
+      "name": "alcremie-caramel-swirl-love-sweet",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/869-caramel-swirl-love-sweet.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 869,
+      "name": "alcremie-caramel-swirl-ribbon-sweet",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/869-caramel-swirl-ribbon-sweet.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 869,
+      "name": "alcremie-caramel-swirl-star-sweet",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/869-caramel-swirl-star-sweet.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 869,
+      "name": "alcremie-caramel-swirl-strawberry-sweet",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/869-caramel-swirl-strawberry-sweet.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 869,
       "name": "alcremie-gmax",
       "formType": "gigantamax",
       "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/10223.png",
       "homeId": 10223
+    },
+    {
+      "speciesId": 869,
+      "name": "alcremie-lemon-cream-berry-sweet",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/869-lemon-cream-berry-sweet.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 869,
+      "name": "alcremie-lemon-cream-clover-sweet",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/869-lemon-cream-clover-sweet.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 869,
+      "name": "alcremie-lemon-cream-flower-sweet",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/869-lemon-cream-flower-sweet.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 869,
+      "name": "alcremie-lemon-cream-love-sweet",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/869-lemon-cream-love-sweet.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 869,
+      "name": "alcremie-lemon-cream-ribbon-sweet",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/869-lemon-cream-ribbon-sweet.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 869,
+      "name": "alcremie-lemon-cream-star-sweet",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/869-lemon-cream-star-sweet.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 869,
+      "name": "alcremie-lemon-cream-strawberry-sweet",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/869-lemon-cream-strawberry-sweet.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 869,
+      "name": "alcremie-matcha-cream-berry-sweet",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/869-matcha-cream-berry-sweet.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 869,
+      "name": "alcremie-matcha-cream-clover-sweet",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/869-matcha-cream-clover-sweet.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 869,
+      "name": "alcremie-matcha-cream-flower-sweet",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/869-matcha-cream-flower-sweet.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 869,
+      "name": "alcremie-matcha-cream-love-sweet",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/869-matcha-cream-love-sweet.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 869,
+      "name": "alcremie-matcha-cream-ribbon-sweet",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/869-matcha-cream-ribbon-sweet.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 869,
+      "name": "alcremie-matcha-cream-star-sweet",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/869-matcha-cream-star-sweet.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 869,
+      "name": "alcremie-matcha-cream-strawberry-sweet",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/869-matcha-cream-strawberry-sweet.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 869,
+      "name": "alcremie-mint-cream-berry-sweet",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/869-mint-cream-berry-sweet.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 869,
+      "name": "alcremie-mint-cream-clover-sweet",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/869-mint-cream-clover-sweet.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 869,
+      "name": "alcremie-mint-cream-flower-sweet",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/869-mint-cream-flower-sweet.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 869,
+      "name": "alcremie-mint-cream-love-sweet",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/869-mint-cream-love-sweet.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 869,
+      "name": "alcremie-mint-cream-ribbon-sweet",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/869-mint-cream-ribbon-sweet.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 869,
+      "name": "alcremie-mint-cream-star-sweet",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/869-mint-cream-star-sweet.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 869,
+      "name": "alcremie-mint-cream-strawberry-sweet",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/869-mint-cream-strawberry-sweet.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 869,
+      "name": "alcremie-rainbow-swirl-berry-sweet",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/869-rainbow-swirl-berry-sweet.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 869,
+      "name": "alcremie-rainbow-swirl-clover-sweet",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/869-rainbow-swirl-clover-sweet.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 869,
+      "name": "alcremie-rainbow-swirl-flower-sweet",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/869-rainbow-swirl-flower-sweet.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 869,
+      "name": "alcremie-rainbow-swirl-love-sweet",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/869-rainbow-swirl-love-sweet.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 869,
+      "name": "alcremie-rainbow-swirl-ribbon-sweet",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/869-rainbow-swirl-ribbon-sweet.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 869,
+      "name": "alcremie-rainbow-swirl-star-sweet",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/869-rainbow-swirl-star-sweet.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 869,
+      "name": "alcremie-rainbow-swirl-strawberry-sweet",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/869-rainbow-swirl-strawberry-sweet.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 869,
+      "name": "alcremie-ruby-cream-berry-sweet",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/869-ruby-cream-berry-sweet.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 869,
+      "name": "alcremie-ruby-cream-clover-sweet",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/869-ruby-cream-clover-sweet.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 869,
+      "name": "alcremie-ruby-cream-flower-sweet",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/869-ruby-cream-flower-sweet.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 869,
+      "name": "alcremie-ruby-cream-love-sweet",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/869-ruby-cream-love-sweet.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 869,
+      "name": "alcremie-ruby-cream-ribbon-sweet",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/869-ruby-cream-ribbon-sweet.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 869,
+      "name": "alcremie-ruby-cream-star-sweet",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/869-ruby-cream-star-sweet.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 869,
+      "name": "alcremie-ruby-cream-strawberry-sweet",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/869-ruby-cream-strawberry-sweet.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 869,
+      "name": "alcremie-ruby-swirl-berry-sweet",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/869-ruby-swirl-berry-sweet.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 869,
+      "name": "alcremie-ruby-swirl-clover-sweet",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/869-ruby-swirl-clover-sweet.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 869,
+      "name": "alcremie-ruby-swirl-flower-sweet",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/869-ruby-swirl-flower-sweet.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 869,
+      "name": "alcremie-ruby-swirl-love-sweet",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/869-ruby-swirl-love-sweet.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 869,
+      "name": "alcremie-ruby-swirl-ribbon-sweet",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/869-ruby-swirl-ribbon-sweet.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 869,
+      "name": "alcremie-ruby-swirl-star-sweet",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/869-ruby-swirl-star-sweet.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 869,
+      "name": "alcremie-ruby-swirl-strawberry-sweet",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/869-ruby-swirl-strawberry-sweet.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 869,
+      "name": "alcremie-salted-cream-berry-sweet",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/869-salted-cream-berry-sweet.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 869,
+      "name": "alcremie-salted-cream-clover-sweet",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/869-salted-cream-clover-sweet.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 869,
+      "name": "alcremie-salted-cream-flower-sweet",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/869-salted-cream-flower-sweet.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 869,
+      "name": "alcremie-salted-cream-love-sweet",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/869-salted-cream-love-sweet.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 869,
+      "name": "alcremie-salted-cream-ribbon-sweet",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/869-salted-cream-ribbon-sweet.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 869,
+      "name": "alcremie-salted-cream-star-sweet",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/869-salted-cream-star-sweet.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 869,
+      "name": "alcremie-salted-cream-strawberry-sweet",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/869-salted-cream-strawberry-sweet.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 869,
+      "name": "alcremie-vanilla-cream-berry-sweet",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/869-vanilla-cream-berry-sweet.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 869,
+      "name": "alcremie-vanilla-cream-clover-sweet",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/869-vanilla-cream-clover-sweet.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 869,
+      "name": "alcremie-vanilla-cream-flower-sweet",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/869-vanilla-cream-flower-sweet.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 869,
+      "name": "alcremie-vanilla-cream-love-sweet",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/869-vanilla-cream-love-sweet.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 869,
+      "name": "alcremie-vanilla-cream-ribbon-sweet",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/869-vanilla-cream-ribbon-sweet.png",
+      "homeId": null
+    },
+    {
+      "speciesId": 869,
+      "name": "alcremie-vanilla-cream-star-sweet",
+      "formType": "cosmetic",
+      "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/869-vanilla-cream-star-sweet.png",
+      "homeId": null
     },
     {
       "speciesId": 870,
@@ -13024,6 +14606,20 @@
       "formType": "alternate",
       "spriteUrl": null,
       "homeId": 10268
+    },
+    {
+      "speciesId": 1012,
+      "name": "poltchageist-artisan",
+      "formType": "cosmetic",
+      "spriteUrl": null,
+      "homeId": null
+    },
+    {
+      "speciesId": 1013,
+      "name": "sinistcha-masterpiece",
+      "formType": "cosmetic",
+      "spriteUrl": null,
+      "homeId": null
     },
     {
       "speciesId": 1017,

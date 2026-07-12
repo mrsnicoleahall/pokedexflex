@@ -15,9 +15,9 @@ type SignInPanelProps = {
 };
 
 export function SignInPanel({ onClose }: SignInPanelProps) {
-	const { requestLink } = useAuth();
+	const { requestLink, refresh } = useAuth();
 	const [email, setEmail] = useState("");
-	const [status, setStatus] = useState<"idle" | "sending" | "sent">("idle");
+	const [status, setStatus] = useState<"idle" | "sending" | "sent" | "verifying">("idle");
 	const [devLink, setDevLink] = useState<string | undefined>(undefined);
 	const [error, setError] = useState<string | null>(null);
 	const inputRef = useRef<HTMLInputElement>(null);
@@ -50,6 +50,23 @@ export function SignInPanel({ onClose }: SignInPanelProps) {
 		}
 	}
 
+	// Complete the dev sign-in by fetching the verify endpoint (which sets the
+	// session cookie) rather than a full-page navigation — the latter can be
+	// intercepted by the dev server's SPA fallback. Then refresh the session.
+	async function handleDevVerify() {
+		if (!devLink) return;
+		setStatus("verifying");
+		setError(null);
+		try {
+			await fetch(devLink, { credentials: "include", redirect: "manual" });
+			await refresh();
+			onClose();
+		} catch {
+			setStatus("sent");
+			setError("Couldn't complete sign-in. Please try again.");
+		}
+	}
+
 	return (
 		<div className="modal-overlay" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
 			<div
@@ -68,14 +85,19 @@ export function SignInPanel({ onClose }: SignInPanelProps) {
 					</button>
 				</div>
 
-				{status === "sent" ? (
+				{status === "sent" || status === "verifying" ? (
 					<div className="modal__body">
 						{devLink ? (
 							<>
 								<p>Dev sign-in link ready:</p>
-								<a className="button" href={devLink}>
-									Sign in →
-								</a>
+								<button
+									type="button"
+									className="button button--primary"
+									onClick={handleDevVerify}
+									disabled={status === "verifying"}
+								>
+									{status === "verifying" ? "Signing in…" : "Sign in →"}
+								</button>
 							</>
 						) : (
 							<p>Check your email for a sign-in link.</p>

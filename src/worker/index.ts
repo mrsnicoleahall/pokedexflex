@@ -5,6 +5,7 @@ import { speciesRoutes } from "./routes/species";
 import { eventRoutes } from "./routes/events";
 import { spriteRoutes } from "./routes/sprites";
 import { authRoutes } from "./routes/auth";
+import { collectionRoutes } from "./routes/collection";
 
 const app = new Hono<{ Bindings: Env }>();
 
@@ -19,6 +20,7 @@ app.route("/api", healthRoutes);
 app.route("/api", speciesRoutes);
 app.route("/api", eventRoutes);
 app.route("/api/auth", authRoutes);
+app.route("/api/collection", collectionRoutes);
 app.route("/sprites", spriteRoutes);
 
 export default app;

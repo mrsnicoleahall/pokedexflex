@@ -265,6 +265,23 @@ export async function deleteBox(id: string): Promise<void> {
 	await handleJson<{ ok: boolean }>(res, "delete box");
 }
 
+/* ---------- Ribbons ---------- */
+
+export type RibbonDto = {
+	id: string;
+	name: string;
+	description: string;
+	category: string;
+	earned: boolean;
+	progress: { current: number; total: number };
+};
+
+export async function fetchRibbons(): Promise<{ ribbons: RibbonDto[]; earnedCount: number; total: number }> {
+	const res = await fetch("/api/ribbons", { credentials: "include" });
+	if (!res.ok) throw new Error(`ribbons fetch failed: ${res.status}`);
+	return res.json() as Promise<{ ribbons: RibbonDto[]; earnedCount: number; total: number }>;
+}
+
 /* ---------- Auth ---------- */
 
 export type UserDto = {

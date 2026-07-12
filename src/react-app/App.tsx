@@ -3,10 +3,10 @@
 import { useState } from "react";
 import type { AccountView } from "./components/AccountMenu";
 import { TopBar, type Tab } from "./components/TopBar";
-import { ComingSoon } from "./pages/ComingSoon";
 import { EventsCatalog } from "./pages/EventsCatalog";
 import { Home } from "./pages/Home";
 import { MyCollection } from "./pages/MyCollection";
+import { Ribbons } from "./pages/Ribbons";
 import { Settings } from "./pages/Settings";
 import { SpeciesCatalog } from "./pages/SpeciesCatalog";
 
@@ -46,7 +46,7 @@ function App() {
 			) : view === "collection" ? (
 				<MyCollection onBrowseSpecies={() => handleTabChange("species")} />
 			) : view === "ribbons" ? (
-				<ComingSoon title="Ribbons" onBack={backToCatalog} />
+				<Ribbons />
 			) : tab === "species" ? (
 				<SpeciesCatalog q={q} gen={gen} />
 			) : (

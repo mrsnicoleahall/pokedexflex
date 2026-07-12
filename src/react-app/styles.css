@@ -1145,6 +1145,215 @@ a {
 	gap: 12px;
 }
 
+/* ---------- Ribbons page ---------- */
+
+.ribbons-summary {
+	display: flex;
+	align-items: center;
+	gap: 20px;
+	flex-wrap: wrap;
+	border: 1px solid var(--hairline);
+	border-radius: var(--radius-card);
+	padding: 20px 24px;
+	margin-bottom: 24px;
+	box-shadow: var(--shadow-card-rest);
+}
+
+.ribbons-summary__count {
+	font-family: var(--font-display);
+	font-weight: 700;
+	font-size: 1.6rem;
+	white-space: nowrap;
+}
+
+.ribbons-summary__count small {
+	font-family: var(--font-body);
+	font-weight: 500;
+	font-size: 0.85rem;
+	color: var(--muted);
+	margin-left: 6px;
+}
+
+.ribbons-summary__bar-wrap {
+	flex: 1;
+	min-width: 160px;
+}
+
+.ribbons-summary__track {
+	height: 10px;
+	border-radius: 999px;
+	background: color-mix(in srgb, var(--ink) 8%, transparent);
+	overflow: hidden;
+}
+
+.ribbons-summary__fill {
+	height: 100%;
+	border-radius: 999px;
+	background: linear-gradient(90deg, #f6c64b, #ff7a3c);
+	transition: width 0.3s ease;
+}
+
+.ribbons-summary__note {
+	width: 100%;
+	color: var(--muted);
+	font-size: 0.85rem;
+}
+
+.ribbon-section {
+	margin-bottom: 28px;
+}
+
+.ribbon-section__header {
+	display: flex;
+	align-items: baseline;
+	justify-content: space-between;
+	gap: 12px;
+	margin-bottom: 12px;
+}
+
+.ribbon-section__title {
+	font-family: var(--font-display);
+	font-weight: 700;
+	font-size: 1.1rem;
+}
+
+.ribbon-section__count {
+	color: var(--muted);
+	font-family: var(--font-mono);
+	font-size: 0.8rem;
+	white-space: nowrap;
+}
+
+.ribbon-section--collapsible {
+	border: 1px solid var(--hairline);
+	border-radius: var(--radius-card);
+	overflow: hidden;
+}
+
+.ribbon-section__summary {
+	list-style: none;
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	padding: 14px 16px;
+	background: var(--surface);
+	cursor: pointer;
+}
+
+.ribbon-section__summary::-webkit-details-marker {
+	display: none;
+}
+
+.ribbon-section__summary .ribbon-section__title {
+	flex: 1;
+}
+
+.ribbon-section__chevron {
+	color: var(--muted);
+	transition: transform 0.15s ease;
+}
+
+.ribbon-section--collapsible[open] > .ribbon-section__summary .ribbon-section__chevron {
+	transform: rotate(90deg);
+}
+
+.ribbon-section__body {
+	padding: 4px 16px 16px;
+	border-top: 1px solid var(--hairline);
+}
+
+.ribbon-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+	gap: 12px;
+}
+
+.ribbon-card {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	border: 1px solid var(--hairline);
+	border-radius: var(--radius-card);
+	padding: 16px;
+	overflow: hidden;
+}
+
+.ribbon-card--earned {
+	box-shadow: var(--shadow-card-rest);
+}
+
+.ribbon-card--locked {
+	background: var(--surface);
+}
+
+.ribbon-card__shine {
+	position: absolute;
+	top: 12px;
+	right: 14px;
+	font-size: 1.1rem;
+	line-height: 1;
+}
+
+.ribbon-card__name {
+	display: flex;
+	align-items: center;
+	font-family: var(--font-display);
+	font-weight: 700;
+	font-size: 0.95rem;
+	padding-right: 20px;
+}
+
+.ribbon-card--locked .ribbon-card__name {
+	color: var(--muted);
+}
+
+.ribbon-card__check {
+	display: inline-flex;
+	flex: none;
+	align-items: center;
+	justify-content: center;
+	width: 20px;
+	height: 20px;
+	border-radius: 50%;
+	margin-right: 8px;
+	color: #fff;
+	font-size: 0.68rem;
+}
+
+.ribbon-card__desc {
+	font-size: 0.82rem;
+	color: var(--muted);
+	line-height: 1.45;
+}
+
+.ribbon-progress {
+	display: flex;
+	flex-direction: column;
+	gap: 5px;
+	margin-top: auto;
+	padding-top: 4px;
+}
+
+.ribbon-progress__track {
+	height: 6px;
+	border-radius: 999px;
+	background: color-mix(in srgb, var(--ink) 8%, transparent);
+	overflow: hidden;
+}
+
+.ribbon-progress__fill {
+	height: 100%;
+	border-radius: 999px;
+	background: var(--muted);
+}
+
+.ribbon-progress__label {
+	font-family: var(--font-mono);
+	font-size: 0.72rem;
+	color: var(--muted);
+}
+
 /* ---------- Responsive ---------- */
 
 @media (max-width: 640px) {
@@ -1193,5 +1402,16 @@ a {
 
 	.editor-actions__spacer {
 		display: none;
+	}
+
+	.ribbons-summary {
+		flex-direction: column;
+		align-items: stretch;
+		gap: 12px;
+	}
+
+	.ribbon-grid {
+		grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+		gap: 10px;
 	}
 }

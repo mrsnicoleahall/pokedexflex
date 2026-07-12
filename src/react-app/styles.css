@@ -159,11 +159,17 @@ a {
 }
 
 .wordmark {
+	appearance: none;
+	border: none;
+	background: transparent;
+	padding: 0;
+	color: inherit;
 	font-family: var(--font-display);
 	font-weight: 700;
 	font-size: 1.15rem;
 	letter-spacing: -0.01em;
 	white-space: nowrap;
+	cursor: pointer;
 }
 
 .tabs {
@@ -277,6 +283,77 @@ a {
 	font-family: "Sora", system-ui, sans-serif;
 	font-weight: 700;
 	letter-spacing: -0.01em;
+}
+
+/* ---------- Hero ---------- */
+
+.hero {
+	position: relative;
+	overflow: hidden;
+	border: 1px solid var(--hairline);
+	border-radius: var(--radius-card);
+	padding: 56px 40px;
+	margin-bottom: 8px;
+	box-shadow: var(--shadow-card-rest);
+}
+
+.hero__eyebrow {
+	font-family: var(--font-mono);
+	font-size: 0.78rem;
+	font-weight: 500;
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+	color: var(--muted);
+	margin-bottom: 10px;
+}
+
+.hero__title {
+	font-size: clamp(1.8rem, 4vw, 2.75rem);
+	line-height: 1.1;
+	letter-spacing: -0.02em;
+	max-width: 18ch;
+}
+
+.hero__title--slim {
+	font-size: clamp(1.4rem, 3vw, 1.9rem);
+}
+
+.hero__subcopy {
+	margin-top: 14px;
+	max-width: 52ch;
+	color: var(--muted);
+	font-size: 1.02rem;
+	line-height: 1.55;
+}
+
+.hero__actions {
+	display: flex;
+	gap: 12px;
+	flex-wrap: wrap;
+	margin-top: 26px;
+}
+
+.hero__actions .button {
+	padding: 11px 24px;
+	font-size: 0.95rem;
+}
+
+.hero__welcome .hero__actions {
+	margin-top: 18px;
+}
+
+@media (max-width: 640px) {
+	.hero {
+		padding: 36px 22px;
+	}
+
+	.hero__actions {
+		flex-direction: column;
+	}
+
+	.hero__actions .button {
+		width: 100%;
+	}
 }
 
 /* ---------- Grid & card ---------- */

@@ -16,6 +16,7 @@ type TopBarProps = {
 	onGenChange: (value: number | undefined) => void;
 	showFilters: boolean;
 	onNavigate: (view: AccountView) => void;
+	onLogoClick: () => void;
 };
 
 export function TopBar({
@@ -27,11 +28,14 @@ export function TopBar({
 	onGenChange,
 	showFilters,
 	onNavigate,
+	onLogoClick,
 }: TopBarProps) {
 	return (
 		<header className="toolbar">
 			<div className="toolbar__inner container">
-				<span className="wordmark">PokeFlexDex</span>
+				<button type="button" className="wordmark" onClick={onLogoClick}>
+					PokeFlexDex
+				</button>
 
 				<nav className="tabs" role="tablist" aria-label="Sections">
 					<button

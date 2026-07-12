@@ -87,6 +87,20 @@ export function getContrastText(hexColor: string): string {
 	return yiq >= 150 ? "#14171F" : "#FFFFFF";
 }
 
+/**
+ * Build a soft, multi-type gradient for large marketing surfaces (the
+ * homepage hero) — a wider echo of the per-card `typeAura`, sweeping across
+ * several signature type colors instead of blending just one or two, so it
+ * reads as "every type welcome here" rather than any one species' aura.
+ */
+export function heroAura(): string {
+	const palette = ["fire", "electric", "grass", "water", "psychic", "dragon"];
+	const stops = palette
+		.map((type, i) => `${typeColor(type)}2E ${Math.round((i / (palette.length - 1)) * 100)}%`)
+		.join(", ");
+	return `linear-gradient(120deg, ${stops}), var(--surface)`;
+}
+
 /** Build the URL for our own lazy-cached HOME sprite proxy route. */
 export function spriteUrl(homeId: number, shiny = false): string {
 	return shiny ? `/sprites/home/shiny/${homeId}` : `/sprites/home/${homeId}`;

@@ -1,11 +1,50 @@
 import { Hono } from "hono";
 import { and, count, eq, like, or } from "drizzle-orm";
 import { getDb } from "../db";
-import { specimens, species } from "../../db/schema";
+import { specimens, species, forms, boxes } from "../../db/schema";
 import { requireUser } from "../auth/current-user";
 import { validateSpecimen, type SpecimenInput } from "../collection/validate";
 
 export const collectionRoutes = new Hono<{ Bindings: Env }>();
+
+type Db = ReturnType<typeof getDb>;
+
+/** Checks that a species row exists for the given id. */
+const speciesExists = async (db: Db, speciesId: number): Promise<boolean> => {
+  const [row] = await db.select({ id: species.id }).from(species).where(eq(species.id, speciesId)).limit(1);
+  return !!row;
+};
+
+/** Checks that a form row exists for the given id. */
+const formExists = async (db: Db, formId: number): Promise<boolean> => {
+  const [row] = await db.select({ id: forms.id }).from(forms).where(eq(forms.id, formId)).limit(1);
+  return !!row;
+};
+
+/** Checks that a box exists and belongs to the given user. */
+const boxBelongsToUser = async (db: Db, boxId: string, userId: string): Promise<boolean> => {
+  const [row] = await db
+    .select({ id: boxes.id })
+    .from(boxes)
+    .where(and(eq(boxes.id, boxId), eq(boxes.userId, userId)))
+    .limit(1);
+  return !!row;
+};
+
+/**
+ * Validates the referential integrity of a validated specimen input (species/form existence,
+ * box ownership) before it is written. Returns a list of errors, empty if all references are valid.
+ */
+const validateReferences = async (db: Db, value: SpecimenInput, userId: string): Promise<string[]> => {
+  const errors: string[] = [];
+  if (!(await speciesExists(db, value.speciesId))) errors.push("speciesId does not exist");
+  if (value.formId !== null && !(await formExists(db, value.formId))) errors.push("formId does not exist");
+  if (value.boxId !== null && !(await boxBelongsToUser(db, value.boxId, userId))) errors.push("boxId not found");
+  return errors;
+};
+
+/** Sentinel returned when `c.req.json()` fails to parse the request body. */
+const INVALID_JSON = Symbol("invalid-json");
 
 type SpecimenRow = typeof specimens.$inferSelect;
 
@@ -81,6 +120,9 @@ collectionRoutes.post("/", async (c) => {
   if (!result.ok) return c.json({ errors: result.errors }, 400);
 
   const db = getDb(c.env.DB);
+  const refErrors = await validateReferences(db, result.value, user.id);
+  if (refErrors.length > 0) return c.json({ errors: refErrors }, 400);
+
   const now = Date.now();
   const row: SpecimenRow = {
     id: crypto.randomUUID(),
@@ -100,8 +142,10 @@ collectionRoutes.get("/", async (c) => {
 
   const q = c.req.query("q")?.trim();
   const box = c.req.query("box");
-  const limit = Math.min(Number(c.req.query("limit") ?? 60) || 60, 200);
-  const offset = Number(c.req.query("offset") ?? 0) || 0;
+  const rawLimit = Number.parseInt(c.req.query("limit") ?? "", 10);
+  const limit = Number.isFinite(rawLimit) && rawLimit >= 1 ? Math.min(rawLimit, 200) : 60;
+  const rawOffset = Number.parseInt(c.req.query("offset") ?? "", 10);
+  const offset = Number.isFinite(rawOffset) && rawOffset >= 0 ? rawOffset : 0;
 
   const conds = [eq(specimens.userId, user.id)];
   if (box) conds.push(eq(specimens.boxId, box));
@@ -159,10 +203,14 @@ collectionRoutes.patch("/:id", async (c) => {
     .limit(1);
   if (!existing) return c.json({ error: "not_found" }, 404);
 
-  const body = await c.req.json().catch(() => ({}) as Record<string, unknown>);
+  const body = await c.req.json().catch(() => INVALID_JSON);
+  if (body === INVALID_JSON) return c.json({ errors: ["invalid JSON body"] }, 400);
   const merged = { ...rowToInput(existing), ...(body as Record<string, unknown>) };
   const result = validateSpecimen(merged);
   if (!result.ok) return c.json({ errors: result.errors }, 400);
+
+  const refErrors = await validateReferences(db, result.value, user.id);
+  if (refErrors.length > 0) return c.json({ errors: refErrors }, 400);
 
   const updated: SpecimenRow = {
     ...existing,

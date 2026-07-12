@@ -2,7 +2,9 @@ import { env, createExecutionContext, waitOnExecutionContext } from "cloudflare:
 import { describe, it, expect, beforeAll } from "vitest";
 import worker from "../../src/worker/index";
 import { getDb } from "../../src/worker/db";
-import { species } from "../../src/db/schema";
+import { species, forms } from "../../src/db/schema";
+
+let validFormId: number;
 
 beforeAll(async () => {
   const db = getDb(env.DB);
@@ -13,6 +15,11 @@ beforeAll(async () => {
     types: JSON.stringify(["fire", "flying"]),
     spriteUrl: null,
   });
+  const [form] = await db
+    .insert(forms)
+    .values({ speciesId: 6, name: "mega-x", formType: "mega", spriteUrl: null, homeId: null })
+    .returning({ id: forms.id });
+  validFormId = form.id;
 });
 
 const call = async (path: string, init?: RequestInit, cookie?: string) => {
@@ -131,5 +138,70 @@ describe("collection API", () => {
     // still there for the real owner
     const stillThere = await call(`/api/collection/${created.id}`, undefined, ownerCookie);
     expect(stillThere.status).toBe(200);
+  });
+
+  it("rejects a nonexistent speciesId with 400 instead of a 500 FK crash", async () => {
+    const cookie = await signIn("badspecies@x.com");
+    const res = await postJson("/api/collection", { speciesId: 999999 }, cookie);
+    expect(res.status).toBe(400);
+    const body = (await res.json()) as any;
+    expect(body.errors).toContain("speciesId does not exist");
+  });
+
+  it("rejects a nonexistent formId with 400", async () => {
+    const cookie = await signIn("badform@x.com");
+    const res = await postJson("/api/collection", { speciesId: 6, formId: 999999 }, cookie);
+    expect(res.status).toBe(400);
+    const body = (await res.json()) as any;
+    expect(body.errors).toContain("formId does not exist");
+
+    // happy path: a real formId is accepted
+    const okRes = await postJson("/api/collection", { speciesId: 6, formId: validFormId }, cookie);
+    expect(okRes.status).toBe(200);
+    const okBody = (await okRes.json()) as any;
+    expect(okBody.formId).toBe(validFormId);
+  });
+
+  it("rejects a boxId owned by another user with 400, accepts the user's own box", async () => {
+    const cookieA = await signIn("boxownerA@x.com");
+    const cookieB = await signIn("boxownerB@x.com");
+
+    const boxB = (await (await postJson("/api/boxes", { name: "B's box" }, cookieB)).json()) as any;
+    const foreignRes = await postJson("/api/collection", { speciesId: 6, boxId: boxB.id }, cookieA);
+    expect(foreignRes.status).toBe(400);
+    const foreignBody = (await foreignRes.json()) as any;
+    expect(foreignBody.errors).toContain("boxId not found");
+
+    const boxA = (await (await postJson("/api/boxes", { name: "A's box" }, cookieA)).json()) as any;
+    const ownRes = await postJson("/api/collection", { speciesId: 6, boxId: boxA.id }, cookieA);
+    expect(ownRes.status).toBe(200);
+    const ownBody = (await ownRes.json()) as any;
+    expect(ownBody.boxId).toBe(boxA.id);
+  });
+
+  it("rejects a malformed JSON body on PATCH with 400", async () => {
+    const cookie = await signIn("badpatchbody@x.com");
+    const created = await (await postJson("/api/collection", { speciesId: 6, nickname: "Original" }, cookie)).json() as any;
+
+    const res = await call(
+      `/api/collection/${created.id}`,
+      { method: "PATCH", headers: { "content-type": "application/json" }, body: "{ not valid json" },
+      cookie,
+    );
+    expect(res.status).toBe(400);
+    const body = (await res.json()) as any;
+    expect(body.errors).toContain("invalid JSON body");
+  });
+
+  it("clamps a negative limit to the default instead of returning everything", async () => {
+    const cookie = await signIn("pagination@x.com");
+    for (let i = 0; i < 3; i++) {
+      await postJson("/api/collection", { speciesId: 6, nickname: `Page${i}` }, cookie);
+    }
+    const res = await call("/api/collection?limit=-5", undefined, cookie);
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as any;
+    expect(body.items.length).toBeLessThanOrEqual(60);
+    expect(body.items.length).toBeGreaterThanOrEqual(3);
   });
 });

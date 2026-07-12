@@ -7,9 +7,12 @@
 // their specimens, reusing the sprite/type-aura/card language from the
 // species and events catalogs.
 //
-// The "Add Pokémon" button and each card's click both defer to optional
-// `onAdd` / `onEditSpecimen` props — Task 5 wires the specimen editor onto
-// these hooks; until then they're safe no-ops.
+// "＋ Add Pokémon" opens a lightweight species picker (SpeciesPicker); picking
+// a species opens the SpecimenEditor in create mode, pre-boxed into whatever
+// box filter is currently selected. Clicking an existing card opens the same
+// editor in edit mode (fetching the full specimen itself). Either flow
+// refetches the grid (and box counts) on save so the Owned badges elsewhere
+// in the app and this grid stay in sync.
 
 import { useCallback, useEffect, useState } from "react";
 import {
@@ -17,9 +20,12 @@ import {
 	listBoxes,
 	listCollection,
 	type BoxDto,
+	type SpeciesDto,
 	type SpecimenDto,
 } from "../api";
 import { useAuth } from "../auth/AuthProvider";
+import { SpeciesPicker } from "../collection/SpeciesPicker";
+import { SpecimenEditor } from "../collection/SpecimenEditor";
 import { BoxBar } from "../components/BoxBar";
 import { SignInPanel } from "../components/SignInPanel";
 import { Sprite } from "../components/Sprite";
@@ -29,11 +35,9 @@ import { formatDexNumber, formatName, typeAura } from "../theme";
 type MyCollectionProps = {
 	/** Sends the user to the Species catalog (used by the empty-collection CTA). */
 	onBrowseSpecies: () => void;
-	/** Task 5 hook: open the specimen editor to create a new specimen (optionally pre-boxed). */
-	onAdd?: (boxId: string | null) => void;
-	/** Task 5 hook: open the specimen editor for an existing specimen. */
-	onEditSpecimen?: (id: string) => void;
 };
+
+type EditorRequest = { mode: "create"; species: SpeciesDto } | { mode: "edit"; specimenId: string };
 
 function SpecimenCard({
 	specimen,
@@ -95,7 +99,7 @@ function SpecimenCard({
 	);
 }
 
-export function MyCollection({ onBrowseSpecies, onAdd, onEditSpecimen }: MyCollectionProps) {
+export function MyCollection({ onBrowseSpecies }: MyCollectionProps) {
 	const { user, loading: authLoading } = useAuth();
 	const [signInOpen, setSignInOpen] = useState(false);
 
@@ -106,6 +110,9 @@ export function MyCollection({ onBrowseSpecies, onAdd, onEditSpecimen }: MyColle
 	const [boxes, setBoxes] = useState<BoxDto[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
+	const [refreshKey, setRefreshKey] = useState(0);
+	const [pickerOpen, setPickerOpen] = useState(false);
+	const [editorRequest, setEditorRequest] = useState<EditorRequest | null>(null);
 
 	const refreshBoxes = useCallback(() => {
 		listBoxes()
@@ -153,7 +160,13 @@ export function MyCollection({ onBrowseSpecies, onAdd, onEditSpecimen }: MyColle
 			cancelled = true;
 			clearTimeout(t);
 		};
-	}, [user, q, selectedBoxId]);
+	}, [user, q, selectedBoxId, refreshKey]);
+
+	function handleEditorSaved() {
+		setEditorRequest(null);
+		setRefreshKey((k) => k + 1);
+		refreshBoxes();
+	}
 
 	if (authLoading) {
 		return (
@@ -205,7 +218,7 @@ export function MyCollection({ onBrowseSpecies, onAdd, onEditSpecimen }: MyColle
 					onChange={(e) => setQ(e.target.value)}
 					aria-label="Search your collection"
 				/>
-				<button type="button" className="button button--primary" onClick={() => onAdd?.(selectedBoxId)}>
+				<button type="button" className="button button--primary" onClick={() => setPickerOpen(true)}>
 					＋ Add Pokémon
 				</button>
 			</div>
@@ -244,10 +257,45 @@ export function MyCollection({ onBrowseSpecies, onAdd, onEditSpecimen }: MyColle
 							key={specimen.id}
 							specimen={specimen}
 							boxName={boxName(specimen.boxId)}
-							onOpen={() => onEditSpecimen?.(specimen.id)}
+							onOpen={() => setEditorRequest({ mode: "edit", specimenId: specimen.id })}
 						/>
 					))}
 				</div>
+			)}
+
+			{pickerOpen && (
+				<SpeciesPicker
+					onClose={() => setPickerOpen(false)}
+					onPick={(species) => {
+						setPickerOpen(false);
+						setEditorRequest({ mode: "create", species });
+					}}
+				/>
+			)}
+
+			{editorRequest && (
+				<SpecimenEditor
+					key={
+						editorRequest.mode === "edit"
+							? `edit-${editorRequest.specimenId}`
+							: `create-${editorRequest.species.id}`
+					}
+					mode={editorRequest.mode}
+					specimenId={editorRequest.mode === "edit" ? editorRequest.specimenId : undefined}
+					initial={
+						editorRequest.mode === "create"
+							? {
+									speciesId: editorRequest.species.id,
+									speciesName: editorRequest.species.name,
+									homeId: editorRequest.species.homeId,
+									forms: editorRequest.species.forms,
+									boxId: selectedBoxId,
+								}
+							: undefined
+					}
+					onClose={() => setEditorRequest(null)}
+					onSaved={handleEditorSaved}
+				/>
 			)}
 		</div>
 	);

@@ -2,7 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { fetchSpecies, type SpeciesDto } from "../api";
+import { useAuth } from "../auth/AuthProvider";
 import { PokemonCard } from "../components/PokemonCard";
+import { SignInPanel } from "../components/SignInPanel";
+import { SpecimenEditor } from "../collection/SpecimenEditor";
 
 type SpeciesCatalogProps = {
 	q: string;
@@ -10,10 +13,14 @@ type SpeciesCatalogProps = {
 };
 
 export function SpeciesCatalog({ q, gen }: SpeciesCatalogProps) {
+	const { user } = useAuth();
 	const [items, setItems] = useState<SpeciesDto[]>([]);
 	const [total, setTotal] = useState<number | null>(null);
 	const [error, setError] = useState<string | null>(null);
 	const [loading, setLoading] = useState(true);
+	const [refreshKey, setRefreshKey] = useState(0);
+	const [signInOpen, setSignInOpen] = useState(false);
+	const [addTarget, setAddTarget] = useState<SpeciesDto | null>(null);
 
 	useEffect(() => {
 		let cancelled = false;
@@ -41,7 +48,15 @@ export function SpeciesCatalog({ q, gen }: SpeciesCatalogProps) {
 			cancelled = true;
 			clearTimeout(t);
 		};
-	}, [q, gen]);
+	}, [q, gen, refreshKey]);
+
+	function handleAddClick(species: SpeciesDto) {
+		if (!user) {
+			setSignInOpen(true);
+			return;
+		}
+		setAddTarget(species);
+	}
 
 	return (
 		<div className="container page">
@@ -71,9 +86,29 @@ export function SpeciesCatalog({ q, gen }: SpeciesCatalogProps) {
 			{items.length > 0 && (
 				<div className="grid">
 					{items.map((species) => (
-						<PokemonCard key={species.id} species={species} />
+						<PokemonCard key={species.id} species={species} onAdd={() => handleAddClick(species)} />
 					))}
 				</div>
+			)}
+
+			{signInOpen && <SignInPanel onClose={() => setSignInOpen(false)} />}
+
+			{addTarget && (
+				<SpecimenEditor
+					key={`create-species-${addTarget.id}`}
+					mode="create"
+					initial={{
+						speciesId: addTarget.id,
+						speciesName: addTarget.name,
+						homeId: addTarget.homeId,
+						forms: addTarget.forms,
+					}}
+					onClose={() => setAddTarget(null)}
+					onSaved={() => {
+						setAddTarget(null);
+						setRefreshKey((k) => k + 1);
+					}}
+				/>
 			)}
 		</div>
 	);

@@ -16,6 +16,7 @@ export type SpeciesDto = {
 	spriteUrl: string | null;
 	homeId: number | null;
 	forms: FormDto[];
+	owned: boolean;
 };
 
 export async function fetchSpecies(
@@ -27,6 +28,13 @@ export async function fetchSpecies(
 	const res = await fetch(`/api/species?${qs}`);
 	if (!res.ok) throw new Error(`species fetch failed: ${res.status}`);
 	return res.json() as Promise<{ items: SpeciesDto[]; total: number }>;
+}
+
+/** Fetches a single species (with its forms) by id — used to hydrate the specimen editor. */
+export async function fetchSpeciesById(id: number): Promise<SpeciesDto> {
+	const res = await fetch(`/api/species/${id}`);
+	if (!res.ok) throw new Error(`species fetch failed: ${res.status}`);
+	return res.json() as Promise<SpeciesDto>;
 }
 
 export type EventDto = {
@@ -72,10 +80,32 @@ export class AuthRequiredError extends Error {
 	}
 }
 
-/** Shared response handler: surfaces 401s as `AuthRequiredError`, other non-ok statuses as a plain Error. */
+/** Thrown when the server responds 400 with a validation `{ errors: string[] }` body. */
+export class ApiValidationError extends Error {
+	errors: string[];
+	constructor(errors: string[]) {
+		super(errors.join("; ") || "validation failed");
+		this.name = "ApiValidationError";
+		this.errors = errors;
+	}
+}
+
+/**
+ * Shared response handler: surfaces 401s as `AuthRequiredError`, 400s carrying a validation
+ * `{ errors: string[] }` body as `ApiValidationError` (so callers can show the exact server
+ * messages), and any other non-ok status as a plain Error.
+ */
 async function handleJson<T>(res: Response, action: string): Promise<T> {
 	if (res.status === 401) throw new AuthRequiredError();
-	if (!res.ok) throw new Error(`${action} failed: ${res.status}`);
+	if (!res.ok) {
+		if (res.status === 400) {
+			const body = (await res.json().catch(() => null)) as { errors?: unknown } | null;
+			if (Array.isArray(body?.errors) && body.errors.length > 0) {
+				throw new ApiValidationError(body.errors.map((e) => String(e)));
+			}
+		}
+		throw new Error(`${action} failed: ${res.status}`);
+	}
 	return res.json() as Promise<T>;
 }
 

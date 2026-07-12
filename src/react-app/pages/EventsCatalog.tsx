@@ -2,7 +2,10 @@
 
 import { useEffect, useRef, useState } from "react";
 import { fetchEvents, type EventDto } from "../api";
+import { useAuth } from "../auth/AuthProvider";
 import { formatDexNumber, formatName, typeAura } from "../theme";
+import { SpecimenEditor } from "../collection/SpecimenEditor";
+import { SignInPanel } from "../components/SignInPanel";
 import { Sprite } from "../components/Sprite";
 import { TypeChip } from "../components/TypeChip";
 
@@ -13,7 +16,7 @@ type EventsCatalogProps = {
 	gen: number | undefined;
 };
 
-function EventCard({ event }: { event: EventDto }) {
+function EventCard({ event, onAdd }: { event: EventDto; onAdd?: () => void }) {
 	const speciesName = formatName(event.speciesName);
 	const homeId = event.homeId ?? event.speciesId;
 	const metaParts = [event.year ? String(event.year) : null, event.games, event.method].filter(
@@ -48,16 +51,32 @@ function EventCard({ event }: { event: EventDto }) {
 			{event.region && <p className="card__meta-line">{event.region}</p>}
 			{otParts.length > 0 && <p className="card__ot">{otParts.join(" · ")}</p>}
 			{event.ribbon && <span className="card__ribbon-chip">{event.ribbon}</span>}
+			{onAdd && (
+				<button
+					type="button"
+					className="button button--primary card__add-button"
+					onClick={(e) => {
+						e.stopPropagation();
+						onAdd();
+					}}
+				>
+					＋ Add
+				</button>
+			)}
 		</article>
 	);
 }
 
 export function EventsCatalog({ q, gen }: EventsCatalogProps) {
+	const { user } = useAuth();
 	const [items, setItems] = useState<EventDto[]>([]);
 	const [total, setTotal] = useState<number | null>(null);
 	const [error, setError] = useState<string | null>(null);
 	const [loading, setLoading] = useState(true);
 	const [loadingMore, setLoadingMore] = useState(false);
+	const [refreshKey, setRefreshKey] = useState(0);
+	const [signInOpen, setSignInOpen] = useState(false);
+	const [addTarget, setAddTarget] = useState<EventDto | null>(null);
 	const offsetRef = useRef(0);
 	const mountedRef = useRef(true);
 
@@ -95,7 +114,15 @@ export function EventsCatalog({ q, gen }: EventsCatalogProps) {
 			cancelled = true;
 			clearTimeout(t);
 		};
-	}, [q, gen]);
+	}, [q, gen, refreshKey]);
+
+	function handleAddClick(event: EventDto) {
+		if (!user) {
+			setSignInOpen(true);
+			return;
+		}
+		setAddTarget(event);
+	}
 
 	const loadMore = () => {
 		const nextOffset = offsetRef.current + PAGE_SIZE;
@@ -153,7 +180,7 @@ export function EventsCatalog({ q, gen }: EventsCatalogProps) {
 				<>
 					<div className="grid">
 						{items.map((event) => (
-							<EventCard key={event.id} event={event} />
+							<EventCard key={event.id} event={event} onAdd={() => handleAddClick(event)} />
 						))}
 					</div>
 					{hasMore && (
@@ -164,6 +191,33 @@ export function EventsCatalog({ q, gen }: EventsCatalogProps) {
 						</div>
 					)}
 				</>
+			)}
+
+			{signInOpen && <SignInPanel onClose={() => setSignInOpen(false)} />}
+
+			{addTarget && (
+				<SpecimenEditor
+					key={`create-event-${addTarget.id}`}
+					mode="create"
+					initial={{
+						speciesId: addTarget.speciesId,
+						speciesName: addTarget.speciesName,
+						homeId: addTarget.homeId,
+						isEvent: true,
+						eventName: addTarget.name,
+						isShiny: addTarget.isShiny,
+						otName: addTarget.otName,
+						otId: addTarget.otId,
+						originGame: addTarget.games,
+						metLocation: addTarget.region,
+						ribbons: addTarget.ribbon ? [addTarget.ribbon] : undefined,
+					}}
+					onClose={() => setAddTarget(null)}
+					onSaved={() => {
+						setAddTarget(null);
+						setRefreshKey((k) => k + 1);
+					}}
+				/>
 			)}
 		</div>
 	);

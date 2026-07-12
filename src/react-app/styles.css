@@ -908,6 +908,243 @@ a {
 	border-color: color-mix(in srgb, #ff7a3c 40%, var(--hairline));
 }
 
+/* ---------- Card add-to-collection button ---------- */
+
+.card__add-button {
+	width: 100%;
+	margin-top: 12px;
+	padding: 7px 14px;
+	font-size: 0.82rem;
+}
+
+/* ---------- Species picker ---------- */
+
+.species-picker__list {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	max-height: 320px;
+	overflow-y: auto;
+}
+
+.species-picker__item {
+	appearance: none;
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	border: 1px solid transparent;
+	background: transparent;
+	color: inherit;
+	border-radius: var(--radius-control);
+	padding: 6px 8px;
+	cursor: pointer;
+	text-align: left;
+}
+
+.species-picker__item:hover,
+.species-picker__item:focus-visible {
+	background: var(--canvas);
+	border-color: var(--hairline);
+}
+
+.species-picker__item .card__sprite-wrap,
+.species-picker__item .card__sprite {
+	width: 40px;
+	height: 40px;
+	margin: 0;
+}
+
+.species-picker__item-name {
+	flex: 1;
+	font-weight: 500;
+}
+
+/* ---------- Specimen editor ---------- */
+
+.editor-modal {
+	max-width: 720px;
+	max-height: 88vh;
+	overflow-y: auto;
+}
+
+.editor-form {
+	gap: 20px;
+}
+
+.editor-identity-preview {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+}
+
+.editor-identity-preview .card__sprite-wrap,
+.editor-identity-preview .card__sprite {
+	width: 64px;
+	height: 64px;
+	margin: 0;
+}
+
+.editor-species-name {
+	font-family: var(--font-display);
+	font-weight: 700;
+	font-size: 1.05rem;
+}
+
+.editor-section {
+	border: 1px solid var(--hairline);
+	border-radius: var(--radius-card);
+	padding: 16px;
+	margin: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+}
+
+.editor-section__legend {
+	padding: 0 6px;
+	font-family: var(--font-display);
+	font-weight: 600;
+	font-size: 0.85rem;
+	color: var(--muted);
+}
+
+.editor-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+	gap: 12px;
+}
+
+.editor-checkbox-field {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+}
+
+.toggle {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	font-size: 0.9rem;
+	cursor: pointer;
+}
+
+.toggle input[type="checkbox"] {
+	width: 16px;
+	height: 16px;
+	accent-color: var(--ink);
+}
+
+.stat-grid {
+	display: grid;
+	grid-template-columns: repeat(6, 1fr);
+	gap: 10px;
+}
+
+.stat-field .field-label {
+	text-align: center;
+}
+
+.stat-field .input {
+	width: 100%;
+	text-align: center;
+}
+
+.stat-sum {
+	font-size: 0.85rem;
+	color: var(--muted);
+}
+
+.stat-sum strong {
+	color: var(--ink);
+	font-family: var(--font-mono);
+}
+
+.stat-sum--over,
+.stat-sum--over strong {
+	color: #c8402a;
+}
+
+.moves-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+	gap: 12px;
+}
+
+.tag-list {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+}
+
+.tag {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	background: var(--canvas);
+	border: 1px solid var(--hairline);
+	border-radius: 999px;
+	padding: 4px 6px 4px 12px;
+	font-size: 0.82rem;
+}
+
+.tag__remove {
+	appearance: none;
+	border: none;
+	background: transparent;
+	color: var(--muted);
+	cursor: pointer;
+	width: 18px;
+	height: 18px;
+	border-radius: 50%;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 0.7rem;
+	line-height: 1;
+}
+
+.tag__remove:hover {
+	background: color-mix(in srgb, var(--ink) 12%, transparent);
+	color: var(--ink);
+}
+
+.editor-tag-input__row {
+	display: flex;
+	gap: 8px;
+}
+
+.editor-tag-input__row .input {
+	flex: 1;
+}
+
+.textarea {
+	resize: vertical;
+	font-family: inherit;
+}
+
+.editor-error-list {
+	margin: 0;
+	padding-left: 20px;
+	list-style: disc;
+}
+
+.editor-actions {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	flex-wrap: wrap;
+}
+
+.editor-actions__spacer {
+	flex: 1;
+}
+
+.editor-delete-confirm {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+}
+
 /* ---------- Responsive ---------- */
 
 @media (max-width: 640px) {
@@ -938,5 +1175,23 @@ a {
 	.card__sprite {
 		width: 110px;
 		height: 110px;
+	}
+
+	.editor-modal {
+		max-width: 100%;
+		max-height: 92vh;
+	}
+
+	.stat-grid {
+		grid-template-columns: repeat(3, 1fr);
+	}
+
+	.editor-actions {
+		flex-direction: column;
+		align-items: stretch;
+	}
+
+	.editor-actions__spacer {
+		display: none;
 	}
 }

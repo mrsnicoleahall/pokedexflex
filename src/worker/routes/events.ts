@@ -1,7 +1,8 @@
 import { Hono } from "hono";
-import { and, count, desc, eq, like, or, sql } from "drizzle-orm";
+import { and, count, desc, eq, isNotNull, like, or, sql } from "drizzle-orm";
 import { getDb } from "../db";
 import { events, species, specimens } from "../../db/schema";
+import { getCurrentUser } from "../auth/current-user";
 
 export const eventRoutes = new Hono<{ Bindings: Env }>();
 
@@ -29,7 +30,6 @@ eventRoutes.get("/events", async (c) => {
   const db = getDb(c.env.DB);
   const q = c.req.query("q");
   const gen = c.req.query("gen");
-  const owner = c.req.query("owner") ?? "demo";
   const limit = Math.min(Number(c.req.query("limit") ?? 60), 200);
   const offset = Number(c.req.query("offset") ?? 0);
 
@@ -56,11 +56,15 @@ eventRoutes.get("/events", async (c) => {
     .innerJoin(species, eq(events.speciesId, species.id))
     .where(where);
 
-  const ownedRows = await db
-    .select({ eventName: specimens.eventName })
-    .from(specimens)
-    .where(and(eq(specimens.userId, owner), eq(specimens.isEvent, 1)));
-  const ownedNames = new Set(ownedRows.map((r) => r.eventName).filter((n): n is string => n !== null));
+  const user = await getCurrentUser(c);
+  let ownedNames = new Set<string>();
+  if (user) {
+    const ownedRows = await db
+      .selectDistinct({ eventName: specimens.eventName })
+      .from(specimens)
+      .where(and(eq(specimens.userId, user.id), eq(specimens.isEvent, 1), isNotNull(specimens.eventName)));
+    ownedNames = new Set(ownedRows.map((r) => r.eventName).filter((n): n is string => n !== null));
+  }
 
   const items = rows.map((r) => shape(r, ownedNames));
   return c.json({ items, total });

@@ -94,4 +94,52 @@ describe("user schema", () => {
     expect(rows[0].source).toBe("manual");
     expect(rows[0].isShiny).toBe(1);
   });
+
+  it("inserts auth records: user with displayName, loginToken, and session", async () => {
+    const db = getDb(env.DB);
+    const { loginTokens, sessions } = await import("../../src/db/schema");
+
+    // Insert user with displayName
+    await db.insert(users).values({
+      id: "u-auth-test",
+      email: "auth@example.com",
+      displayName: "Test User",
+      createdAt: 1000,
+    });
+
+    // Insert loginToken
+    await db.insert(loginTokens).values({
+      id: "lt-1",
+      tokenHash: "hash123",
+      email: "auth@example.com",
+      expiresAt: 2000,
+      createdAt: 1000,
+    });
+
+    // Insert session
+    await db.insert(sessions).values({
+      id: "sess-1",
+      userId: "u-auth-test",
+      expiresAt: 3000,
+      createdAt: 1000,
+    });
+
+    // Read back and assert
+    const userRows = await db.select().from(users).where(eq(users.id, "u-auth-test"));
+    expect(userRows).toHaveLength(1);
+    expect(userRows[0].displayName).toBe("Test User");
+    expect(userRows[0].email).toBe("auth@example.com");
+
+    const tokenRows = await db.select().from(loginTokens).where(eq(loginTokens.id, "lt-1"));
+    expect(tokenRows).toHaveLength(1);
+    expect(tokenRows[0].tokenHash).toBe("hash123");
+    expect(tokenRows[0].email).toBe("auth@example.com");
+    expect(tokenRows[0].expiresAt).toBe(2000);
+    expect(tokenRows[0].usedAt).toBeNull();
+
+    const sessionRows = await db.select().from(sessions).where(eq(sessions.id, "sess-1"));
+    expect(sessionRows).toHaveLength(1);
+    expect(sessionRows[0].userId).toBe("u-auth-test");
+    expect(sessionRows[0].expiresAt).toBe(3000);
+  });
 });

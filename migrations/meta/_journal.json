@@ -36,6 +36,13 @@
       "when": 1783684079550,
       "tag": "0004_overconfident_pyro",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1783864959297,
+      "tag": "0005_fine_firebrand",
+      "breakpoints": true
     }
   ]
 }

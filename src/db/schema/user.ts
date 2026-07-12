@@ -4,6 +4,7 @@ import { species, forms } from "./reference";
 export const users = sqliteTable("users", {
   id: text("id").primaryKey(),
   email: text("email").notNull().unique(),
+  displayName: text("display_name"),
   createdAt: integer("created_at").notNull(),
 });
 
@@ -52,5 +53,21 @@ export const importJobs = sqliteTable("import_jobs", {
   status: text("status").notNull(),
   rawFileKey: text("raw_file_key"),
   preview: text("preview"),
+  createdAt: integer("created_at").notNull(),
+});
+
+export const loginTokens = sqliteTable("login_tokens", {
+  id: text("id").primaryKey(),
+  tokenHash: text("token_hash").notNull(),
+  email: text("email").notNull(),
+  expiresAt: integer("expires_at").notNull(),
+  usedAt: integer("used_at"),
+  createdAt: integer("created_at").notNull(),
+});
+
+export const sessions = sqliteTable("sessions", {
+  id: text("id").primaryKey(),
+  userId: text("user_id").notNull().references(() => users.id),
+  expiresAt: integer("expires_at").notNull(),
   createdAt: integer("created_at").notNull(),
 });

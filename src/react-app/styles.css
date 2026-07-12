@@ -586,6 +586,129 @@ a {
 	border: 1px solid color-mix(in srgb, #f6c64b 45%, var(--hairline));
 }
 
+/* ---------- Box bar ---------- */
+
+.box-bar {
+	margin-bottom: 16px;
+}
+
+.box-bar__pills {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 8px;
+}
+
+.box-bar__pill-wrap {
+	display: inline-flex;
+	align-items: center;
+	gap: 2px;
+	border: 1px solid var(--hairline);
+	border-radius: 999px;
+	padding-right: 2px;
+	background: var(--surface);
+}
+
+.box-bar__pill-wrap:has(.box-bar__pill[aria-pressed="true"]) {
+	border-color: var(--ink);
+}
+
+.box-bar__pill-wrap .box-bar__pill {
+	border: none;
+	background: transparent;
+}
+
+.box-bar__pill {
+	appearance: none;
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	border: 1px solid var(--hairline);
+	background: var(--surface);
+	color: var(--ink);
+	border-radius: 999px;
+	padding: 7px 14px;
+	font-size: 0.85rem;
+	font-weight: 500;
+	cursor: pointer;
+	transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.box-bar__pill:hover {
+	background: var(--canvas);
+}
+
+.box-bar__pill[aria-pressed="true"] {
+	background: var(--ink);
+	color: var(--canvas);
+	border-color: var(--ink);
+}
+
+.box-bar__count {
+	font-family: var(--font-mono);
+	font-size: 0.72rem;
+	opacity: 0.75;
+}
+
+.box-bar__pill-actions {
+	display: inline-flex;
+	gap: 2px;
+	padding-right: 4px;
+}
+
+.box-bar__icon-btn {
+	appearance: none;
+	border: none;
+	background: transparent;
+	color: var(--muted);
+	cursor: pointer;
+	font-size: 0.75rem;
+	line-height: 1;
+	padding: 4px 6px;
+	border-radius: 6px;
+}
+
+.box-bar__icon-btn:hover:not(:disabled) {
+	background: color-mix(in srgb, var(--ink) 10%, transparent);
+	color: var(--ink);
+}
+
+.box-bar__icon-btn:disabled {
+	cursor: not-allowed;
+	opacity: 0.5;
+}
+
+.box-bar__pill--new {
+	border-style: dashed;
+	color: var(--muted);
+}
+
+/* ---------- Collection toolbar ---------- */
+
+.collection-toolbar {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	flex-wrap: wrap;
+	margin-bottom: 20px;
+}
+
+.collection-toolbar .input {
+	width: 260px;
+}
+
+@media (max-width: 640px) {
+	.collection-toolbar {
+		flex-direction: column;
+		align-items: stretch;
+	}
+
+	.collection-toolbar .input {
+		width: 100%;
+	}
+}
+
 /* ---------- Load more ---------- */
 
 .load-more {

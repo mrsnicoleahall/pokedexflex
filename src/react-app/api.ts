@@ -62,6 +62,179 @@ export async function fetchEvents(
 	return res.json() as Promise<{ items: EventDto[]; total: number }>;
 }
 
+/* ---------- Collection ---------- */
+
+/** Thrown by any collection/box helper when the server responds 401 (no/expired session). */
+export class AuthRequiredError extends Error {
+	constructor() {
+		super("sign in required");
+		this.name = "AuthRequiredError";
+	}
+}
+
+/** Shared response handler: surfaces 401s as `AuthRequiredError`, other non-ok statuses as a plain Error. */
+async function handleJson<T>(res: Response, action: string): Promise<T> {
+	if (res.status === 401) throw new AuthRequiredError();
+	if (!res.ok) throw new Error(`${action} failed: ${res.status}`);
+	return res.json() as Promise<T>;
+}
+
+export type StatBlock = {
+	hp: number;
+	atk: number;
+	def: number;
+	spa: number;
+	spd: number;
+	spe: number;
+};
+
+export type SpecimenDto = {
+	id: string;
+	speciesId: number;
+	speciesName: string;
+	homeId: number | null;
+	types: string[];
+	formId: number | null;
+	nickname: string | null;
+	level: number | null;
+	isShiny: boolean;
+	gender: string | null;
+	nature: string | null;
+	ability: string | null;
+	heldItem: string | null;
+	ball: string | null;
+	otName: string | null;
+	otId: string | null;
+	metLocation: string | null;
+	metDate: string | null;
+	originGame: string | null;
+	originEra: string | null;
+	isEvent: boolean;
+	eventName: string | null;
+	ribbons: string[];
+	ivs: StatBlock | null;
+	evs: StatBlock | null;
+	moves: string[];
+	notes: string | null;
+	boxId: string | null;
+	createdAt: number;
+	updatedAt: number;
+};
+
+/** Writable subset of `SpecimenDto` accepted by create/update — everything but `speciesId` is optional. */
+export type SpecimenInput = {
+	speciesId: number;
+	formId?: number | null;
+	nickname?: string | null;
+	level?: number | null;
+	isShiny?: boolean;
+	gender?: string | null;
+	nature?: string | null;
+	ability?: string | null;
+	heldItem?: string | null;
+	ball?: string | null;
+	otName?: string | null;
+	otId?: string | null;
+	metLocation?: string | null;
+	metDate?: string | null;
+	originGame?: string | null;
+	originEra?: string | null;
+	isEvent?: boolean;
+	eventName?: string | null;
+	ribbons?: string[];
+	ivs?: StatBlock | null;
+	evs?: StatBlock | null;
+	moves?: string[];
+	notes?: string | null;
+	boxId?: string | null;
+};
+
+export async function listCollection(
+	params: { q?: string; box?: string; limit?: number; offset?: number } = {},
+): Promise<{ items: SpecimenDto[]; total: number }> {
+	const qs = new URLSearchParams();
+	if (params.q) qs.set("q", params.q);
+	if (params.box) qs.set("box", params.box);
+	if (params.limit) qs.set("limit", String(params.limit));
+	if (params.offset) qs.set("offset", String(params.offset));
+	const res = await fetch(`/api/collection?${qs}`, { credentials: "include" });
+	return handleJson<{ items: SpecimenDto[]; total: number }>(res, "collection fetch");
+}
+
+export async function createSpecimen(input: SpecimenInput): Promise<SpecimenDto> {
+	const res = await fetch("/api/collection", {
+		method: "POST",
+		credentials: "include",
+		headers: { "Content-Type": "application/json" },
+		body: JSON.stringify(input),
+	});
+	return handleJson<SpecimenDto>(res, "create specimen");
+}
+
+export async function getSpecimen(id: string): Promise<SpecimenDto> {
+	const res = await fetch(`/api/collection/${id}`, { credentials: "include" });
+	return handleJson<SpecimenDto>(res, "specimen fetch");
+}
+
+export async function updateSpecimen(id: string, input: Partial<SpecimenInput>): Promise<SpecimenDto> {
+	const res = await fetch(`/api/collection/${id}`, {
+		method: "PATCH",
+		credentials: "include",
+		headers: { "Content-Type": "application/json" },
+		body: JSON.stringify(input),
+	});
+	return handleJson<SpecimenDto>(res, "update specimen");
+}
+
+export async function deleteSpecimen(id: string): Promise<void> {
+	const res = await fetch(`/api/collection/${id}`, {
+		method: "DELETE",
+		credentials: "include",
+	});
+	await handleJson<{ ok: boolean }>(res, "delete specimen");
+}
+
+/* ---------- Boxes ---------- */
+
+export type BoxDto = {
+	id: string;
+	name: string;
+	count: number;
+};
+
+export async function listBoxes(): Promise<{ boxes: BoxDto[] }> {
+	const res = await fetch("/api/boxes", { credentials: "include" });
+	return handleJson<{ boxes: BoxDto[] }>(res, "boxes fetch");
+}
+
+export async function createBox(name: string): Promise<BoxDto> {
+	const res = await fetch("/api/boxes", {
+		method: "POST",
+		credentials: "include",
+		headers: { "Content-Type": "application/json" },
+		body: JSON.stringify({ name }),
+	});
+	return handleJson<BoxDto>(res, "create box");
+}
+
+export async function renameBox(id: string, name: string): Promise<BoxDto> {
+	const res = await fetch(`/api/boxes/${id}`, {
+		method: "PATCH",
+		credentials: "include",
+		headers: { "Content-Type": "application/json" },
+		body: JSON.stringify({ name }),
+	});
+	return handleJson<BoxDto>(res, "rename box");
+}
+
+export async function deleteBox(id: string): Promise<void> {
+	const res = await fetch(`/api/boxes/${id}`, {
+		method: "DELETE",
+		credentials: "include",
+	});
+	await handleJson<{ ok: boolean }>(res, "delete box");
+}
+
 /* ---------- Auth ---------- */
 
 export type UserDto = {

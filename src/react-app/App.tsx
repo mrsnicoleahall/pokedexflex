@@ -6,6 +6,7 @@ import { TopBar, type Tab } from "./components/TopBar";
 import { ComingSoon } from "./pages/ComingSoon";
 import { EventsCatalog } from "./pages/EventsCatalog";
 import { Home } from "./pages/Home";
+import { MyCollection } from "./pages/MyCollection";
 import { Settings } from "./pages/Settings";
 import { SpeciesCatalog } from "./pages/SpeciesCatalog";
 
@@ -43,7 +44,7 @@ function App() {
 			) : view === "settings" ? (
 				<Settings onBack={backToCatalog} />
 			) : view === "collection" ? (
-				<ComingSoon title="My Collection" onBack={backToCatalog} />
+				<MyCollection onBrowseSpecies={() => handleTabChange("species")} />
 			) : view === "ribbons" ? (
 				<ComingSoon title="Ribbons" onBack={backToCatalog} />
 			) : tab === "species" ? (

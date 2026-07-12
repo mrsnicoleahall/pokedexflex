@@ -1,5 +1,6 @@
 // src/react-app/components/TopBar.tsx
 
+import { AccountMenu, type AccountView } from "./AccountMenu";
 import { ThemeToggle } from "./ThemeToggle";
 
 export type Tab = "species" | "events";
@@ -14,6 +15,7 @@ type TopBarProps = {
 	gen: number | undefined;
 	onGenChange: (value: number | undefined) => void;
 	showFilters: boolean;
+	onNavigate: (view: AccountView) => void;
 };
 
 export function TopBar({
@@ -24,6 +26,7 @@ export function TopBar({
 	gen,
 	onGenChange,
 	showFilters,
+	onNavigate,
 }: TopBarProps) {
 	return (
 		<header className="toolbar">
@@ -80,6 +83,7 @@ export function TopBar({
 						</>
 					)}
 					<ThemeToggle />
+					<AccountMenu onNavigate={onNavigate} />
 				</div>
 			</div>
 		</header>

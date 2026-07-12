@@ -545,6 +545,169 @@ a {
 	}
 }
 
+/* ---------- Buttons ---------- */
+
+.button--primary {
+	background: var(--ink);
+	color: var(--canvas);
+	border-color: var(--ink);
+}
+
+.button--primary:hover:not(:disabled) {
+	background: color-mix(in srgb, var(--ink) 88%, transparent);
+}
+
+.button--danger {
+	background: color-mix(in srgb, #ff7a3c 14%, var(--surface));
+	color: #c8402a;
+	border-color: color-mix(in srgb, #ff7a3c 45%, var(--hairline));
+}
+
+.button--danger:hover:not(:disabled) {
+	background: color-mix(in srgb, #ff7a3c 24%, var(--surface));
+}
+
+/* ---------- Form fields ---------- */
+
+.field-label {
+	display: block;
+	font-size: 0.8rem;
+	font-weight: 500;
+	color: var(--muted);
+	margin-bottom: 6px;
+}
+
+.input--full {
+	width: 100%;
+}
+
+/* ---------- Account menu ---------- */
+
+.account-menu {
+	position: relative;
+}
+
+.account-menu__trigger {
+	max-width: 220px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.account-menu__dropdown {
+	position: absolute;
+	top: calc(100% + 8px);
+	right: 0;
+	z-index: 20;
+	min-width: 180px;
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+	background: var(--surface);
+	border: 1px solid var(--hairline);
+	border-radius: var(--radius-control);
+	box-shadow: var(--shadow-card-hover);
+	padding: 6px;
+}
+
+.account-menu__item {
+	appearance: none;
+	border: none;
+	background: transparent;
+	color: var(--ink);
+	text-align: left;
+	font-size: 0.9rem;
+	padding: 8px 10px;
+	border-radius: 7px;
+	cursor: pointer;
+}
+
+.account-menu__item:hover {
+	background: var(--canvas);
+}
+
+.account-menu__divider {
+	height: 1px;
+	background: var(--hairline);
+	margin: 4px 2px;
+}
+
+/* ---------- Modal ---------- */
+
+.modal-overlay {
+	position: fixed;
+	inset: 0;
+	z-index: 30;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background: color-mix(in srgb, black 45%, transparent);
+	padding: 20px;
+}
+
+.modal {
+	width: 100%;
+	max-width: 380px;
+	background: var(--surface);
+	border: 1px solid var(--hairline);
+	border-radius: var(--radius-card);
+	box-shadow: var(--shadow-card-hover);
+	padding: 20px;
+}
+
+.modal__header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 16px;
+}
+
+.modal__title {
+	font-size: 1.1rem;
+}
+
+.modal__body {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+}
+
+/* ---------- Settings page ---------- */
+
+.settings-page {
+	max-width: 560px;
+}
+
+.settings-section {
+	border: 1px solid var(--hairline);
+	border-radius: var(--radius-card);
+	padding: 20px;
+	margin-bottom: 20px;
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+	align-items: flex-start;
+}
+
+.settings-section__title {
+	font-size: 1rem;
+}
+
+.settings-section__row {
+	display: flex;
+	gap: 8px;
+	align-items: baseline;
+}
+
+.settings-section__hint {
+	color: var(--muted);
+	font-size: 0.88rem;
+}
+
+.settings-section--danger {
+	border-color: color-mix(in srgb, #ff7a3c 40%, var(--hairline));
+}
+
 /* ---------- Responsive ---------- */
 
 @media (max-width: 640px) {

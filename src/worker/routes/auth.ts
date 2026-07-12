@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { deleteCookie, getSignedCookie, setSignedCookie } from "hono/cookie";
 import { and, eq, gt, isNull } from "drizzle-orm";
-import { boxes, loginTokens, specimens, sessions as sessionsTable, users } from "../../db/schema";
+import { boxes, importJobs, loginTokens, specimens, sessions as sessionsTable, users } from "../../db/schema";
 import { getDb } from "../db";
 import { generateToken, hashToken } from "../auth/tokens";
 import { createSession, deleteSession, SESSION_COOKIE } from "../auth/session";
@@ -12,7 +12,7 @@ export const authRoutes = new Hono<{ Bindings: Env }>();
 
 authRoutes.post("/request-link", async (c) => {
   const body = await c.req.json<{ email?: string }>().catch(() => ({}) as { email?: string });
-  const email = body.email?.trim();
+  const email = body.email?.trim().toLowerCase();
   if (!email) return c.json({ error: "email_required" }, 400);
 
   const db = getDb(c.env.DB);
@@ -38,15 +38,13 @@ authRoutes.get("/verify", async (c) => {
   const db = getDb(c.env.DB);
   const tokenHash = await hashToken(token);
   const now = Date.now();
-  const rows = await db
-    .select()
-    .from(loginTokens)
+  const consumed = await db
+    .update(loginTokens)
+    .set({ usedAt: now })
     .where(and(eq(loginTokens.tokenHash, tokenHash), isNull(loginTokens.usedAt), gt(loginTokens.expiresAt, now)))
-    .limit(1);
-  const tokenRow = rows[0];
+    .returning();
+  const tokenRow = consumed[0];
   if (!tokenRow) return c.json({ error: "invalid_or_expired" }, 400);
-
-  await db.update(loginTokens).set({ usedAt: now }).where(eq(loginTokens.id, tokenRow.id));
 
   const existing = await db.select().from(users).where(eq(users.email, tokenRow.email)).limit(1);
   let user = existing[0];
@@ -84,11 +82,14 @@ authRoutes.get("/me", async (c) => {
 authRoutes.delete("/account", async (c) => {
   const user = await requireUser(c);
   const db = getDb(c.env.DB);
-  await db.delete(specimens).where(eq(specimens.userId, user.id));
-  await db.delete(boxes).where(eq(boxes.userId, user.id));
-  await db.delete(sessionsTable).where(eq(sessionsTable.userId, user.id));
-  await db.delete(loginTokens).where(eq(loginTokens.email, user.email));
-  await db.delete(users).where(eq(users.id, user.id));
+  await db.batch([
+    db.delete(specimens).where(eq(specimens.userId, user.id)),
+    db.delete(importJobs).where(eq(importJobs.userId, user.id)),
+    db.delete(boxes).where(eq(boxes.userId, user.id)),
+    db.delete(sessionsTable).where(eq(sessionsTable.userId, user.id)),
+    db.delete(loginTokens).where(eq(loginTokens.email, user.email)),
+    db.delete(users).where(eq(users.id, user.id)),
+  ]);
   deleteCookie(c, SESSION_COOKIE, { path: "/" });
   return c.json({ ok: true });
 });

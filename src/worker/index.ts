@@ -12,7 +12,7 @@ app.onError((err, c) => {
   if (err instanceof HTTPException) {
     return c.json({ error: err.message }, err.status);
   }
-  throw err;
+  return c.json({ error: "internal_error" }, 500);
 });
 
 app.route("/api", healthRoutes);

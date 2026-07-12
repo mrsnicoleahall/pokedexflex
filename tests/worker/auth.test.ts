@@ -42,4 +42,24 @@ describe("auth helpers", () => {
   it("/me is null without a cookie", async () => {
     expect((await (await call("/api/auth/me")).json() as any).user).toBeNull();
   });
+  it("a verify link can only be used once (single-use token)", async () => {
+    const r1 = await call("/api/auth/request-link", { method: "POST", headers: {"content-type":"application/json"}, body: JSON.stringify({ email: "once@x.com" }) });
+    const { devLink } = await r1.json() as any;
+    const path = new URL(devLink).pathname + new URL(devLink).search;
+    const verify1 = await call(path, { redirect: "manual" } as any);
+    expect(verify1.status).toBe(302);
+    expect(verify1.headers.get("set-cookie")).toContain("pfd_session=");
+    const verify2 = await call(path, { redirect: "manual" } as any);
+    expect(verify2.status).toBe(400);
+    expect((await verify2.json() as any).error).toBe("invalid_or_expired");
+  });
+  it("normalizes email casing/whitespace on request-link so verify resolves to the lowercased email", async () => {
+    const r1 = await call("/api/auth/request-link", { method: "POST", headers: {"content-type":"application/json"}, body: JSON.stringify({ email: "  Foo@X.COM  " }) });
+    const { devLink } = await r1.json() as any;
+    const path = new URL(devLink).pathname + new URL(devLink).search;
+    const verify = await call(path, { redirect: "manual" } as any);
+    const cookie = verify.headers.get("set-cookie")!.split(";")[0];
+    const me = await call("/api/auth/me", undefined, cookie);
+    expect((await me.json() as any).user.email).toBe("foo@x.com");
+  });
 });

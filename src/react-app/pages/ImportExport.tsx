@@ -29,6 +29,8 @@ import {
 	importCommit,
 	importPreview,
 	photoPreview,
+	savePreview,
+	UnsupportedSaveError,
 	VisionUnavailableError,
 	type FieldMapping,
 	type ImportFormat,
@@ -188,15 +190,38 @@ function asPhotoRowInput(input: unknown): PhotoRowInput | null {
 	return { speciesId: obj.speciesId, isShiny: obj.isShiny === true };
 }
 
-/** A resolved species' display bits, cached by id so a screenshot with repeats only fetches each species once. */
+/** The bits of a save-preview row's `input` this page actually needs — narrowed from `unknown`. */
+type SaveRowInput = { speciesId: number; isShiny: boolean; level: number | null };
+
+/** Narrows a save-preview row's `input` down to `{ speciesId, isShiny, level }`, or `null` if it doesn't look like one (i.e. the row failed validation). */
+function asSaveRowInput(input: unknown): SaveRowInput | null {
+	if (typeof input !== "object" || input === null) return null;
+	const obj = input as Record<string, unknown>;
+	if (typeof obj.speciesId !== "number") return null;
+	return {
+		speciesId: obj.speciesId,
+		isShiny: obj.isShiny === true,
+		level: typeof obj.level === "number" ? obj.level : null,
+	};
+}
+
+/** A resolved species' display bits, cached by id so a batch of rows with repeats only fetches each species once. */
 type SpeciesLookup = { name: string; homeId: number | null };
 
-/** Fetches (and caches) `{name, homeId}` for every distinct `speciesId` referenced by a batch of photo-preview rows. Best-effort: a species that fails to resolve is simply omitted, and the row falls back to showing its error text. */
-async function resolveSpeciesLookups(rows: ImportRowResult[]): Promise<Map<number, SpeciesLookup>> {
+/**
+ * Fetches (and caches) `{name, homeId}` for every distinct species id a batch of preview rows
+ * references, using `extractSpeciesId` to pull that id out of each row's (typed `unknown`)
+ * `input`. Best-effort: a species that fails to resolve is simply omitted, and the row falls
+ * back to showing its error text.
+ */
+async function resolveSpeciesLookups(
+	rows: ImportRowResult[],
+	extractSpeciesId: (input: unknown) => number | null,
+): Promise<Map<number, SpeciesLookup>> {
 	const ids = new Set<number>();
 	for (const row of rows) {
-		const parsed = asPhotoRowInput(row.input);
-		if (parsed) ids.add(parsed.speciesId);
+		const id = extractSpeciesId(row.input);
+		if (id !== null) ids.add(id);
 	}
 	const map = new Map<number, SpeciesLookup>();
 	await Promise.all(
@@ -244,6 +269,18 @@ export function ImportExport() {
 	const [photoCommitting, setPhotoCommitting] = useState(false);
 	const [photoCommitResult, setPhotoCommitResult] = useState<{ created: number; skipped: number } | null>(null);
 	const [photoCommitError, setPhotoCommitError] = useState<string | null>(null);
+
+	const [saveFileName, setSaveFileName] = useState<string | null>(null);
+	const [saveLoading, setSaveLoading] = useState(false);
+	const [saveError, setSaveError] = useState<string | null>(null);
+	const [saveUnsupported, setSaveUnsupported] = useState(false);
+	const [saveResult, setSaveResult] = useState<ImportPreviewResponse | null>(null);
+	const [saveChecked, setSaveChecked] = useState<boolean[]>([]);
+	const [saveSpecies, setSaveSpecies] = useState<Map<number, SpeciesLookup>>(new Map());
+
+	const [saveCommitting, setSaveCommitting] = useState(false);
+	const [saveCommitResult, setSaveCommitResult] = useState<{ created: number; skipped: number } | null>(null);
+	const [saveCommitError, setSaveCommitError] = useState<string | null>(null);
 
 	// Debounced preview: fires whenever the content, format, or mapping changes.
 	// A CSV's first preview omits `mapping` so the server auto-detects one; once
@@ -394,7 +431,9 @@ export function ImportExport() {
 			const result = await photoPreview(file);
 			setPhotoResult(result);
 			setPhotoChecked(result.rows.map((row) => row.input !== null));
-			resolveSpeciesLookups(result.rows).then(setPhotoSpecies).catch(() => undefined);
+			resolveSpeciesLookups(result.rows, (input) => asPhotoRowInput(input)?.speciesId ?? null)
+				.then(setPhotoSpecies)
+				.catch(() => undefined);
 		} catch (err) {
 			if (err instanceof VisionUnavailableError) {
 				setPhotoVisionUnavailable(true);
@@ -433,6 +472,65 @@ export function ImportExport() {
 		}
 	}
 
+	async function handleSaveFileInput(e: ChangeEvent<HTMLInputElement>) {
+		const file = e.target.files?.[0];
+		e.target.value = "";
+		if (!file) return;
+
+		setSaveFileName(file.name);
+		setSaveError(null);
+		setSaveUnsupported(false);
+		setSaveResult(null);
+		setSaveChecked([]);
+		setSaveSpecies(new Map());
+		setSaveCommitResult(null);
+		setSaveCommitError(null);
+		setSaveLoading(true);
+		try {
+			const result = await savePreview(file);
+			setSaveResult(result);
+			setSaveChecked(result.rows.map((row) => row.input !== null));
+			resolveSpeciesLookups(result.rows, (input) => asSaveRowInput(input)?.speciesId ?? null)
+				.then(setSaveSpecies)
+				.catch(() => undefined);
+		} catch (err) {
+			if (err instanceof UnsupportedSaveError) {
+				setSaveUnsupported(true);
+			} else {
+				setSaveError(describeError(err));
+			}
+		} finally {
+			setSaveLoading(false);
+		}
+	}
+
+	function toggleSaveRow(index: number) {
+		setSaveChecked((prev) => prev.map((checked, i) => (i === index ? !checked : checked)));
+	}
+
+	async function handleSaveCommit() {
+		if (!saveResult) return;
+		const confirmed = saveResult.rows
+			.filter((row, i) => saveChecked[i] && row.input !== null)
+			.map((row) => row.input);
+		if (confirmed.length === 0) return;
+
+		setSaveCommitError(null);
+		setSaveCommitting(true);
+		try {
+			const result = await importCommit({ format: "json", content: JSON.stringify(confirmed) });
+			setSaveCommitResult(result);
+			setSaveResult(null);
+			setSaveChecked([]);
+			setSaveSpecies(new Map());
+			setSaveFileName(null);
+		} catch (err) {
+			setSaveCommitError(describeError(err));
+		} finally {
+			setSaveCommitting(false);
+		}
+	}
+
 	if (authLoading) {
 		return (
 			<div className="container page">
@@ -462,6 +560,9 @@ export function ImportExport() {
 
 	const photoCheckedCount = photoChecked.filter(Boolean).length;
 	const canCommitPhoto = photoCheckedCount > 0 && !photoCommitting;
+
+	const saveCheckedCount = saveChecked.filter(Boolean).length;
+	const canCommitSave = saveCheckedCount > 0 && !saveCommitting;
 
 	return (
 		<div className="container page">
@@ -762,6 +863,135 @@ export function ImportExport() {
 						onClick={handlePhotoCommit}
 					>
 						{photoCommitting ? "Adding…" : `Add ${photoCheckedCount} Pokémon`}
+					</button>
+				)}
+			</section>
+
+			<section className="settings-section impexp-section">
+				<h2 className="settings-section__title">From an Ultra Sun / Ultra Moon save file</h2>
+				<p className="settings-section__hint">
+					Gen 7 USUM only. Export your save with a homebrew tool (e.g. Checkpoint/JKSM). We'll read your
+					boxes for you to review before adding.
+				</p>
+				<p className="settings-section__hint save-import__caveat">
+					Save parsing is best-effort — double-check the results.
+				</p>
+
+				<div className="import-dropzone">
+					<label htmlFor="save-import-file" className="field-label">
+						Upload a save file
+					</label>
+					<input
+						id="save-import-file"
+						type="file"
+						accept=".sav,.bin"
+						className="import-dropzone__input"
+						onChange={handleSaveFileInput}
+					/>
+					<p className="import-dropzone__hint">Click to choose a .sav or .bin file.</p>
+					{saveFileName && <p className="import-dropzone__filename">Loaded: {saveFileName}</p>}
+				</div>
+
+				{saveLoading && <p className="settings-section__hint">Reading your save file…</p>}
+
+				{saveUnsupported && (
+					<p className="error-banner" role="alert">
+						That doesn't look like an Ultra Sun / Ultra Moon save. Only USUM (Gen 7) saves are supported.
+					</p>
+				)}
+
+				{saveError && (
+					<p className="error-banner" role="alert">
+						{saveError}
+					</p>
+				)}
+
+				{saveResult && saveResult.rows.length > 0 && (
+					<div className="import-preview">
+						<p className="import-preview__summary">
+							<strong>{saveResult.validCount}</strong> found · <strong>{saveResult.errorCount}</strong>{" "}
+							skipped
+						</p>
+						<div className="import-preview__table-wrap">
+							<table className="import-preview__table">
+								<thead>
+									<tr>
+										<th scope="col">
+											<span className="visually-hidden">Include</span>
+										</th>
+										<th scope="col"></th>
+										<th scope="col">Species</th>
+										<th scope="col">Level</th>
+										<th scope="col">Shiny</th>
+									</tr>
+								</thead>
+								<tbody>
+									{saveResult.rows.map((row, i) => {
+										const parsed = asSaveRowInput(row.input);
+										const lookup = parsed ? saveSpecies.get(parsed.speciesId) : undefined;
+										const valid = row.input !== null;
+										return (
+											<tr
+												key={i}
+												className={valid ? "import-preview__row--valid" : "import-preview__row--invalid"}
+											>
+												<td>
+													<input
+														type="checkbox"
+														aria-label={lookup ? `Include ${lookup.name}` : `Include row ${i + 1}`}
+														checked={Boolean(saveChecked[i])}
+														disabled={!valid}
+														onChange={() => toggleSaveRow(i)}
+													/>
+												</td>
+												<td>
+													{lookup?.homeId != null && (
+														<img
+															className="photo-import__thumb"
+															src={spriteUrl(lookup.homeId, parsed?.isShiny)}
+															alt=""
+															width={32}
+															height={32}
+															loading="lazy"
+														/>
+													)}
+												</td>
+												<td>
+													{lookup?.name ?? (row.errors.length > 0 ? row.errors.join("; ") : "Unrecognized")}
+												</td>
+												<td>{parsed?.level ?? "—"}</td>
+												<td>
+													<span aria-hidden="true">{parsed?.isShiny ? "✨" : "—"}</span>
+													<span className="visually-hidden">{parsed?.isShiny ? "Shiny" : "Not shiny"}</span>
+												</td>
+											</tr>
+										);
+									})}
+								</tbody>
+							</table>
+						</div>
+					</div>
+				)}
+
+				{saveCommitError && (
+					<p className="error-banner" role="alert">
+						{saveCommitError}
+					</p>
+				)}
+				{saveCommitResult && (
+					<p className="import-preview__summary" role="status">
+						Added {saveCommitResult.created} to your collection · {saveCommitResult.skipped} skipped
+					</p>
+				)}
+
+				{saveResult && saveResult.rows.length > 0 && (
+					<button
+						type="button"
+						className="button button--primary"
+						disabled={!canCommitSave}
+						onClick={handleSaveCommit}
+					>
+						{saveCommitting ? "Adding…" : `Add ${saveCheckedCount} Pokémon`}
 					</button>
 				)}
 			</section>

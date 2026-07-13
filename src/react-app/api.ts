@@ -374,6 +374,40 @@ export async function photoPreview(image: File): Promise<ImportPreviewResponse> 
 	return handleJson<ImportPreviewResponse>(res, "photo preview");
 }
 
+/**
+ * Thrown by `savePreview` when the server responds `400 {error:"unsupported_save"}` — the
+ * uploaded file isn't a save the parser recognizes (only Gen 7 Ultra Sun/Ultra Moon saves are
+ * supported). Callers should show a friendly "not a USUM save" message rather than a generic one.
+ */
+export class UnsupportedSaveError extends Error {
+	constructor() {
+		super("that doesn't look like a supported save file");
+		this.name = "UnsupportedSaveError";
+	}
+}
+
+/**
+ * Uploads a Gen 7 Ultra Sun/Ultra Moon save file (multipart field `save`) for box/party parsing
+ * and returns the same preview shape as `importPreview`/`photoPreview` (`{ rows, validCount,
+ * errorCount }`), one row per recognized Pokémon. Throws `UnsupportedSaveError` on a `400
+ * {error:"unsupported_save"}` response (not a recognized USUM save) so the UI can show a
+ * friendly message instead of a generic failure.
+ */
+export async function savePreview(file: File): Promise<ImportPreviewResponse> {
+	const form = new FormData();
+	form.append("save", file);
+	const res = await fetch("/api/import/save/preview", {
+		method: "POST",
+		credentials: "include",
+		body: form,
+	});
+	if (res.status === 400) {
+		const body = (await res.json().catch(() => null)) as { error?: string } | null;
+		if (body?.error === "unsupported_save") throw new UnsupportedSaveError();
+	}
+	return handleJson<ImportPreviewResponse>(res, "save preview");
+}
+
 export type ExportResponse = {
 	exportedAt: number;
 	count: number;

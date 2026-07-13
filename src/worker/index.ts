@@ -10,6 +10,7 @@ import { boxRoutes } from "./routes/boxes";
 import { ribbonRoutes } from "./routes/ribbons";
 import { importRoutes } from "./routes/import";
 import { exportRoutes } from "./routes/export";
+import { photoImportRoutes } from "./routes/photo-import";
 
 const app = new Hono<{ Bindings: Env }>();
 
@@ -28,6 +29,7 @@ app.route("/api/collection", collectionRoutes);
 app.route("/api/boxes", boxRoutes);
 app.route("/api/ribbons", ribbonRoutes);
 app.route("/api/import", importRoutes);
+app.route("/api/import/photo", photoImportRoutes);
 app.route("/api/export", exportRoutes);
 app.route("/sprites", spriteRoutes);
 

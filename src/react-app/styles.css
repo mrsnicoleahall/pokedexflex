@@ -1073,6 +1073,27 @@ a {
 	}
 }
 
+/* ---------- Photo import ---------- */
+
+.photo-dropzone {
+	padding: 24px;
+}
+
+.photo-import__thumb {
+	display: block;
+	border-radius: var(--radius-control);
+	background: var(--canvas);
+}
+
+.photo-import__unavailable {
+	border: 1px solid var(--hairline);
+	border-radius: var(--radius-control);
+	background: var(--canvas);
+	padding: 12px 16px;
+	color: var(--muted);
+	font-size: 0.9rem;
+}
+
 /* ---------- Card add-to-collection button ---------- */
 
 .card__add-button {

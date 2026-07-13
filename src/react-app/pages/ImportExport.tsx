@@ -25,14 +25,19 @@ import type { ChangeEvent, DragEvent } from "react";
 import {
 	AuthRequiredError,
 	exportCollection,
+	fetchSpeciesById,
 	importCommit,
 	importPreview,
+	photoPreview,
+	VisionUnavailableError,
 	type FieldMapping,
 	type ImportFormat,
 	type ImportPreviewResponse,
+	type ImportRowResult,
 } from "../api";
 import { useAuth } from "../auth/AuthProvider";
 import { SignInPanel } from "../components/SignInPanel";
+import { spriteUrl } from "../theme";
 
 /** Specimen field keys a CSV column can be mapped onto (mirrors `src/worker/import/map.ts`'s recognized keys). */
 const FIELD_OPTIONS: { value: string; label: string }[] = [
@@ -172,6 +177,41 @@ function jsonDisplayRows(content: string): DisplayRow[] {
 	}
 }
 
+/** The bits of a photo-preview row's `input` this page actually needs — narrowed from `unknown`. */
+type PhotoRowInput = { speciesId: number; isShiny: boolean };
+
+/** Narrows a photo-preview row's `input` (typed `unknown` on the wire) down to `{ speciesId, isShiny }`, or `null` if it doesn't look like one (i.e. the row failed validation). */
+function asPhotoRowInput(input: unknown): PhotoRowInput | null {
+	if (typeof input !== "object" || input === null) return null;
+	const obj = input as Record<string, unknown>;
+	if (typeof obj.speciesId !== "number") return null;
+	return { speciesId: obj.speciesId, isShiny: obj.isShiny === true };
+}
+
+/** A resolved species' display bits, cached by id so a screenshot with repeats only fetches each species once. */
+type SpeciesLookup = { name: string; homeId: number | null };
+
+/** Fetches (and caches) `{name, homeId}` for every distinct `speciesId` referenced by a batch of photo-preview rows. Best-effort: a species that fails to resolve is simply omitted, and the row falls back to showing its error text. */
+async function resolveSpeciesLookups(rows: ImportRowResult[]): Promise<Map<number, SpeciesLookup>> {
+	const ids = new Set<number>();
+	for (const row of rows) {
+		const parsed = asPhotoRowInput(row.input);
+		if (parsed) ids.add(parsed.speciesId);
+	}
+	const map = new Map<number, SpeciesLookup>();
+	await Promise.all(
+		[...ids].map(async (id) => {
+			try {
+				const s = await fetchSpeciesById(id);
+				map.set(id, { name: s.name, homeId: s.homeId });
+			} catch {
+				// Best-effort: leave unresolved, row shows its error text instead.
+			}
+		}),
+	);
+	return map;
+}
+
 export function ImportExport() {
 	const { user, loading: authLoading } = useAuth();
 	const [signInOpen, setSignInOpen] = useState(false);
@@ -192,6 +232,18 @@ export function ImportExport() {
 	const [exporting, setExporting] = useState(false);
 	const [exportError, setExportError] = useState<string | null>(null);
 	const [exportCount, setExportCount] = useState<number | null>(null);
+
+	const [photoFileName, setPhotoFileName] = useState<string | null>(null);
+	const [photoLoading, setPhotoLoading] = useState(false);
+	const [photoError, setPhotoError] = useState<string | null>(null);
+	const [photoVisionUnavailable, setPhotoVisionUnavailable] = useState(false);
+	const [photoResult, setPhotoResult] = useState<ImportPreviewResponse | null>(null);
+	const [photoChecked, setPhotoChecked] = useState<boolean[]>([]);
+	const [photoSpecies, setPhotoSpecies] = useState<Map<number, SpeciesLookup>>(new Map());
+
+	const [photoCommitting, setPhotoCommitting] = useState(false);
+	const [photoCommitResult, setPhotoCommitResult] = useState<{ created: number; skipped: number } | null>(null);
+	const [photoCommitError, setPhotoCommitError] = useState<string | null>(null);
 
 	// Debounced preview: fires whenever the content, format, or mapping changes.
 	// A CSV's first preview omits `mapping` so the server auto-detects one; once
@@ -324,6 +376,63 @@ export function ImportExport() {
 		}
 	}
 
+	async function handlePhotoFileInput(e: ChangeEvent<HTMLInputElement>) {
+		const file = e.target.files?.[0];
+		e.target.value = "";
+		if (!file) return;
+
+		setPhotoFileName(file.name);
+		setPhotoError(null);
+		setPhotoVisionUnavailable(false);
+		setPhotoResult(null);
+		setPhotoChecked([]);
+		setPhotoSpecies(new Map());
+		setPhotoCommitResult(null);
+		setPhotoCommitError(null);
+		setPhotoLoading(true);
+		try {
+			const result = await photoPreview(file);
+			setPhotoResult(result);
+			setPhotoChecked(result.rows.map((row) => row.input !== null));
+			resolveSpeciesLookups(result.rows).then(setPhotoSpecies).catch(() => undefined);
+		} catch (err) {
+			if (err instanceof VisionUnavailableError) {
+				setPhotoVisionUnavailable(true);
+			} else {
+				setPhotoError(describeError(err));
+			}
+		} finally {
+			setPhotoLoading(false);
+		}
+	}
+
+	function togglePhotoRow(index: number) {
+		setPhotoChecked((prev) => prev.map((checked, i) => (i === index ? !checked : checked)));
+	}
+
+	async function handlePhotoCommit() {
+		if (!photoResult) return;
+		const confirmed = photoResult.rows
+			.filter((row, i) => photoChecked[i] && row.input !== null)
+			.map((row) => row.input);
+		if (confirmed.length === 0) return;
+
+		setPhotoCommitError(null);
+		setPhotoCommitting(true);
+		try {
+			const result = await importCommit({ format: "json", content: JSON.stringify(confirmed) });
+			setPhotoCommitResult(result);
+			setPhotoResult(null);
+			setPhotoChecked([]);
+			setPhotoSpecies(new Map());
+			setPhotoFileName(null);
+		} catch (err) {
+			setPhotoCommitError(describeError(err));
+		} finally {
+			setPhotoCommitting(false);
+		}
+	}
+
 	if (authLoading) {
 		return (
 			<div className="container page">
@@ -350,6 +459,9 @@ export function ImportExport() {
 	}
 
 	const canCommit = Boolean(preview) && (preview?.validCount ?? 0) > 0 && !committing && !previewLoading;
+
+	const photoCheckedCount = photoChecked.filter(Boolean).length;
+	const canCommitPhoto = photoCheckedCount > 0 && !photoCommitting;
 
 	return (
 		<div className="container page">
@@ -522,6 +634,136 @@ export function ImportExport() {
 				<button type="button" className="button button--primary" disabled={!canCommit} onClick={handleCommit}>
 					{committing ? "Importing…" : `Import ${preview?.validCount ?? 0} Pokémon`}
 				</button>
+			</section>
+
+			<section className="settings-section impexp-section">
+				<h2 className="settings-section__title">From a HOME / Scarlet·Violet screenshot</h2>
+				<p className="settings-section__hint">
+					Upload a box screenshot — we'll recognize the Pokémon for you to review before adding.
+				</p>
+
+				<div className="import-dropzone photo-dropzone">
+					<label htmlFor="photo-import-file" className="field-label">
+						Upload a screenshot
+					</label>
+					<input
+						id="photo-import-file"
+						type="file"
+						accept="image/*"
+						className="import-dropzone__input"
+						onChange={handlePhotoFileInput}
+					/>
+					<p className="import-dropzone__hint">Click to choose a box screenshot (PNG or JPG).</p>
+					{photoFileName && <p className="import-dropzone__filename">Loaded: {photoFileName}</p>}
+				</div>
+
+				{photoLoading && <p className="settings-section__hint">Recognizing Pokémon in your screenshot…</p>}
+
+				{photoVisionUnavailable && (
+					<p className="photo-import__unavailable" role="status">
+						📷 Photo recognition activates once PokeFlexDex is deployed with the AI service. For now, use
+						CSV/JSON import or add Pokémon manually.
+					</p>
+				)}
+
+				{photoError && (
+					<p className="error-banner" role="alert">
+						{photoError}
+					</p>
+				)}
+
+				{photoResult && photoResult.rows.length > 0 && (
+					<div className="import-preview">
+						<p className="import-preview__summary">
+							<strong>{photoResult.validCount}</strong> recognized · <strong>{photoResult.errorCount}</strong>{" "}
+							not matched
+						</p>
+						<div className="import-preview__table-wrap">
+							<table className="import-preview__table">
+								<thead>
+									<tr>
+										<th scope="col">
+											<span className="visually-hidden">Include</span>
+										</th>
+										<th scope="col"></th>
+										<th scope="col">Species</th>
+										<th scope="col">Shiny</th>
+									</tr>
+								</thead>
+								<tbody>
+									{photoResult.rows.map((row, i) => {
+										const parsed = asPhotoRowInput(row.input);
+										const lookup = parsed ? photoSpecies.get(parsed.speciesId) : undefined;
+										const valid = row.input !== null;
+										return (
+											<tr
+												key={i}
+												className={valid ? "import-preview__row--valid" : "import-preview__row--invalid"}
+											>
+												<td>
+													<input
+														type="checkbox"
+														aria-label={
+															lookup
+																? `Include ${lookup.name}`
+																: `Include row ${i + 1}`
+														}
+														checked={Boolean(photoChecked[i])}
+														disabled={!valid}
+														onChange={() => togglePhotoRow(i)}
+													/>
+												</td>
+												<td>
+													{lookup?.homeId != null && (
+														<img
+															className="photo-import__thumb"
+															src={spriteUrl(lookup.homeId, parsed?.isShiny)}
+															alt=""
+															width={32}
+															height={32}
+															loading="lazy"
+														/>
+													)}
+												</td>
+												<td>
+													{lookup?.name ?? (row.errors.length > 0 ? row.errors.join("; ") : "Unrecognized")}
+												</td>
+												<td>
+													<span aria-hidden="true">{parsed?.isShiny ? "✨" : "—"}</span>
+													<span className="visually-hidden">
+														{parsed?.isShiny ? "Shiny" : "Not shiny"}
+													</span>
+												</td>
+											</tr>
+										);
+									})}
+								</tbody>
+							</table>
+						</div>
+					</div>
+				)}
+
+				{photoCommitError && (
+					<p className="error-banner" role="alert">
+						{photoCommitError}
+					</p>
+				)}
+				{photoCommitResult && (
+					<p className="import-preview__summary" role="status">
+						Added {photoCommitResult.created} to your collection · {photoCommitResult.skipped} skipped
+					</p>
+				)}
+
+				{photoResult && photoResult.rows.length > 0 && (
+					<button
+						type="button"
+						className="button button--primary"
+						disabled={!canCommitPhoto}
+						onClick={handlePhotoCommit}
+					>
+						{photoCommitting ? "Adding…" : `Add ${photoCheckedCount} Pokémon`}
+					</button>
+				)}
 			</section>
 
 			<section className="settings-section impexp-section">

@@ -343,6 +343,37 @@ export async function importCommit(params: {
 	return handleJson<ImportCommitResponse>(res, "import commit");
 }
 
+/**
+ * Thrown by `photoPreview` when the server's `503 { error: "vision_unavailable" }` response
+ * means no vision backend is configured (e.g. local dev without the Cloudflare `AI` binding).
+ * Callers should show a friendly "not available yet" message rather than treating this as a
+ * crash-worthy error.
+ */
+export class VisionUnavailableError extends Error {
+	constructor() {
+		super("photo recognition isn't available in this environment yet");
+		this.name = "VisionUnavailableError";
+	}
+}
+
+/**
+ * Uploads a box screenshot for AI recognition and returns the same preview shape as
+ * `importPreview` (`{ rows, validCount, errorCount }`), one row per Pokémon the vision model
+ * found. Throws `VisionUnavailableError` on a `503` (no vision backend configured) so the UI
+ * can distinguish "try again later" from a genuine failure.
+ */
+export async function photoPreview(image: File): Promise<ImportPreviewResponse> {
+	const form = new FormData();
+	form.append("image", image);
+	const res = await fetch("/api/import/photo/preview", {
+		method: "POST",
+		credentials: "include",
+		body: form,
+	});
+	if (res.status === 503) throw new VisionUnavailableError();
+	return handleJson<ImportPreviewResponse>(res, "photo preview");
+}
+
 export type ExportResponse = {
 	exportedAt: number;
 	count: number;

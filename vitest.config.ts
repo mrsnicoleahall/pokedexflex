@@ -12,6 +12,11 @@ export default defineConfig(async () => {
     plugins: [
       cloudflareTest({
         wrangler: { configPath: "./wrangler.jsonc" },
+        // The `AI` binding has no local simulator (Cloudflare always routes it
+        // remotely), which would otherwise make every test run try to open an
+        // authenticated remote-proxy session. Tests never exercise the real
+        // AI call (see src/worker/import/vision.ts), so disable that here.
+        remoteBindings: false,
         miniflare: {
           // Test-only binding so the setup file can apply migrations.
           bindings: { TEST_MIGRATIONS: migrations },

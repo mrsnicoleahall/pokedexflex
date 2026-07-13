@@ -282,6 +282,79 @@ export async function fetchRibbons(): Promise<{ ribbons: RibbonDto[]; earnedCoun
 	return res.json() as Promise<{ ribbons: RibbonDto[]; earnedCount: number; total: number }>;
 }
 
+/* ---------- Import / Export ---------- */
+
+export type ImportFormat = "csv" | "json";
+
+/**
+ * A CSV header (verbatim) or, for JSON imports, unused — maps to a specimen
+ * field key (see `src/worker/import/map.ts`'s `FieldMapping`), the `"species"`
+ * sentinel, or `null` to ignore the column.
+ */
+export type FieldMapping = Record<string, string | null>;
+
+export type ImportRowResult = {
+	/** The validated specimen-input object for this row, or `null` if it failed validation. */
+	input: unknown;
+	errors: string[];
+};
+
+export type ImportPreviewResponse = {
+	/** CSV column headers, in order (present for `format: "csv"` only). */
+	headers?: string[];
+	/** Server's best-guess column mapping (present for `format: "csv"` only). */
+	suggestedMapping?: FieldMapping;
+	/** Per-row results, capped server-side to a preview window. */
+	rows: ImportRowResult[];
+	validCount: number;
+	errorCount: number;
+};
+
+export type ImportCommitResponse = {
+	created: number;
+	skipped: number;
+};
+
+export async function importPreview(params: {
+	format: ImportFormat;
+	content: string;
+	mapping?: FieldMapping;
+}): Promise<ImportPreviewResponse> {
+	const res = await fetch("/api/import/preview", {
+		method: "POST",
+		credentials: "include",
+		headers: { "Content-Type": "application/json" },
+		body: JSON.stringify(params),
+	});
+	return handleJson<ImportPreviewResponse>(res, "import preview");
+}
+
+export async function importCommit(params: {
+	format: ImportFormat;
+	content: string;
+	mapping?: FieldMapping;
+}): Promise<ImportCommitResponse> {
+	const res = await fetch("/api/import/commit", {
+		method: "POST",
+		credentials: "include",
+		headers: { "Content-Type": "application/json" },
+		body: JSON.stringify(params),
+	});
+	return handleJson<ImportCommitResponse>(res, "import commit");
+}
+
+export type ExportResponse = {
+	exportedAt: number;
+	count: number;
+	/** Re-importable specimen objects (see `GET /api/export`) — plain, JSON-decoded rows. */
+	specimens: Record<string, unknown>[];
+};
+
+export async function exportCollection(): Promise<ExportResponse> {
+	const res = await fetch("/api/export", { credentials: "include" });
+	return handleJson<ExportResponse>(res, "export collection");
+}
+
 /* ---------- Auth ---------- */
 
 export type UserDto = {

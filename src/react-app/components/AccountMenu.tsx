@@ -10,7 +10,7 @@ import { useEffect, useRef, useState } from "react";
 import { useAuth } from "../auth/AuthProvider";
 import { SignInPanel } from "./SignInPanel";
 
-export type AccountView = "collection" | "ribbons" | "settings";
+export type AccountView = "collection" | "ribbons" | "importExport" | "settings";
 
 type AccountMenuProps = {
 	onNavigate: (view: AccountView) => void;
@@ -84,6 +84,9 @@ export function AccountMenu({ onNavigate }: AccountMenuProps) {
 					</button>
 					<button type="button" role="menuitem" className="account-menu__item" onClick={() => go("ribbons")}>
 						Ribbons
+					</button>
+					<button type="button" role="menuitem" className="account-menu__item" onClick={() => go("importExport")}>
+						Import / Export
 					</button>
 					<button type="button" role="menuitem" className="account-menu__item" onClick={() => go("settings")}>
 						Settings

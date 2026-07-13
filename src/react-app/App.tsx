@@ -5,6 +5,7 @@ import type { AccountView } from "./components/AccountMenu";
 import { TopBar, type Tab } from "./components/TopBar";
 import { EventsCatalog } from "./pages/EventsCatalog";
 import { Home } from "./pages/Home";
+import { ImportExport } from "./pages/ImportExport";
 import { MyCollection } from "./pages/MyCollection";
 import { Ribbons } from "./pages/Ribbons";
 import { Settings } from "./pages/Settings";
@@ -47,6 +48,8 @@ function App() {
 				<MyCollection onBrowseSpecies={() => handleTabChange("species")} />
 			) : view === "ribbons" ? (
 				<Ribbons />
+			) : view === "importExport" ? (
+				<ImportExport />
 			) : tab === "species" ? (
 				<SpeciesCatalog q={q} gen={gen} />
 			) : (

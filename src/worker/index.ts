@@ -8,6 +8,8 @@ import { authRoutes } from "./routes/auth";
 import { collectionRoutes } from "./routes/collection";
 import { boxRoutes } from "./routes/boxes";
 import { ribbonRoutes } from "./routes/ribbons";
+import { importRoutes } from "./routes/import";
+import { exportRoutes } from "./routes/export";
 
 const app = new Hono<{ Bindings: Env }>();
 
@@ -25,6 +27,8 @@ app.route("/api/auth", authRoutes);
 app.route("/api/collection", collectionRoutes);
 app.route("/api/boxes", boxRoutes);
 app.route("/api/ribbons", ribbonRoutes);
+app.route("/api/import", importRoutes);
+app.route("/api/export", exportRoutes);
 app.route("/sprites", spriteRoutes);
 
 export default app;

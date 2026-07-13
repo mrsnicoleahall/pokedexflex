@@ -46,10 +46,10 @@ const validateReferences = async (db: Db, value: SpecimenInput, userId: string):
 /** Sentinel returned when `c.req.json()` fails to parse the request body. */
 const INVALID_JSON = Symbol("invalid-json");
 
-type SpecimenRow = typeof specimens.$inferSelect;
+export type SpecimenRow = typeof specimens.$inferSelect;
 
 /** Converts a stored specimen row into a response DTO, parsing its JSON columns. */
-const toDto = (row: SpecimenRow) => ({
+export const toDto = (row: SpecimenRow) => ({
   ...row,
   ivs: row.ivs ? JSON.parse(row.ivs) : null,
   evs: row.evs ? JSON.parse(row.evs) : null,
@@ -86,7 +86,7 @@ const rowToInput = (row: SpecimenRow): Record<string, unknown> => ({
 });
 
 /** Maps a validated SpecimenInput onto the storage shape (JSON-encoded columns, bit flags). */
-const toStorage = (value: SpecimenInput) => ({
+export const toStorage = (value: SpecimenInput) => ({
   speciesId: value.speciesId,
   formId: value.formId,
   nickname: value.nickname,

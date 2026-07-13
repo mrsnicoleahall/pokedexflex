@@ -29,6 +29,14 @@ export type RibbonResult = {
   progress: { current: number; total: number };
 };
 
+/** Turn a PokéAPI slug ("mr-mime") into a display name ("Mr Mime"). */
+function prettyName(slug: string): string {
+  return slug
+    .split("-")
+    .map((w) => (w ? w[0].toUpperCase() + w.slice(1) : w))
+    .join(" ");
+}
+
 const MIN_FORM_SET_SIZE = 4;
 const TIERED_THRESHOLDS = [10, 50, 100] as const;
 
@@ -178,7 +186,7 @@ export function computeRibbons(summary: CollectionSummary, ref: ReferenceData): 
   for (const speciesId of formSetSpeciesIds) {
     const ids = formIdsBySpecies.get(speciesId) ?? [];
     const p = progressFor(summary.formIds, ids);
-    const speciesName = ref.speciesNames.get(speciesId) ?? `Species #${speciesId}`;
+    const speciesName = prettyName(ref.speciesNames.get(speciesId) ?? `Species #${speciesId}`);
     results.push({
       id: `formset-${speciesId}`,
       name: `Complete ${speciesName} Forms`,

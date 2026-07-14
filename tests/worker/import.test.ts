@@ -168,4 +168,51 @@ describe("import/export API", () => {
     const commitBody = (await commitRes.json()) as any;
     expect(commitBody.created).toBe(1);
   });
+
+  it("previews a multipart CSV file upload", async () => {
+    const cookie = await signIn("multipartcsv@x.com");
+    const form = new FormData();
+    form.append("file", new Blob(["Species,Nickname\ncharizard,Blaze"], { type: "text/csv" }), "mons.csv");
+    form.append("format", "csv");
+    const res = await call("/api/import/preview", { method: "POST", body: form }, cookie);
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as any;
+    expect(body.validCount).toBe(1);
+    expect(body.errorCount).toBe(0);
+  });
+
+  it("previews a multipart JSON file upload", async () => {
+    const cookie = await signIn("multipartjson@x.com");
+    const jsonContent = JSON.stringify({ catalogue: [{ dex: 1, name: "bulbasaur" }] });
+    const form = new FormData();
+    form.append("file", new Blob([jsonContent], { type: "application/json" }), "mons.json");
+    form.append("format", "json");
+    const res = await call("/api/import/preview", { method: "POST", body: form }, cookie);
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as any;
+    expect(body.validCount).toBe(1);
+    expect(body.errorCount).toBe(0);
+  });
+
+  it("commits a large import via db.batch, past the point sequential inserts would exceed the subrequest limit", async () => {
+    const cookie = await signIn("batchimporter@x.com");
+    const specimensToImport = Array.from({ length: 1500 }, (_, i) => ({
+      speciesId: [1, 6, 25][i % 3],
+      nickname: `Batch${i}`,
+      isShiny: 0,
+    }));
+    const res = await postJson(
+      "/api/import/commit",
+      { format: "json", content: JSON.stringify({ specimens: specimensToImport }) },
+      cookie,
+    );
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as any;
+    expect(body.created).toBe(1500);
+    expect(body.skipped).toBe(0);
+
+    const listRes = await call("/api/collection?limit=2000", undefined, cookie);
+    const listBody = (await listRes.json()) as any;
+    expect(listBody.total).toBe(1500);
+  });
 });

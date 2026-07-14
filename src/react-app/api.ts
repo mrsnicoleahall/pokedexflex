@@ -315,30 +315,50 @@ export type ImportCommitResponse = {
 	skipped: number;
 };
 
-export async function importPreview(params: {
+/**
+ * Shared params for `importPreview`/`importCommit`: either pasted/small text via `content`
+ * (sent as a JSON body), or a `File` (sent as `multipart/form-data` so a large file's bytes
+ * aren't embedded/escaped inside a JSON string — that bloats the body enough to blow past the
+ * server's JSON body-size limit for real multi-MB imports).
+ */
+export type ImportParams = {
 	format: ImportFormat;
-	content: string;
 	mapping?: FieldMapping;
-}): Promise<ImportPreviewResponse> {
+} & ({ content: string; file?: undefined } | { file: File; content?: undefined });
+
+/** Builds the fetch `body`+`headers` for an import request: multipart for a `File`, JSON for pasted `content`. */
+function buildImportRequestInit(params: ImportParams): { headers?: HeadersInit; body: BodyInit } {
+	if (params.file) {
+		const form = new FormData();
+		form.append("file", params.file);
+		form.append("format", params.format);
+		if (params.mapping) form.append("mapping", JSON.stringify(params.mapping));
+		return { body: form };
+	}
+	return {
+		headers: { "Content-Type": "application/json" },
+		body: JSON.stringify({ format: params.format, content: params.content, mapping: params.mapping }),
+	};
+}
+
+export async function importPreview(params: ImportParams): Promise<ImportPreviewResponse> {
+	const { headers, body } = buildImportRequestInit(params);
 	const res = await fetch("/api/import/preview", {
 		method: "POST",
 		credentials: "include",
-		headers: { "Content-Type": "application/json" },
-		body: JSON.stringify(params),
+		headers,
+		body,
 	});
 	return handleJson<ImportPreviewResponse>(res, "import preview");
 }
 
-export async function importCommit(params: {
-	format: ImportFormat;
-	content: string;
-	mapping?: FieldMapping;
-}): Promise<ImportCommitResponse> {
+export async function importCommit(params: ImportParams): Promise<ImportCommitResponse> {
+	const { headers, body } = buildImportRequestInit(params);
 	const res = await fetch("/api/import/commit", {
 		method: "POST",
 		credentials: "include",
-		headers: { "Content-Type": "application/json" },
-		body: JSON.stringify(params),
+		headers,
+		body,
 	});
 	return handleJson<ImportCommitResponse>(res, "import commit");
 }

@@ -34,6 +34,7 @@ import {
 	VisionUnavailableError,
 	type FieldMapping,
 	type ImportFormat,
+	type ImportParams,
 	type ImportPreviewResponse,
 	type ImportRowResult,
 } from "../api";
@@ -243,6 +244,12 @@ export function ImportExport() {
 
 	const [format, setFormat] = useState<ImportFormat>("csv");
 	const [content, setContent] = useState("");
+	// The picked/dropped File, when the current import came from a file rather than the paste
+	// box. Kept alongside `content` (still read locally for the preview table's species/
+	// nickname/level display) so preview/commit requests can send it as `multipart/form-data`
+	// instead of embedding its bytes in a JSON body — large files (multi-MB) blow past the
+	// server's JSON body-size limit that way.
+	const [file, setFile] = useState<File | null>(null);
 	const [fileName, setFileName] = useState<string | null>(null);
 	const [mapping, setMapping] = useState<FieldMapping | null>(null);
 
@@ -282,12 +289,21 @@ export function ImportExport() {
 	const [saveCommitResult, setSaveCommitResult] = useState<{ created: number; skipped: number } | null>(null);
 	const [saveCommitError, setSaveCommitError] = useState<string | null>(null);
 
-	// Debounced preview: fires whenever the content, format, or mapping changes.
+	// Builds the shared `{format, content|file, mapping?}` params for a preview/commit
+	// request: the picked file when one is loaded (sent as multipart), else the pasted
+	// `content` text (sent as JSON) — see the `file` state comment above.
+	function currentImportParams(): ImportParams {
+		const previewMapping = format === "csv" ? mapping ?? undefined : undefined;
+		if (file) return { format, file, mapping: previewMapping };
+		return { format, content, mapping: previewMapping };
+	}
+
+	// Debounced preview: fires whenever the content, file, format, or mapping changes.
 	// A CSV's first preview omits `mapping` so the server auto-detects one; once
 	// that suggestion comes back it seeds local state (only while `mapping` is
 	// still null, so it never clobbers a user's own edits).
 	useEffect(() => {
-		if (!content.trim()) {
+		if (!file && !content.trim()) {
 			setPreview(null);
 			setPreviewError(null);
 			return;
@@ -295,7 +311,7 @@ export function ImportExport() {
 		let cancelled = false;
 		setPreviewLoading(true);
 		const t = setTimeout(() => {
-			importPreview({ format, content, mapping: format === "csv" ? mapping ?? undefined : undefined })
+			importPreview(currentImportParams())
 				.then((r) => {
 					if (cancelled) return;
 					setPreview(r);
@@ -318,20 +334,23 @@ export function ImportExport() {
 			cancelled = true;
 			clearTimeout(t);
 		};
-	}, [format, content, mapping]);
+	}, [format, content, file, mapping]);
 
 	const displayRows = useMemo<DisplayRow[]>(() => {
 		if (!preview) return [];
 		return format === "csv" ? csvDisplayRows(content, mapping) : jsonDisplayRows(content);
 	}, [preview, format, content, mapping]);
 
-	async function loadFile(file: File) {
-		const text = await file.text();
-		const detected: ImportFormat = file.name.toLowerCase().endsWith(".json") ? "json" : "csv";
+	async function loadFile(picked: File) {
+		// Read the text locally for the preview table's species/nickname/level display only —
+		// the network request sends `picked` itself (multipart), not this string.
+		const text = await picked.text();
+		const detected: ImportFormat = picked.name.toLowerCase().endsWith(".json") ? "json" : "csv";
 		setFormat(detected);
 		setContent(text);
+		setFile(picked);
 		setMapping(null);
-		setFileName(file.name);
+		setFileName(picked.name);
 		setCommitResult(null);
 		setCommitError(null);
 	}
@@ -350,6 +369,7 @@ export function ImportExport() {
 
 	function handlePasteChange(value: string) {
 		setContent(value);
+		setFile(null);
 		setMapping(null);
 		setFileName(null);
 		setCommitResult(null);
@@ -373,13 +393,10 @@ export function ImportExport() {
 		setCommitError(null);
 		setCommitting(true);
 		try {
-			const result = await importCommit({
-				format,
-				content,
-				mapping: format === "csv" ? mapping ?? undefined : undefined,
-			});
+			const result = await importCommit(currentImportParams());
 			setCommitResult(result);
 			setContent("");
+			setFile(null);
 			setMapping(null);
 			setPreview(null);
 			setFileName(null);

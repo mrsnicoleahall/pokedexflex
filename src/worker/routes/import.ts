@@ -1,4 +1,4 @@
-import { Hono } from "hono";
+import { Hono, type Context } from "hono";
 import { eq } from "drizzle-orm";
 import { getDb } from "../db";
 import { specimens, species, forms, boxes } from "../../db/schema";
@@ -21,6 +21,15 @@ const PREVIEW_ROW_CAP = 200;
  * so 3 rows/chunk (87 params) stays safely under that limit.
  */
 const INSERT_CHUNK_SIZE = 3;
+
+/**
+ * Max insert statements per `db.batch()` call. A large commit (e.g. 6,000 rows /
+ * INSERT_CHUNK_SIZE = ~2,000 statements) would otherwise mean ~2,000 sequential
+ * `db.insert` calls — each a separate Workers subrequest, which blows past the
+ * ~1,000 subrequest limit and is very slow. Batching keeps each `db.batch()` call
+ * to a single subrequest, so 2,000 statements becomes 40 `db.batch()` calls.
+ */
+const BATCH_GROUP_SIZE = 50;
 
 type RowResult = { input: SpecimenInput | null; errors: string[] };
 
@@ -166,6 +175,40 @@ const parseJsonRows = (content: string): unknown[] | null => {
 
 type ImportBody = { format?: string; content?: string; mapping?: FieldMapping };
 
+/**
+ * Reads the shared `{format, content, mapping?}` shape off the request, from either body
+ * encoding:
+ * - `multipart/form-data` (fields `file`, `format`, optional `mapping` JSON string) — the path
+ *   for file uploads, since embedding a large file as an escaped JSON string bloats the body
+ *   enough to blow past the JSON body-size limit that trips a real multi-MB import.
+ * - `application/json` (`{format, content, mapping?}`) — the existing path, still used by the
+ *   paste box and other small/JSON-object callers (photo/save preview commits).
+ * Returns `null` if the content-type is recognized but the expected fields are missing/malformed;
+ * `parseImportBody` does the actual format/content type-narrowing on the result either way.
+ */
+const extractImportBody = async (c: Context<{ Bindings: Env }>): Promise<unknown> => {
+  const contentType = c.req.header("content-type") ?? "";
+  if (contentType.includes("multipart/form-data")) {
+    const form = await c.req.formData().catch(() => null);
+    if (!form) return null;
+    const file = form.get("file");
+    if (!(file instanceof Blob)) return null;
+    const content = await file.text();
+    const format = form.get("format");
+    const mappingRaw = form.get("mapping");
+    let mapping: unknown;
+    if (typeof mappingRaw === "string" && mappingRaw !== "") {
+      try {
+        mapping = JSON.parse(mappingRaw);
+      } catch {
+        return null;
+      }
+    }
+    return { format: typeof format === "string" ? format : undefined, content, mapping };
+  }
+  return c.req.json().catch(() => null);
+};
+
 /** Validates+narrows the shared `{format, content, mapping?}` request body shape. */
 const parseImportBody = (body: unknown): ImportBody | null => {
   if (typeof body !== "object" || body === null) return null;
@@ -197,7 +240,7 @@ const buildRows = (
 
 importRoutes.post("/preview", async (c) => {
   await requireUser(c);
-  const body = await c.req.json().catch(() => null);
+  const body = await extractImportBody(c);
   const parsedBody = parseImportBody(body);
   if (!parsedBody) return c.json({ error: "invalid_body" }, 400);
 
@@ -219,7 +262,7 @@ importRoutes.post("/preview", async (c) => {
 
 importRoutes.post("/commit", async (c) => {
   const user = await requireUser(c);
-  const body = await c.req.json().catch(() => null);
+  const body = await extractImportBody(c);
   const parsedBody = parseImportBody(body);
   if (!parsedBody) return c.json({ error: "invalid_body" }, 400);
 
@@ -268,10 +311,24 @@ importRoutes.post("/commit", async (c) => {
     });
   }
 
-  // Insert in chunks (see INSERT_CHUNK_SIZE): a single insert of hundreds/thousands of
-  // rows exceeds D1's per-statement bound-parameter cap and 500s, inserting nothing.
+  // Build insert statements in chunks (see INSERT_CHUNK_SIZE): a single insert of
+  // hundreds/thousands of rows exceeds D1's per-statement bound-parameter cap and 500s,
+  // inserting nothing.
+  const buildInsertStatement = (rows: SpecimenRow[]) => db.insert(specimens).values(rows);
+  type InsertStatement = ReturnType<typeof buildInsertStatement>;
+  const statements: InsertStatement[] = [];
   for (let i = 0; i < rowsToInsert.length; i += INSERT_CHUNK_SIZE) {
-    await db.insert(specimens).values(rowsToInsert.slice(i, i + INSERT_CHUNK_SIZE));
+    statements.push(buildInsertStatement(rowsToInsert.slice(i, i + INSERT_CHUNK_SIZE)));
+  }
+
+  // Run the statements via db.batch, grouped into batches of at most BATCH_GROUP_SIZE
+  // statements per call: each db.batch() call is a single Workers subrequest, so a large
+  // import (thousands of statements) stays well under the ~1,000 subrequest limit instead
+  // of issuing one subrequest per sequential insert.
+  for (let i = 0; i < statements.length; i += BATCH_GROUP_SIZE) {
+    const group = statements.slice(i, i + BATCH_GROUP_SIZE);
+    if (group.length === 0) continue;
+    await db.batch(group as [InsertStatement, ...InsertStatement[]]);
   }
   return c.json({ created: rowsToInsert.length, skipped });
 });

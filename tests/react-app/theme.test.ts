@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getContrastText, typeColor, TYPE_COLORS } from "../../src/react-app/theme";
+import { getContrastText, typeColor, typeIconUrl, TYPE_COLORS } from "../../src/react-app/theme";
 
 describe("type palette (documented duiker101 colors)", () => {
   it("has all 18 canonical types", () => {
@@ -25,5 +25,17 @@ describe("type palette (documented duiker101 colors)", () => {
     expect(getContrastText(typeColor("ice"))).toBe("#14171F");
     expect(getContrastText(typeColor("dragon"))).toBe("#FFFFFF"); // deep blue → light glyph
     expect(getContrastText(typeColor("dark"))).toBe("#FFFFFF");
+  });
+});
+
+describe("typeIconUrl", () => {
+  it("maps a type to its public SVG path", () => {
+    expect(typeIconUrl("fire")).toBe("/types/fire.svg");
+  });
+  it("lowercases the slug", () => {
+    expect(typeIconUrl("Water")).toBe("/types/water.svg");
+  });
+  it("falls back to normal for unknown types", () => {
+    expect(typeIconUrl("mystery")).toBe("/types/normal.svg");
   });
 });

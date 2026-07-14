@@ -32,6 +32,12 @@ export function typeColor(type: string): string {
 	return TYPE_COLORS[type.toLowerCase()] ?? FALLBACK_TYPE_COLOR;
 }
 
+/** Path to a type's icon SVG (served from public/types), falling back to "normal" for unknown types. */
+export function typeIconUrl(type: string): string {
+	const slug = type.toLowerCase();
+	return `/types/${slug in TYPE_COLORS ? slug : "normal"}.svg`;
+}
+
 /**
  * Turn a PokéAPI-style slug ("charizard-mega-x", "mr-mime") into a
  * title-cased display name ("Charizard Mega X", "Mr Mime").

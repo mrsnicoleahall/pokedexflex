@@ -102,6 +102,16 @@ describe("ribbons API", () => {
     const boxHoarder = body.ribbons.find((r: any) => r.id === "fun-box-hoarder");
     expect(boxHoarder.progress.current).toBeGreaterThanOrEqual(1);
   });
+
+  it("still returns the catalog after the summary was widened (no crash on new aggregates)", async () => {
+    const cookie = await signIn("widened@x.com");
+    await postJson("/api/collection", { speciesId: 1001, level: 100, nature: "Adamant", ball: "Ultra Ball",
+      ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 } }, cookie);
+    const res = await call("/api/ribbons", undefined, cookie);
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as any;
+    expect(body.total).toBeGreaterThan(0);
+  });
 });
 
 /** Seeds species #129 (Magikarp) so a specimen referencing it can be created. */

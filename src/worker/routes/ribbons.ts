@@ -3,7 +3,7 @@ import { and, count, countDistinct, eq, isNotNull } from "drizzle-orm";
 import { getDb } from "../db";
 import { species, forms, specimens, boxes } from "../../db/schema";
 import { getCurrentUser } from "../auth/current-user";
-import { computeRibbons, type CollectionSummary, type ReferenceData } from "../ribbons/catalog";
+import { computeRibbons, isSixIv, type CollectionSummary, type ReferenceData } from "../ribbons/catalog";
 
 export const ribbonRoutes = new Hono<{ Bindings: Env }>();
 
@@ -14,6 +14,13 @@ const emptySummary: CollectionSummary = {
   eventCount: 0,
   specimenCount: 0,
   boxCount: 0,
+  naturesOwned: new Set(),
+  ballsOwned: new Set(),
+  level100Count: 0,
+  sixIvCount: 0,
+  megaFormCount: 0,
+  gmaxFormCount: 0,
+  shinySpeciesIds: new Set(),
 };
 
 ribbonRoutes.get("/", async (c) => {
@@ -29,6 +36,12 @@ ribbonRoutes.get("/", async (c) => {
       [{ value: eventCount }],
       [{ value: specimenCount }],
       [{ value: boxCount }],
+      natureRows,
+      ballRows,
+      [{ value: level100Count }],
+      shinySpeciesRows,
+      ownedFormTypeRows,
+      ivsRows,
     ] = await Promise.all([
       db.selectDistinct({ speciesId: specimens.speciesId }).from(specimens).where(eq(specimens.userId, user.id)),
       db
@@ -45,7 +58,42 @@ ribbonRoutes.get("/", async (c) => {
         .where(and(eq(specimens.userId, user.id), eq(specimens.isEvent, 1), isNotNull(specimens.eventName))),
       db.select({ value: count(specimens.id) }).from(specimens).where(eq(specimens.userId, user.id)),
       db.select({ value: count(boxes.id) }).from(boxes).where(eq(boxes.userId, user.id)),
+      db
+        .selectDistinct({ nature: specimens.nature })
+        .from(specimens)
+        .where(and(eq(specimens.userId, user.id), isNotNull(specimens.nature))),
+      db
+        .selectDistinct({ ball: specimens.ball })
+        .from(specimens)
+        .where(and(eq(specimens.userId, user.id), isNotNull(specimens.ball))),
+      db
+        .select({ value: count(specimens.id) })
+        .from(specimens)
+        .where(and(eq(specimens.userId, user.id), eq(specimens.level, 100))),
+      db
+        .selectDistinct({ speciesId: specimens.speciesId })
+        .from(specimens)
+        .where(and(eq(specimens.userId, user.id), eq(specimens.isShiny, 1))),
+      // Owned form ids joined to their formType, for mega / gmax breadth.
+      db
+        .selectDistinct({ formId: specimens.formId, formType: forms.formType })
+        .from(specimens)
+        .innerJoin(forms, eq(specimens.formId, forms.id))
+        .where(eq(specimens.userId, user.id)),
+      // Raw ivs strings for 6IV detection (parsed in JS — cannot query JSON in D1).
+      db
+        .select({ ivs: specimens.ivs })
+        .from(specimens)
+        .where(and(eq(specimens.userId, user.id), isNotNull(specimens.ivs))),
     ]);
+
+    let megaFormCount = 0;
+    let gmaxFormCount = 0;
+    for (const r of ownedFormTypeRows) {
+      if (r.formType === "mega") megaFormCount++;
+      else if (r.formType === "gigantamax") gmaxFormCount++;
+    }
+    const sixIvCount = ivsRows.reduce((n, r) => (isSixIv(r.ivs) ? n + 1 : n), 0);
 
     summary = {
       speciesIds: new Set(speciesRows.map((r) => r.speciesId)),
@@ -54,6 +102,13 @@ ribbonRoutes.get("/", async (c) => {
       eventCount,
       specimenCount,
       boxCount,
+      naturesOwned: new Set(natureRows.map((r) => (r.nature ?? "").toLowerCase()).filter(Boolean)),
+      ballsOwned: new Set(ballRows.map((r) => (r.ball ?? "").toLowerCase()).filter(Boolean)),
+      level100Count,
+      sixIvCount,
+      megaFormCount,
+      gmaxFormCount,
+      shinySpeciesIds: new Set(shinySpeciesRows.map((r) => r.speciesId)),
     };
   }
 

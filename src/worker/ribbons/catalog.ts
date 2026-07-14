@@ -16,6 +16,20 @@ export type CollectionSummary = {
   specimenCount: number;
   /** Total boxes the user has created. */
   boxCount: number;
+  /** Distinct nature names owned, lowercased (e.g. "adamant"). */
+  naturesOwned: Set<string>;
+  /** Distinct Poké Ball names owned, lowercased (e.g. "ultra ball"). */
+  ballsOwned: Set<string>;
+  /** Specimens at level 100. */
+  level100Count: number;
+  /** Specimens with a flawless (all-31) IV spread. */
+  sixIvCount: number;
+  /** Distinct owned form ids whose formType is "mega". */
+  megaFormCount: number;
+  /** Distinct owned form ids whose formType is "gigantamax". */
+  gmaxFormCount: number;
+  /** Species ids for which the user owns at least one shiny. */
+  shinySpeciesIds: Set<number>;
 };
 
 export type ReferenceData = {
@@ -41,6 +55,25 @@ function prettyName(slug: string): string {
     .split("-")
     .map((w) => (w ? w[0].toUpperCase() + w.slice(1) : w))
     .join(" ");
+}
+
+const SIX_IV_STATS = ["hp", "atk", "def", "spa", "spd", "spe"] as const;
+
+/**
+ * Pure test for a flawless (6×31) IV spread from the raw JSON `ivs` column.
+ * Returns false for null / empty / malformed / partial input — never throws.
+ */
+export function isSixIv(ivsJson: string | null): boolean {
+  if (!ivsJson) return false;
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(ivsJson);
+  } catch {
+    return false;
+  }
+  if (typeof parsed !== "object" || parsed === null) return false;
+  const obj = parsed as Record<string, unknown>;
+  return SIX_IV_STATS.every((k) => obj[k] === 31);
 }
 
 const MIN_FORM_SET_SIZE = 4;

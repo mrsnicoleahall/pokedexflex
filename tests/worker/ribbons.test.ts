@@ -31,6 +31,13 @@ const emptySummary: CollectionSummary = {
   eventCount: 0,
   specimenCount: 0,
   boxCount: 0,
+  naturesOwned: new Set(),
+  ballsOwned: new Set(),
+  level100Count: 0,
+  sixIvCount: 0,
+  megaFormCount: 0,
+  gmaxFormCount: 0,
+  shinySpeciesIds: new Set(),
 };
 
 const byId = (results: ReturnType<typeof computeRibbons>, id: string) => {

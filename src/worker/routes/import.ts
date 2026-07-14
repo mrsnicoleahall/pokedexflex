@@ -15,6 +15,13 @@ type Db = ReturnType<typeof getDb>;
 /** Rows beyond this count are still validated/counted, but omitted from the response body. */
 const PREVIEW_ROW_CAP = 200;
 
+/**
+ * Max rows per insert statement. D1 caps bound parameters at 100 per statement
+ * (well under the SQLite compile-time default of 999); specimens has 29 columns,
+ * so 3 rows/chunk (87 params) stays safely under that limit.
+ */
+const INSERT_CHUNK_SIZE = 3;
+
 type RowResult = { input: SpecimenInput | null; errors: string[] };
 
 /**
@@ -55,32 +62,91 @@ const buildCsvRow = (
   return { input: result.value, errors: [] };
 };
 
+const isPositiveInt = (v: unknown): v is number => typeof v === "number" && Number.isInteger(v) && v > 0;
+
+/** All-31 IV block used when a source only records "perfect IVs" as a boolean flag. */
+const PERFECT_IVS = { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 };
+
 /**
- * Builds+validates a specimen from one JSON object (e.g. an `/api/export` entry, or a
- * hand-authored import row). Accepts a numeric `speciesId`, or a name/dex value under
- * `speciesId`/`species`/`speciesName`/`dex`, resolved via `resolveSpecies`.
+ * Normalizes a gender value: "Male"/"Female" (any case) map to "male"/"female"; any
+ * other non-empty string (e.g. "Genderless") is lowercased as-is. Non-string values
+ * (including null/undefined) pass through unchanged so downstream null-handling applies.
+ */
+const normalizeGender = (g: unknown): unknown => {
+  if (typeof g !== "string") return g;
+  const trimmed = g.trim();
+  if (trimmed === "") return g;
+  const lower = trimmed.toLowerCase();
+  if (lower === "male" || lower === "female") return lower;
+  return lower;
+};
+
+/** True if `v` is a plain (non-array) object, e.g. a stat block. */
+const isPlainObject = (v: unknown): v is Record<string, unknown> =>
+  typeof v === "object" && v !== null && !Array.isArray(v);
+
+/**
+ * Builds+validates a specimen from one JSON object. Supports two shapes:
+ * - Our own `/api/export` shape (speciesId, ivs object, moves[], otName, otId, isShiny, ...).
+ * - The common third-party "automator" export shape (dex, name, shiny, ot_name, ot_id,
+ *   held_item_slug, ability_slug, iv_perfect, moves: string[], ...).
+ * Our own field names always take priority when both are present.
  */
 const buildJsonRow = (raw: unknown, resolveSpecies: (nameOrDex: string) => number | null): RowResult => {
   if (typeof raw !== "object" || raw === null || Array.isArray(raw)) {
     return { input: null, errors: ["row must be an object"] };
   }
-  const obj = { ...(raw as Record<string, unknown>) };
-  const rawSpecies = obj.speciesId ?? obj.species ?? obj.speciesName ?? obj.dex;
-  if (rawSpecies === undefined || rawSpecies === null || rawSpecies === "") {
-    return { input: null, errors: ["unknown species: (missing)"] };
-  }
-  const resolved = resolveSpecies(String(rawSpecies));
-  if (resolved === null) {
-    return { input: null, errors: [`unknown species: ${String(rawSpecies)}`] };
-  }
-  obj.speciesId = resolved;
+  const obj = raw as Record<string, unknown>;
 
-  const result = validateSpecimen(obj);
+  let speciesId: number | null = null;
+  if (isPositiveInt(obj.speciesId)) {
+    speciesId = obj.speciesId;
+  } else if (isPositiveInt(obj.dex)) {
+    speciesId = obj.dex;
+  } else {
+    const nameCandidate = obj.species ?? obj.speciesName ?? obj.name;
+    if (nameCandidate !== undefined && nameCandidate !== null && String(nameCandidate).trim() !== "") {
+      speciesId = resolveSpecies(String(nameCandidate));
+    }
+  }
+  if (speciesId === null) {
+    const shown = obj.speciesId ?? obj.dex ?? obj.species ?? obj.speciesName ?? obj.name;
+    const label = shown === undefined || shown === null || shown === "" ? "(missing)" : String(shown);
+    return { input: null, errors: [`unknown species: ${label}`] };
+  }
+
+  const heldItemSlug = obj.held_item_slug;
+  const heldItem =
+    obj.heldItem ?? (typeof heldItemSlug === "string" && heldItemSlug !== "none" ? heldItemSlug : null);
+
+  const ivsField = isPlainObject(obj.ivs) ? obj.ivs : obj.iv_perfect === true ? PERFECT_IVS : null;
+  const evsField = isPlainObject(obj.evs) ? obj.evs : null;
+
+  const normalized: Record<string, unknown> = {
+    ...obj,
+    speciesId,
+    isShiny: obj.isShiny ?? obj.shiny,
+    ability: obj.ability ?? obj.ability_slug,
+    heldItem,
+    otName: obj.otName ?? obj.ot_name,
+    otId: String(obj.otId ?? obj.ot_id ?? "") || null,
+    gender: normalizeGender(obj.gender),
+    nickname: obj.nickname,
+    ivs: ivsField,
+    evs: evsField,
+    level: typeof obj.level === "number" ? obj.level : null,
+  };
+
+  const result = validateSpecimen(normalized);
   if (!result.ok) return { input: null, errors: result.errors };
   return { input: result.value, errors: [] };
 };
 
-/** Parses a JSON import body: either a bare array of specimen-like objects, or `{ specimens: [...] }`. */
+/**
+ * Parses a JSON import body. Accepts, in order: a bare array of specimen-like objects;
+ * `{ specimens: [...] }` (our own `/api/export` shape); or `{ catalogue: [...] }` (a
+ * common third-party "automator" export shape).
+ */
 const parseJsonRows = (content: string): unknown[] | null => {
   let parsed: unknown;
   try {
@@ -92,6 +158,8 @@ const parseJsonRows = (content: string): unknown[] | null => {
   if (typeof parsed === "object" && parsed !== null) {
     const specimensField = (parsed as Record<string, unknown>).specimens;
     if (Array.isArray(specimensField)) return specimensField;
+    const catalogueField = (parsed as Record<string, unknown>).catalogue;
+    if (Array.isArray(catalogueField)) return catalogueField;
   }
   return null;
 };
@@ -200,6 +268,10 @@ importRoutes.post("/commit", async (c) => {
     });
   }
 
-  if (rowsToInsert.length > 0) await db.insert(specimens).values(rowsToInsert);
+  // Insert in chunks (see INSERT_CHUNK_SIZE): a single insert of hundreds/thousands of
+  // rows exceeds D1's per-statement bound-parameter cap and 500s, inserting nothing.
+  for (let i = 0; i < rowsToInsert.length; i += INSERT_CHUNK_SIZE) {
+    await db.insert(specimens).values(rowsToInsert.slice(i, i + INSERT_CHUNK_SIZE));
+  }
   return c.json({ created: rowsToInsert.length, skipped });
 });

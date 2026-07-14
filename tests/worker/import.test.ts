@@ -7,6 +7,7 @@ import { species } from "../../src/db/schema";
 beforeAll(async () => {
   const db = getDb(env.DB);
   await db.insert(species).values([
+    { id: 1, name: "bulbasaur", generation: 1, types: JSON.stringify(["grass", "poison"]), spriteUrl: null },
     { id: 6, name: "charizard", generation: 1, types: JSON.stringify(["fire", "flying"]), spriteUrl: null },
     { id: 25, name: "pikachu", generation: 1, types: JSON.stringify(["electric"]), spriteUrl: null },
   ]);
@@ -103,5 +104,68 @@ describe("import/export API", () => {
     const listBody = (await listRes.json()) as any;
     expect(listBody.total).toBe(4);
     expect(listBody.items.filter((i: any) => i.source === "json").length).toBe(2);
+  });
+
+  it("commits a large import in chunks past the SQLite bound-variable limit", async () => {
+    const cookie = await signIn("bulkimporter@x.com");
+    const specimensToImport = Array.from({ length: 120 }, (_, i) => ({
+      speciesId: [1, 6, 25][i % 3],
+      nickname: `Mon${i}`,
+      isShiny: 0,
+    }));
+    const res = await postJson(
+      "/api/import/commit",
+      { format: "json", content: JSON.stringify({ specimens: specimensToImport }) },
+      cookie,
+    );
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as any;
+    expect(body.created).toBe(120);
+    expect(body.skipped).toBe(0);
+
+    const listRes = await call("/api/collection?limit=200", undefined, cookie);
+    const listBody = (await listRes.json()) as any;
+    expect(listBody.total).toBe(120);
+  });
+
+  it("previews and commits a JSON import in the {catalogue:[...]} automator shape", async () => {
+    const cookie = await signIn("catalogueimporter@x.com");
+    const content = JSON.stringify({
+      catalogue: [
+        {
+          dex: 1,
+          name: "bulbasaur",
+          shiny: true,
+          nature: "Bold",
+          ball: "poke-ball",
+          moves: ["tackle", "growl"],
+          ot_name: "cole",
+          ot_id: 57962,
+          gender: "Male",
+          held_item_slug: "none",
+          iv_perfect: true,
+        },
+      ],
+    });
+
+    const previewRes = await postJson("/api/import/preview", { format: "json", content }, cookie);
+    expect(previewRes.status).toBe(200);
+    const previewBody = (await previewRes.json()) as any;
+    expect(previewBody.validCount).toBe(1);
+    const row = previewBody.rows[0];
+    expect(row.input.speciesId).toBe(1);
+    expect(row.input.isShiny).toBe(1);
+    expect(row.input.nature).toBe("Bold");
+    expect(row.input.ball).toBe("poke-ball");
+    expect(row.input.otName).toBe("cole");
+    expect(row.input.otId).toBe("57962");
+    expect(row.input.gender).toBe("male");
+    expect(row.input.moves.length).toBe(2);
+    expect(row.input.ivs).toEqual({ hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 });
+
+    const commitRes = await postJson("/api/import/commit", { format: "json", content }, cookie);
+    expect(commitRes.status).toBe(200);
+    const commitBody = (await commitRes.json()) as any;
+    expect(commitBody.created).toBe(1);
   });
 });

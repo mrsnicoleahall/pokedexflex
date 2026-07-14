@@ -4,7 +4,7 @@ import { getDb } from "../db";
 import { species, forms, specimens, boxes } from "../../db/schema";
 import { getCurrentUser } from "../auth/current-user";
 import { computeRibbons, isSixIv, type CollectionSummary, type ReferenceData } from "../ribbons/catalog";
-import { syncEarnedRibbons, loadUserRibbonRows } from "../ribbons/incentive-store";
+import { syncEarnedRibbons, loadUserRibbonRows, ribbonRarity } from "../ribbons/incentive-store";
 
 export const ribbonRoutes = new Hono<{ Bindings: Env }>();
 
@@ -140,7 +140,12 @@ ribbonRoutes.get("/", async (c) => {
     }
   }
 
-  const ribbonsOut = ribbons.map((r) => ({ ...r, newlyEarned: newlyEarnedIds.has(r.id) }));
+  const rarity = await ribbonRarity(db);
+  const ribbonsOut = ribbons.map((r) => ({
+    ...r,
+    newlyEarned: newlyEarnedIds.has(r.id),
+    rarityPct: rarity.totalUsers > 0 ? (rarity.counts.get(r.id) ?? 0) / rarity.totalUsers : 0,
+  }));
 
   return c.json({ ribbons: ribbonsOut, earnedCount: ribbons.filter((r) => r.earned).length, total: ribbons.length });
 });

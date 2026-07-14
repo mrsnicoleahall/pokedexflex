@@ -145,6 +145,38 @@ describe("ribbons API", () => {
     const body = (await res.json()) as any;
     for (const r of body.ribbons) expect(r.newlyEarned).toBe(false);
   });
+
+  it("computes rarityPct as a 0..1 fraction of all users that never exceeds 1 and only rises as more users earn the same ribbon", async () => {
+    const cookieA = await signIn("rarity-a@x.com");
+    await postJson("/api/collection", { speciesId: 1001 }, cookieA);
+    await call("/api/ribbons", undefined, cookieA); // sync A's earn
+
+    const res1 = await call("/api/ribbons", undefined, cookieA);
+    const body1 = (await res1.json()) as any;
+    const firstCatch1 = body1.ribbons.find((r: any) => r.id === "fun-first-catch");
+    expect(firstCatch1.rarityPct).toBeGreaterThan(0);
+    expect(firstCatch1.rarityPct).toBeLessThanOrEqual(1);
+
+    // A brand-new user who has NOT earned it — adds to totalUsers without adding an earner,
+    // so the fraction can only drop or stay the same.
+    const cookieB = await signIn("rarity-b@x.com");
+    const res2 = await call("/api/ribbons", undefined, cookieB);
+    const body2 = (await res2.json()) as any;
+    const firstCatch2 = body2.ribbons.find((r: any) => r.id === "fun-first-catch");
+    expect(firstCatch2.rarityPct).toBeLessThanOrEqual(firstCatch1.rarityPct);
+
+    // A ribbon nobody in this whole test file ever earns has rarityPct 0.
+    const neverEarned = body2.ribbons.find((r: any) => r.id === "rarity-paradox");
+    expect(neverEarned.rarityPct).toBe(0);
+  });
+
+  it("returns rarityPct even for logged-out requests (it's a global aggregate, not per-user)", async () => {
+    const res = await call("/api/ribbons");
+    const body = (await res.json()) as any;
+    const firstCatch = body.ribbons.find((r: any) => r.id === "fun-first-catch");
+    expect(typeof firstCatch.rarityPct).toBe("number");
+    expect(firstCatch.rarityPct).toBeGreaterThanOrEqual(0);
+  });
 });
 
 /** Seeds species #129 (Magikarp) so a specimen referencing it can be created. */

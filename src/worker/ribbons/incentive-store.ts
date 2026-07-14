@@ -5,9 +5,9 @@
  * route (`routes/ribbons.ts`) is the only caller. Extended across Tasks
  * D3–D6; this task adds the sync + read-back functions.
  */
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import type { getDb } from "../db";
-import { userRibbons } from "../../db/schema";
+import { userRibbons, users } from "../../db/schema";
 
 type Db = ReturnType<typeof getDb>;
 
@@ -41,4 +41,24 @@ export async function loadUserRibbonRows(
     .from(userRibbons)
     .where(eq(userRibbons.userId, userId));
   return new Map(rows.map((r) => [r.ribbonId, { earnedAt: r.earnedAt, seenAt: r.seenAt }]));
+}
+
+/**
+ * Ribbon rarity across the whole userbase: `earnedCount(ribbonId) /
+ * totalUsers`. Independent of the requesting user — computed from ALL
+ * users' `user_ribbons` rows, so it's safe to include in the response for
+ * signed-in AND logged-out requests alike (it never touches per-user data).
+ */
+export async function ribbonRarity(db: Db): Promise<{ counts: Map<string, number>; totalUsers: number }> {
+  const [countRows, [{ value: totalUsers }]] = await Promise.all([
+    db
+      .select({ ribbonId: userRibbons.ribbonId, value: sql<number>`count(*)` })
+      .from(userRibbons)
+      .groupBy(userRibbons.ribbonId),
+    db.select({ value: sql<number>`count(*)` }).from(users),
+  ]);
+  return {
+    counts: new Map(countRows.map((r) => [r.ribbonId, Number(r.value)])),
+    totalUsers: Number(totalUsers),
+  };
 }

@@ -21,7 +21,10 @@ import { RibbonIcon } from "../ribbons/RibbonIcon";
 import { typeColor } from "../theme";
 
 /** Sensible display order for ribbon categories; "Grand" (the hardest, rarest ribbons) leads. "Fun" (easter eggs) trails. */
-const CATEGORY_ORDER = ["Grand", "Generation", "Type", "Forms", "Form Sets", "Shiny", "Events", "Fun"];
+const CATEGORY_ORDER = [
+	"Grand", "Completion", "Regional", "Type", "Rarity Class",
+	"Collector", "Forms", "Form Sets", "Shiny", "Events", "Fun",
+];
 
 /** Above this many cards, a category collapses behind a disclosure by default (currently only "Form Sets" is this large). */
 const COLLAPSE_THRESHOLD = 20;
@@ -29,7 +32,10 @@ const COLLAPSE_THRESHOLD = 20;
 /** Maps non-"Type" categories onto one of the 18 canonical type colors, so every category still reads as part of the same visual language. */
 const CATEGORY_ACCENT_TYPE: Record<string, string> = {
 	Grand: "electric",
-	Generation: "dragon",
+	Completion: "electric",
+	Regional: "dragon",
+	"Rarity Class": "ghost",
+	Collector: "steel",
 	Forms: "psychic",
 	"Form Sets": "ice",
 	Shiny: "fairy",

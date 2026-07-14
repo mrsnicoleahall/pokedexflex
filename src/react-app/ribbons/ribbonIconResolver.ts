@@ -24,22 +24,36 @@ const GEN_COLORS: Record<number, string> = {
 /** Emoji for the three form-fanatic ribbons. */
 const FORM_EMOJI: Record<string, string> = { mega: "🧬", regional: "🗺️", gigantamax: "🌀" };
 
+// Per-generation base hues reused for Regional ribbons (region == generation).
+const REGION_COLORS: Record<number, string> = GEN_COLORS;
+
+// Metallic tone for rarity-class ribbons.
+const RARITY_METAL = "#C0A062";
+
 export function resolveRibbonIcon(ribbon: { id: string; category: string }): RibbonVisual {
 	const { id, category } = ribbon;
 
 	if (id === "living-dex") return { kind: "piece", piece: "trophy" };
 	if (id === "complete-dex-forms") return { kind: "piece", piece: "diamond" };
+	if (id === "national-dex-100") return { kind: "piece", piece: "coin" };
+	if (id === "shiny-living-dex") return { kind: "piece", piece: "heart" };
 
 	if (category === "Type" && id.startsWith("type-")) {
 		const type = id.slice("type-".length);
 		return { kind: "rosette", baseColor: typeColor(type), glyph: { kind: "type", type } };
 	}
+	if (category === "Type" && id.startsWith("typemaster-")) {
+		// typemaster-<slug>-<tier>
+		const rest = id.slice("typemaster-".length);
+		const slug = rest.slice(0, rest.lastIndexOf("-"));
+		return { kind: "rosette", baseColor: typeColor(slug), glyph: { kind: "type", type: slug } };
+	}
 
-	if (category === "Generation" && id.startsWith("gen-")) {
+	if ((category === "Generation" || category === "Regional") && id.startsWith("gen-")) {
 		const n = Number(id.slice("gen-".length));
 		return {
 			kind: "rosette",
-			baseColor: GEN_COLORS[n] ?? "#7E8AA2",
+			baseColor: REGION_COLORS[n] ?? "#7E8AA2",
 			glyph: { kind: "text", text: ROMAN[n] ?? String(n) },
 		};
 	}
@@ -67,6 +81,26 @@ export function resolveRibbonIcon(ribbon: { id: string; category: string }): Rib
 
 	if (category === "Fun") {
 		return { kind: "rosette", baseColor: typeColor("poison"), glyph: { kind: "emoji", emoji: "🎉" } };
+	}
+
+	if (category === "Completion" && id.startsWith("national-dex-")) {
+		const pct = id.slice("national-dex-".length);
+		return { kind: "rosette", baseColor: typeColor("electric"), glyph: { kind: "text", text: `${pct}%` } };
+	}
+
+	if (category === "Rarity Class") {
+		return { kind: "rosette", baseColor: RARITY_METAL, glyph: { kind: "emoji", emoji: "💎" } };
+	}
+
+	if (category === "Collector") {
+		const emoji =
+			id === "collector-natures" ? "🌿" :
+			id === "collector-balls" ? "🔴" :
+			id.startsWith("collector-level100") ? "💯" :
+			id.startsWith("collector-6iv") ? "⭐" :
+			id === "collector-mega" ? "🧬" :
+			id === "collector-gmax" ? "🔺" : "📦";
+		return { kind: "rosette", baseColor: typeColor("steel"), glyph: { kind: "emoji", emoji } };
 	}
 
 	if (category === "Grand") return { kind: "piece", piece: "trophy" };

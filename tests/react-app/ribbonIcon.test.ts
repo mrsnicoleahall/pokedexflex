@@ -33,4 +33,27 @@ describe("resolveRibbonIcon", () => {
       kind: "rosette", baseColor: typeColor("normal"), glyph: { kind: "text", text: "X" },
     });
   });
+  it("assigns the free pieces to the two new marquee ribbons", () => {
+    expect(resolveRibbonIcon({ id: "national-dex-100", category: "Completion" })).toEqual({ kind: "piece", piece: "coin" });
+    expect(resolveRibbonIcon({ id: "shiny-living-dex", category: "Shiny" })).toEqual({ kind: "piece", piece: "heart" });
+  });
+  it("regional ribbons keep the roman-numeral rosette (id-keyed on gen-N)", () => {
+    const v = resolveRibbonIcon({ id: "gen-3", category: "Regional" });
+    expect(v.kind).toBe("rosette");
+    if (v.kind === "rosette") expect(v.glyph).toEqual({ kind: "text", text: "III" });
+  });
+  it("lower national-dex tiers use a rosette with a % text glyph", () => {
+    const v = resolveRibbonIcon({ id: "national-dex-25", category: "Completion" });
+    expect(v.kind).toBe("rosette");
+    if (v.kind === "rosette") expect(v.glyph).toEqual({ kind: "text", text: "25%" });
+  });
+  it("rarity-class ribbons use a metallic rosette + diamond emoji glyph", () => {
+    const v = resolveRibbonIcon({ id: "rarity-legendaries", category: "Rarity Class" });
+    expect(v.kind).toBe("rosette");
+    if (v.kind === "rosette") expect(v.glyph.kind).toBe("emoji");
+  });
+  it("collector ribbons resolve to a rosette (no crash on new ids)", () => {
+    expect(resolveRibbonIcon({ id: "collector-natures", category: "Collector" }).kind).toBe("rosette");
+    expect(resolveRibbonIcon({ id: "typemaster-bug-25", category: "Type" }).kind).toBe("rosette");
+  });
 });

@@ -377,4 +377,55 @@ describe("computeRibbons", () => {
       expect(byId(r, "collector-gmax").progress).toEqual({ current: 3, total: 10 });
     });
   });
+
+  describe("Type deepening + shiny", () => {
+    const bigRef: ReferenceData = {
+      species: [
+        ...Array.from({ length: 30 }, (_, i) => ({ id: 1000 + i, generation: 1, types: ["bug"] })),
+        { id: 2000, generation: 1, types: ["ice"] }, // ice has only 1 species -> no ice tiers
+      ],
+      forms: [],
+      speciesNames: new Map(),
+    };
+
+    it("generates type tiers only up to what a type can support", () => {
+      const ids = computeRibbons(emptySummary, bigRef).map((r) => r.id);
+      expect(ids).toContain("typemaster-bug-10");    // 30 bug species -> 10 & 25 exist
+      expect(ids).toContain("typemaster-bug-25");
+      expect(ids).not.toContain("typemaster-bug-50"); // only 30 < 50
+      expect(ids).not.toContain("typemaster-ice-10"); // only 1 ice species
+    });
+
+    it("earns a type tier by distinct owned count of that type", () => {
+      const owned = new Set(Array.from({ length: 12 }, (_, i) => 1000 + i));
+      const t = byId(computeRibbons({ ...emptySummary, speciesIds: owned }, bigRef), "typemaster-bug-10");
+      expect(t.category).toBe("Type");
+      expect(t.earned).toBe(true);
+      expect(t.progress).toEqual({ current: 10, total: 10 });
+      expect(byId(computeRibbons({ ...emptySummary, speciesIds: owned }, bigRef), "typemaster-bug-25").earned).toBe(false);
+    });
+
+    it("earns shiny-living-dex only when a shiny of every species is owned", () => {
+      const allShiny = new Set(ref.species.map((s) => s.id));
+      const done = byId(computeRibbons({ ...emptySummary, shinySpeciesIds: allShiny }, ref), "shiny-living-dex");
+      expect(done.category).toBe("Shiny");
+      expect(done.earned).toBe(true);
+    });
+
+    it("earns shiny-rainbow when a shiny of every present type is owned", () => {
+      // ref types present: grass, fire. Shiny species 1 (grass) + 2 (fire) covers both.
+      const r = byId(computeRibbons({ ...emptySummary, shinySpeciesIds: new Set([1, 2]) }, ref), "shiny-rainbow");
+      expect(r.earned).toBe(true);
+      const partial = byId(computeRibbons({ ...emptySummary, shinySpeciesIds: new Set([1]) }, ref), "shiny-rainbow");
+      expect(partial.earned).toBe(false);
+    });
+
+    it("adds extended shiny/event tiers at 250 and 500", () => {
+      const r = computeRibbons({ ...emptySummary, shinyCount: 300, eventCount: 300 }, ref);
+      expect(byId(r, "shiny-250").earned).toBe(true);
+      expect(byId(r, "shiny-500").earned).toBe(false);
+      expect(byId(r, "event-250").earned).toBe(true);
+      expect(byId(r, "event-500").earned).toBe(false);
+    });
+  });
 });

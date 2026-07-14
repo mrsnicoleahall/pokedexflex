@@ -84,6 +84,9 @@ export function isSixIv(ivsJson: string | null): boolean {
 
 const MIN_FORM_SET_SIZE = 4;
 const TIERED_THRESHOLDS = [10, 50, 100] as const;
+const TYPE_MASTER_TIERS = [10, 25, 50] as const;
+const SHINY_EXTRA_TIERS = [250, 500] as const;
+const EVENT_EXTRA_TIERS = [250, 500] as const;
 const LEVEL100_TIERS = [1, 10, 50] as const;
 const SIX_IV_TIERS = [1, 10, 50] as const;
 const MEGA_MASTER_TOTAL = 20;
@@ -181,13 +184,16 @@ const tieredResult = (
  * Order (stable, deterministic): living-dex, complete-dex-forms, regional
  * gens (1..9, ascending, only generations present in ref.species), national
  * dex % tiers (25/50/75/100), types (alphabetical, only types present in
- * ref.species), rarity class (starters, legendaries, mythicals, pseudo,
- * fossils, babies, ultra beasts, paradox — fixed order), collector (natures,
- * balls, level100 tiers, 6IV tiers, mega, gmax), form-fanatic (mega,
- * regional, gigantamax), form-sets (species with >=4 forms, sorted by
- * speciesId), shiny (10/50/100), event (10/50/100), Fun (funny/easter-egg
- * ribbons, appended last; most are `secret: true` and should render hidden as
- * "???" in the UI until earned).
+ * ref.species) followed immediately by that type's typemaster-{10,25,50}
+ * tiers (only tiers the type has enough species to support), rarity class
+ * (starters, legendaries, mythicals, pseudo, fossils, babies, ultra beasts,
+ * paradox — fixed order), collector (natures, balls, level100 tiers, 6IV
+ * tiers, mega, gmax), form-fanatic (mega, regional, gigantamax), form-sets
+ * (species with >=4 forms, sorted by speciesId), shiny (10/50/100), event
+ * (10/50/100), extended shiny/event tiers (250/500), shiny-rainbow (shiny of
+ * every present type), shiny-living-dex (shiny of every species), Fun
+ * (funny/easter-egg ribbons, appended last; most are `secret: true` and
+ * should render hidden as "???" in the UI until earned).
  */
 export function computeRibbons(summary: CollectionSummary, ref: ReferenceData): RibbonResult[] {
   const results: RibbonResult[] = [];
@@ -270,6 +276,24 @@ export function computeRibbons(summary: CollectionSummary, ref: ReferenceData): 
       earned: p.earned,
       progress: { current: p.current, total: p.total },
     });
+  }
+
+  // typemaster-{slug}-{tier}: own N distinct species of a type. Only emitted
+  // when the type has at least `tier` species (never an impossible ribbon).
+  for (const type of types) {
+    const ids = ref.species.filter((s) => s.types.includes(type)).map((s) => s.id);
+    const ownedCount = ids.reduce((n, id) => (summary.speciesIds.has(id) ? n + 1 : n), 0);
+    for (const tier of TYPE_MASTER_TIERS) {
+      if (ids.length < tier) continue;
+      results.push({
+        id: `typemaster-${type}-${tier}`,
+        name: `${capitalize(type)} Specialist ${tier}`,
+        description: `Own ${tier} different ${type}-type species.`,
+        category: "Type",
+        earned: ownedCount >= tier,
+        progress: { current: Math.min(ownedCount, tier), total: tier },
+      });
+    }
   }
 
   // rarity-{class}: own every member of a curated rarity-class set.
@@ -411,6 +435,40 @@ export function computeRibbons(summary: CollectionSummary, ref: ReferenceData): 
         tier,
       ),
     );
+  }
+
+  // Extended shiny / event tiers.
+  for (const tier of SHINY_EXTRA_TIERS) {
+    results.push(tieredResult("shiny", "Shiny Hunter", (t) => `Catch ${t} shiny Pokémon.`, "Shiny", summary.shinyCount, tier));
+  }
+  for (const tier of EVENT_EXTRA_TIERS) {
+    results.push(tieredResult("event", "Event Collector", (t) => `Collect ${t} event Pokémon.`, "Events", summary.eventCount, tier));
+  }
+
+  // shiny-rainbow: own a shiny of every type present in the reference data.
+  {
+    const shinyTypes = new Set<string>();
+    for (const s of ref.species) {
+      if (summary.shinySpeciesIds.has(s.id)) for (const t of s.types) shinyTypes.add(t);
+    }
+    const total = types.length;
+    results.push({
+      id: "shiny-rainbow", name: "Chromatic",
+      description: "Own a shiny Pokémon of every type.", category: "Shiny",
+      earned: total > 0 && shinyTypes.size >= total,
+      progress: { current: Math.min(shinyTypes.size, total), total },
+    });
+  }
+
+  // shiny-living-dex: own a shiny of every species.
+  {
+    const p = progressFor(summary.shinySpeciesIds, allSpeciesIds);
+    results.push({
+      id: "shiny-living-dex", name: "Shiny Living Dex",
+      description: "Own a shiny of every species in the Pokédex.", category: "Shiny",
+      earned: p.earned,
+      progress: { current: p.current, total: p.total },
+    });
   }
 
   // fun-{species}: own one specific (usually meme-worthy) species.

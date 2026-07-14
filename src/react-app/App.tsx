@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { AccountView } from "./components/AccountMenu";
 import { TopBar, type Tab } from "./components/TopBar";
+import { Footer } from "./components/Footer";
 import { EventsCatalog } from "./pages/EventsCatalog";
 import { Home } from "./pages/Home";
 import { ImportExport } from "./pages/ImportExport";
@@ -57,6 +58,7 @@ function App() {
 			) : (
 				<EventsCatalog q={q} gen={gen} />
 			)}
+			<Footer />
 		</div>
 	);
 }

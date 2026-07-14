@@ -124,6 +124,16 @@ const SPECIES_FUN_RIBBONS = [
   { id: "fun-zubat", name: "Zubat Zone", description: "Own a Zubat.", speciesId: 41, secret: true },
   { id: "fun-slowpoke", name: "Slow and Steady", description: "Own a Slowpoke.", speciesId: 79, secret: true },
   { id: "fun-metapod", name: "Harden", description: "Own a Metapod.", speciesId: 11, secret: true },
+  { id: "fun-mimikyu", name: "Costume Party", description: "Own a Mimikyu.", speciesId: 778, secret: true },
+  { id: "fun-sudowoodo", name: "Not a Tree", description: "Own a Sudowoodo.", speciesId: 185, secret: true },
+  { id: "fun-luvdisc", name: "Lucky in Love", description: "Own a Luvdisc.", speciesId: 370, secret: true },
+  { id: "fun-stunfisk", name: "Flat Out", description: "Own a Stunfisk.", speciesId: 618, secret: true },
+  { id: "fun-feebas", name: "Diamond in the Rough", description: "Own a Feebas.", speciesId: 349, secret: true },
+  { id: "fun-spinda", name: "Spot the Difference", description: "Own a Spinda.", speciesId: 327, secret: true },
+  { id: "fun-shuckle", name: "Juice Box", description: "Own a Shuckle.", speciesId: 213, secret: true },
+  { id: "fun-delibird", name: "Seasonal Worker", description: "Own a Delibird.", speciesId: 225, secret: true },
+  { id: "fun-dunsparce", name: "Underrated", description: "Own a Dunsparce.", speciesId: 206, secret: true },
+  { id: "fun-bidoof", name: "Positive Outlook", description: "Own a Bidoof.", speciesId: 399, secret: true },
 ] as const;
 
 /** Eevee and its eight evolutions, for the "Eeveelutionary" Fun ribbon. */

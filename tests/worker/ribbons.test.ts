@@ -295,6 +295,27 @@ describe("computeRibbons", () => {
       // 25 owned bug species but progress caps display at the 20 total.
       expect(complete.progress).toEqual({ current: 20, total: 20 });
     });
+
+    it("adds ten new secret species easter eggs, hidden until earned", () => {
+      const newFun = [
+        "fun-mimikyu", "fun-sudowoodo", "fun-luvdisc", "fun-stunfisk", "fun-feebas",
+        "fun-spinda", "fun-shuckle", "fun-delibird", "fun-dunsparce", "fun-bidoof",
+      ];
+      const results = computeRibbons(emptySummary, ref);
+      for (const id of newFun) {
+        const r = results.find((x) => x.id === id)!;
+        expect(r, id).toBeTruthy();
+        expect(r.category).toBe("Fun");
+        expect(r.secret).toBe(true);
+        expect(r.earned).toBe(false);
+      }
+    });
+
+    it("earns fun-bidoof once Bidoof (399) is owned", () => {
+      const r = byId(computeRibbons({ ...emptySummary, speciesIds: new Set([399]) }, ref), "fun-bidoof");
+      expect(r.earned).toBe(true);
+      expect(r.progress).toEqual({ current: 1, total: 1 });
+    });
   });
 
   it("re-themes gen ribbons as Regional dexes (id + earn logic unchanged)", () => {

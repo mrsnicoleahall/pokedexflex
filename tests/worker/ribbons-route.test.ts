@@ -1,5 +1,6 @@
 import { env, createExecutionContext, waitOnExecutionContext } from "cloudflare:test";
 import { describe, it, expect, beforeAll } from "vitest";
+import { eq } from "drizzle-orm";
 import worker from "../../src/worker/index";
 import { getDb } from "../../src/worker/db";
 import { species } from "../../src/db/schema";
@@ -71,4 +72,48 @@ describe("ribbons API", () => {
     expect(gen1.earned).toBe(true);
     expect(body.earnedCount).toBeGreaterThan(0);
   });
+
+  it("earns the secret fun-magikarp ribbon once the user owns a Magikarp specimen", async () => {
+    const cookie = await signIn("magikarp-owner@x.com");
+    await db_insertMagikarpSpecies();
+    await postJson("/api/collection", { speciesId: 129 }, cookie);
+
+    const res = await call("/api/ribbons", undefined, cookie);
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as any;
+    const fun = body.ribbons.find((r: any) => r.id === "fun-magikarp");
+    expect(fun).toBeTruthy();
+    expect(fun.earned).toBe(true);
+    expect(fun.category).toBe("Fun");
+    expect(fun.secret).toBe(true);
+  });
+
+  it("flows specimenCount and boxCount through to their fun ribbons via aggregate counts", async () => {
+    const cookie = await signIn("counter@x.com");
+    await postJson("/api/collection", { speciesId: 1001 }, cookie);
+    const boxRes = await postJson("/api/boxes", { name: "Box A" }, cookie);
+    expect(boxRes.status).toBeLessThan(300);
+
+    const res = await call("/api/ribbons", undefined, cookie);
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as any;
+    const firstCatch = body.ribbons.find((r: any) => r.id === "fun-first-catch");
+    expect(firstCatch.earned).toBe(true);
+    const boxHoarder = body.ribbons.find((r: any) => r.id === "fun-box-hoarder");
+    expect(boxHoarder.progress.current).toBeGreaterThanOrEqual(1);
+  });
 });
+
+/** Seeds species #129 (Magikarp) so a specimen referencing it can be created. */
+async function db_insertMagikarpSpecies(): Promise<void> {
+  const db = getDb(env.DB);
+  const existing = await db.select({ id: species.id }).from(species).where(eq(species.id, 129)).limit(1);
+  if (existing.length > 0) return;
+  await db.insert(species).values({
+    id: 129,
+    name: "magikarp",
+    generation: 1,
+    types: JSON.stringify(["water"]),
+    spriteUrl: null,
+  });
+}

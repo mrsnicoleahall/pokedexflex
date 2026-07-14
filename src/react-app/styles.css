@@ -1519,6 +1519,40 @@ a {
 	line-height: 1.45;
 }
 
+.ribbon-card--secret {
+	border-style: dashed;
+}
+
+.ribbon-card--secret .ribbon-card__desc {
+	font-style: italic;
+}
+
+.ribbon-card__secret-icon {
+	display: inline-flex;
+	flex: none;
+	align-items: center;
+	justify-content: center;
+	width: 20px;
+	height: 20px;
+	border-radius: 50%;
+	margin-right: 8px;
+	color: var(--muted);
+	border: 1px dashed var(--hairline);
+	font-size: 0.72rem;
+}
+
+.ribbon-card__secret-tag {
+	margin-left: 8px;
+	padding: 1px 7px;
+	border: 1px solid;
+	border-radius: 999px;
+	font-size: 0.62rem;
+	font-family: var(--font-mono);
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+	font-weight: 600;
+}
+
 .ribbon-progress {
 	display: flex;
 	flex-direction: column;

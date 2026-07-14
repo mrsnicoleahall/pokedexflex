@@ -19,8 +19,8 @@ import { fetchRibbons, type RibbonDto } from "../api";
 import { useAuth } from "../auth/AuthProvider";
 import { typeColor } from "../theme";
 
-/** Sensible display order for ribbon categories; "Grand" (the hardest, rarest ribbons) leads. */
-const CATEGORY_ORDER = ["Grand", "Generation", "Type", "Forms", "Form Sets", "Shiny", "Events"];
+/** Sensible display order for ribbon categories; "Grand" (the hardest, rarest ribbons) leads. "Fun" (easter eggs) trails. */
+const CATEGORY_ORDER = ["Grand", "Generation", "Type", "Forms", "Form Sets", "Shiny", "Events", "Fun"];
 
 /** Above this many cards, a category collapses behind a disclosure by default (currently only "Form Sets" is this large). */
 const COLLAPSE_THRESHOLD = 20;
@@ -33,6 +33,7 @@ const CATEGORY_ACCENT_TYPE: Record<string, string> = {
 	"Form Sets": "ice",
 	Shiny: "fairy",
 	Events: "grass",
+	Fun: "poison",
 };
 
 /** Picks an earned-ribbon accent color: the ribbon's own type for "Type" ribbons (parsed from its `type-<type>` id), otherwise a fixed per-category color. */
@@ -43,9 +44,14 @@ function ribbonAccentColor(ribbon: RibbonDto): string {
 	return typeColor(CATEGORY_ACCENT_TYPE[ribbon.category] ?? "normal");
 }
 
+/** Secret ribbons stay unrevealed until earned: no name, no criteria, just a nudge to keep playing. */
+const SECRET_HIDDEN_NAME = "???";
+const SECRET_HIDDEN_DESC = "Secret ribbon — keep collecting to reveal it.";
+
 function RibbonCard({ ribbon }: { ribbon: RibbonDto }) {
 	const { current, total } = ribbon.progress;
 	const pct = total > 0 ? Math.round((current / total) * 100) : 0;
+	const hiddenSecret = Boolean(ribbon.secret) && !ribbon.earned;
 
 	if (ribbon.earned) {
 		const accent = ribbonAccentColor(ribbon);
@@ -65,6 +71,11 @@ function RibbonCard({ ribbon }: { ribbon: RibbonDto }) {
 						✓
 					</span>
 					{ribbon.name}
+					{ribbon.secret && (
+						<span className="ribbon-card__secret-tag" style={{ color: accent, borderColor: accent }}>
+							Secret
+						</span>
+					)}
 				</h3>
 				<p className="ribbon-card__desc">{ribbon.description}</p>
 			</article>
@@ -72,9 +83,16 @@ function RibbonCard({ ribbon }: { ribbon: RibbonDto }) {
 	}
 
 	return (
-		<article className="ribbon-card ribbon-card--locked">
-			<h3 className="ribbon-card__name">{ribbon.name}</h3>
-			<p className="ribbon-card__desc">{ribbon.description}</p>
+		<article className={`ribbon-card ribbon-card--locked${hiddenSecret ? " ribbon-card--secret" : ""}`}>
+			<h3 className="ribbon-card__name">
+				{hiddenSecret && (
+					<span className="ribbon-card__secret-icon" aria-hidden="true">
+						?
+					</span>
+				)}
+				{hiddenSecret ? SECRET_HIDDEN_NAME : ribbon.name}
+			</h3>
+			<p className="ribbon-card__desc">{hiddenSecret ? SECRET_HIDDEN_DESC : ribbon.description}</p>
 			<div className="ribbon-progress">
 				<div
 					className="ribbon-progress__track"
@@ -82,7 +100,7 @@ function RibbonCard({ ribbon }: { ribbon: RibbonDto }) {
 					aria-valuenow={current}
 					aria-valuemin={0}
 					aria-valuemax={total}
-					aria-label={`${ribbon.name} progress`}
+					aria-label={`${hiddenSecret ? SECRET_HIDDEN_NAME : ribbon.name} progress`}
 				>
 					<div className="ribbon-progress__fill" style={{ width: `${pct}%` }} />
 				</div>

@@ -1,7 +1,7 @@
 import { Hono } from "hono";
-import { and, countDistinct, eq, isNotNull } from "drizzle-orm";
+import { and, count, countDistinct, eq, isNotNull } from "drizzle-orm";
 import { getDb } from "../db";
-import { species, forms, specimens } from "../../db/schema";
+import { species, forms, specimens, boxes } from "../../db/schema";
 import { getCurrentUser } from "../auth/current-user";
 import { computeRibbons, type CollectionSummary, type ReferenceData } from "../ribbons/catalog";
 
@@ -12,6 +12,8 @@ const emptySummary: CollectionSummary = {
   formIds: new Set(),
   shinyCount: 0,
   eventCount: 0,
+  specimenCount: 0,
+  boxCount: 0,
 };
 
 ribbonRoutes.get("/", async (c) => {
@@ -20,7 +22,14 @@ ribbonRoutes.get("/", async (c) => {
 
   let summary: CollectionSummary = emptySummary;
   if (user) {
-    const [speciesRows, formRows, [{ value: shinyCount }], [{ value: eventCount }]] = await Promise.all([
+    const [
+      speciesRows,
+      formRows,
+      [{ value: shinyCount }],
+      [{ value: eventCount }],
+      [{ value: specimenCount }],
+      [{ value: boxCount }],
+    ] = await Promise.all([
       db.selectDistinct({ speciesId: specimens.speciesId }).from(specimens).where(eq(specimens.userId, user.id)),
       db
         .selectDistinct({ formId: specimens.formId })
@@ -34,6 +43,8 @@ ribbonRoutes.get("/", async (c) => {
         .select({ value: countDistinct(specimens.eventName) })
         .from(specimens)
         .where(and(eq(specimens.userId, user.id), eq(specimens.isEvent, 1), isNotNull(specimens.eventName))),
+      db.select({ value: count(specimens.id) }).from(specimens).where(eq(specimens.userId, user.id)),
+      db.select({ value: count(boxes.id) }).from(boxes).where(eq(boxes.userId, user.id)),
     ]);
 
     summary = {
@@ -41,6 +52,8 @@ ribbonRoutes.get("/", async (c) => {
       formIds: new Set(formRows.map((r) => r.formId).filter((id): id is number => id !== null)),
       shinyCount,
       eventCount,
+      specimenCount,
+      boxCount,
     };
   }
 

@@ -274,6 +274,8 @@ export type RibbonDto = {
 	category: string;
 	earned: boolean;
 	progress: { current: number; total: number };
+	/** Hidden easter-egg ribbon: the UI must not reveal name/description until earned. */
+	secret?: boolean;
 };
 
 export async function fetchRibbons(): Promise<{ ribbons: RibbonDto[]; earnedCount: number; total: number }> {

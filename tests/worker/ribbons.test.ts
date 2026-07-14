@@ -29,6 +29,8 @@ const emptySummary: CollectionSummary = {
   formIds: new Set(),
   shinyCount: 0,
   eventCount: 0,
+  specimenCount: 0,
+  boxCount: 0,
 };
 
 const byId = (results: ReturnType<typeof computeRibbons>, id: string) => {
@@ -178,5 +180,113 @@ describe("computeRibbons", () => {
       expect(Number.isFinite(r.progress.total)).toBe(true);
     }
     expect(byId(results, "living-dex").progress).toEqual({ current: 0, total: 0 });
+  });
+
+  describe("Fun ribbons", () => {
+    it("earns the secret Magikarp ribbon once Magikarp (129) is owned, and hides it via the secret flag otherwise", () => {
+      const unowned = byId(computeRibbons(emptySummary, ref), "fun-magikarp");
+      expect(unowned.earned).toBe(false);
+      expect(unowned.secret).toBe(true);
+      expect(unowned.category).toBe("Fun");
+
+      const owned = byId(
+        computeRibbons({ ...emptySummary, speciesIds: new Set([129]) }, ref),
+        "fun-magikarp",
+      );
+      expect(owned.earned).toBe(true);
+      expect(owned.progress).toEqual({ current: 1, total: 1 });
+    });
+
+    it("does not mark non-secret Fun ribbons (e.g. fun-pikachu) as secret", () => {
+      const pikachu = byId(computeRibbons(emptySummary, ref), "fun-pikachu");
+      expect(pikachu.secret).toBeFalsy();
+      const owned = byId(computeRibbons({ ...emptySummary, speciesIds: new Set([25]) }, ref), "fun-pikachu");
+      expect(owned.earned).toBe(true);
+    });
+
+    it("tracks Eeveelutionary progress across Eevee + its 8 evolutions, earning only when all 9 are owned", () => {
+      const partial = byId(
+        computeRibbons({ ...emptySummary, speciesIds: new Set([133, 134, 135]) }, ref),
+        "fun-eeveelution",
+      );
+      expect(partial.earned).toBe(false);
+      expect(partial.progress).toEqual({ current: 3, total: 9 });
+
+      const complete = byId(
+        computeRibbons(
+          { ...emptySummary, speciesIds: new Set([133, 134, 135, 136, 196, 197, 470, 471, 700]) },
+          ref,
+        ),
+        "fun-eeveelution",
+      );
+      expect(complete.earned).toBe(true);
+      expect(complete.progress).toEqual({ current: 9, total: 9 });
+    });
+
+    it("earns fun-first-shiny once shinyCount reaches 1, and is not secret", () => {
+      const none = byId(computeRibbons(emptySummary, ref), "fun-first-shiny");
+      expect(none.earned).toBe(false);
+      expect(none.secret).toBeFalsy();
+      const one = byId(computeRibbons({ ...emptySummary, shinyCount: 1 }, ref), "fun-first-shiny");
+      expect(one.earned).toBe(true);
+    });
+
+    it("earns the secret fun-nice ribbon only at exactly 69 specimens, not 68 or 70", () => {
+      const at68 = byId(computeRibbons({ ...emptySummary, specimenCount: 68 }, ref), "fun-nice");
+      expect(at68.earned).toBe(false);
+      expect(at68.progress).toEqual({ current: 68, total: 69 });
+
+      const at69 = byId(computeRibbons({ ...emptySummary, specimenCount: 69 }, ref), "fun-nice");
+      expect(at69.earned).toBe(true);
+      expect(at69.secret).toBe(true);
+      expect(at69.progress).toEqual({ current: 69, total: 69 });
+
+      const at70 = byId(computeRibbons({ ...emptySummary, specimenCount: 70 }, ref), "fun-nice");
+      expect(at70.earned).toBe(false);
+    });
+
+    it("earns the secret fun-blaze ribbon at 420+ specimens", () => {
+      const under = byId(computeRibbons({ ...emptySummary, specimenCount: 419 }, ref), "fun-blaze");
+      expect(under.earned).toBe(false);
+      const over = byId(computeRibbons({ ...emptySummary, specimenCount: 420 }, ref), "fun-blaze");
+      expect(over.earned).toBe(true);
+      expect(over.secret).toBe(true);
+    });
+
+    it("earns the non-secret welcome ribbon (fun-first-catch) once specimenCount >= 1", () => {
+      const none = byId(computeRibbons(emptySummary, ref), "fun-first-catch");
+      expect(none.earned).toBe(false);
+      expect(none.secret).toBeFalsy();
+      const one = byId(computeRibbons({ ...emptySummary, specimenCount: 1 }, ref), "fun-first-catch");
+      expect(one.earned).toBe(true);
+    });
+
+    it("earns the secret fun-box-hoarder ribbon once boxCount reaches 10", () => {
+      const under = byId(computeRibbons({ ...emptySummary, boxCount: 9 }, ref), "fun-box-hoarder");
+      expect(under.earned).toBe(false);
+      expect(under.progress).toEqual({ current: 9, total: 10 });
+      const over = byId(computeRibbons({ ...emptySummary, boxCount: 10 }, ref), "fun-box-hoarder");
+      expect(over.earned).toBe(true);
+      expect(over.secret).toBe(true);
+    });
+
+    it("counts owned bug-type species for fun-bug-collector, capping progress at the total", () => {
+      const bugRef: ReferenceData = {
+        species: Array.from({ length: 25 }, (_, i) => ({ id: 900 + i, generation: 1, types: ["bug"] })),
+        forms: [],
+        speciesNames: new Map(),
+      };
+      const ownedTen = new Set(Array.from({ length: 10 }, (_, i) => 900 + i));
+      const partial = byId(computeRibbons({ ...emptySummary, speciesIds: ownedTen }, bugRef), "fun-bug-collector");
+      expect(partial.earned).toBe(false);
+      expect(partial.progress).toEqual({ current: 10, total: 20 });
+      expect(partial.secret).toBeFalsy();
+
+      const ownedAll = new Set(Array.from({ length: 25 }, (_, i) => 900 + i));
+      const complete = byId(computeRibbons({ ...emptySummary, speciesIds: ownedAll }, bugRef), "fun-bug-collector");
+      expect(complete.earned).toBe(true);
+      // 25 owned bug species but progress caps display at the 20 total.
+      expect(complete.progress).toEqual({ current: 20, total: 20 });
+    });
   });
 });

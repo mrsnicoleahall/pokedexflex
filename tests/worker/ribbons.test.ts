@@ -296,4 +296,24 @@ describe("computeRibbons", () => {
       expect(complete.progress).toEqual({ current: 20, total: 20 });
     });
   });
+
+  it("re-themes gen ribbons as Regional dexes (id + earn logic unchanged)", () => {
+    const summary: CollectionSummary = { ...emptySummary, speciesIds: new Set([1, 2]) };
+    const gen1 = byId(computeRibbons(summary, ref), "gen-1");
+    expect(gen1.category).toBe("Regional");
+    expect(gen1.name).toBe("Kanto Regional Dex");
+    expect(gen1.earned).toBe(true); // still: own all gen-1 species
+  });
+
+  it("adds National Dex % completion tiers (Completion category) earned by ratio", () => {
+    // ref has 3 species total; owning 2 of 3 = 66% -> clears 25 and 50, not 75/100.
+    const summary: CollectionSummary = { ...emptySummary, speciesIds: new Set([1, 2]) };
+    const results = computeRibbons(summary, ref);
+    const t25 = byId(results, "national-dex-25");
+    expect(t25.category).toBe("Completion");
+    expect(t25.earned).toBe(true);
+    expect(byId(results, "national-dex-50").earned).toBe(true);
+    expect(byId(results, "national-dex-75").earned).toBe(false);
+    expect(byId(results, "national-dex-100").earned).toBe(false);
+  });
 });

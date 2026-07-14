@@ -79,6 +79,15 @@ export function isSixIv(ivsJson: string | null): boolean {
 const MIN_FORM_SET_SIZE = 4;
 const TIERED_THRESHOLDS = [10, 50, 100] as const;
 
+/** Generation → region label, for Regional-dex ribbon flavor (dex still defined by the `generation` field). */
+const REGION_NAMES: Record<number, string> = {
+  1: "Kanto", 2: "Johto", 3: "Hoenn", 4: "Sinnoh", 5: "Unova",
+  6: "Kalos", 7: "Alola", 8: "Galar", 9: "Paldea",
+};
+
+/** National Dex completion percentage tiers. */
+const NATIONAL_DEX_TIERS = [25, 50, 75, 100] as const;
+
 const FORM_FANATIC_TYPES = [
   { key: "mega", label: "Mega" },
   { key: "regional", label: "Regional" },
@@ -159,9 +168,10 @@ const tieredResult = (
 /**
  * Builds and evaluates the full ribbon catalog for a collection.
  *
- * Order (stable, deterministic): living-dex, complete-dex-forms, gens (1..9,
- * ascending, only generations present in ref.species), types (alphabetical,
- * only types present in ref.species), form-fanatic (mega, regional,
+ * Order (stable, deterministic): living-dex, complete-dex-forms, regional
+ * gens (1..9, ascending, only generations present in ref.species), national
+ * dex % tiers (25/50/75/100), types (alphabetical, only types present in
+ * ref.species), form-fanatic (mega, regional,
  * gigantamax), form-sets (species with >=4 forms, sorted by speciesId),
  * shiny (10/50/100), event (10/50/100), Fun (funny/easter-egg ribbons,
  * appended last; most are `secret: true` and should render hidden as "???"
@@ -207,14 +217,32 @@ export function computeRibbons(summary: CollectionSummary, ref: ReferenceData): 
   for (const gen of generations) {
     const ids = ref.species.filter((s) => s.generation === gen).map((s) => s.id);
     const p = progressFor(summary.speciesIds, ids);
+    const region = REGION_NAMES[gen] ?? `Generation ${gen}`;
     results.push({
       id: `gen-${gen}`,
-      name: `Generation ${gen} Cleared`,
-      description: `Own every species introduced in Generation ${gen}.`,
-      category: "Generation",
+      name: `${region} Regional Dex`,
+      description: `Own every species introduced in Generation ${gen} (the ${region} regional dex).`,
+      category: "Regional",
       earned: p.earned,
       progress: { current: p.current, total: p.total },
     });
+  }
+
+  // national-dex-{25,50,75,100}: own at least N% of all species.
+  {
+    const totalSpecies = allSpeciesIds.length;
+    const owned = allSpeciesIds.reduce((n, id) => (summary.speciesIds.has(id) ? n + 1 : n), 0);
+    for (const tier of NATIONAL_DEX_TIERS) {
+      const threshold = Math.ceil((totalSpecies * tier) / 100);
+      results.push({
+        id: `national-dex-${tier}`,
+        name: `National Dex ${tier}%`,
+        description: `Register ${tier}% of the National Pokédex.`,
+        category: "Completion",
+        earned: totalSpecies > 0 && owned >= threshold,
+        progress: { current: Math.min(owned, threshold), total: threshold },
+      });
+    }
   }
 
   // type-{t}: own every species of a type, for each distinct type present.

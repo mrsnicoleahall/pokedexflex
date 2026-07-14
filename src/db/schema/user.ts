@@ -1,4 +1,4 @@
-import { sqliteTable, integer, text } from "drizzle-orm/sqlite-core";
+import { sqliteTable, integer, text, unique } from "drizzle-orm/sqlite-core";
 import { species, forms } from "./reference";
 
 export const users = sqliteTable("users", {
@@ -71,3 +71,41 @@ export const sessions = sqliteTable("sessions", {
   expiresAt: integer("expires_at").notNull(),
   createdAt: integer("created_at").notNull(),
 });
+
+/**
+ * One row per (user, ribbonId) the user has ever earned. `earnedAt` is set
+ * once, on first earn, and never overwritten. `seenAt` starts `null` — a
+ * freshly-earned ribbon is "newly earned" (see `newlyEarned` in the API
+ * response) until `POST /api/ribbons/seen` bumps `seenAt`.
+ */
+export const userRibbons = sqliteTable(
+  "user_ribbons",
+  {
+    id: text("id").primaryKey(),
+    userId: text("user_id").notNull().references(() => users.id),
+    ribbonId: text("ribbon_id").notNull(),
+    earnedAt: integer("earned_at").notNull(),
+    seenAt: integer("seen_at"),
+  },
+  (t) => [unique("user_ribbons_user_id_ribbon_id_unique").on(t.userId, t.ribbonId)],
+);
+
+/**
+ * Up to 6 ribbons a user has pinned to their showcase ("trophy wall"), keyed
+ * by slot (0..5). Membership (a ribbon must be earned to be pinned) is
+ * validated in the route against `userRibbons`, not enforceable at the
+ * schema level since the ribbon catalog itself is computed, not stored.
+ */
+export const userShowcase = sqliteTable(
+  "user_showcase",
+  {
+    id: text("id").primaryKey(),
+    userId: text("user_id").notNull().references(() => users.id),
+    ribbonId: text("ribbon_id").notNull(),
+    slot: integer("slot").notNull(),
+  },
+  (t) => [
+    unique("user_showcase_user_id_slot_unique").on(t.userId, t.slot),
+    unique("user_showcase_user_id_ribbon_id_unique").on(t.userId, t.ribbonId),
+  ],
+);

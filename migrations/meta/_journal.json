@@ -43,6 +43,13 @@
       "when": 1783864959297,
       "tag": "0005_fine_firebrand",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1784057283462,
+      "tag": "0006_chubby_proteus",
+      "breakpoints": true
     }
   ]
 }

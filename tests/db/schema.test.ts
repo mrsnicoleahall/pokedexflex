@@ -2,7 +2,7 @@ import { env } from "cloudflare:test";
 import { describe, it, expect } from "vitest";
 import { eq } from "drizzle-orm";
 import { getDb } from "../../src/worker/db";
-import { species, forms, users, boxes, specimens, events } from "../../src/db/schema";
+import { species, forms, users, boxes, specimens, events, userRibbons, userShowcase } from "../../src/db/schema";
 
 describe("reference schema", () => {
   it("inserts a species with a form", async () => {
@@ -141,5 +141,44 @@ describe("user schema", () => {
     expect(sessionRows).toHaveLength(1);
     expect(sessionRows[0].userId).toBe("u-auth-test");
     expect(sessionRows[0].expiresAt).toBe(3000);
+  });
+});
+
+describe("ribbon incentive schema", () => {
+  it("user_ribbons: inserts, reads, and enforces one row per (user, ribbon)", async () => {
+    const db = getDb(env.DB);
+    await db.insert(users).values({ id: "ur1", email: "ur1@x.com", createdAt: 1 });
+    await db.insert(userRibbons).values({
+      id: "row1", userId: "ur1", ribbonId: "living-dex", earnedAt: 1000, seenAt: null,
+    });
+    const rows = await db.select().from(userRibbons).where(eq(userRibbons.userId, "ur1"));
+    expect(rows).toHaveLength(1);
+    expect(rows[0].earnedAt).toBe(1000);
+    expect(rows[0].seenAt).toBeNull();
+
+    await expect(
+      db.insert(userRibbons).values({
+        id: "row2", userId: "ur1", ribbonId: "living-dex", earnedAt: 2000, seenAt: null,
+      }),
+    ).rejects.toThrow();
+  });
+
+  it("user_showcase: inserts, reads, and enforces one ribbon per slot and one slot per ribbon", async () => {
+    const db = getDb(env.DB);
+    await db.insert(users).values({ id: "us1", email: "us1@x.com", createdAt: 1 });
+    await db.insert(userShowcase).values({ id: "s1", userId: "us1", ribbonId: "living-dex", slot: 0 });
+    const rows = await db.select().from(userShowcase).where(eq(userShowcase.userId, "us1"));
+    expect(rows).toHaveLength(1);
+    expect(rows[0].slot).toBe(0);
+
+    // Same user, same slot, different ribbon -> blocked.
+    await expect(
+      db.insert(userShowcase).values({ id: "s2", userId: "us1", ribbonId: "shiny-10", slot: 0 }),
+    ).rejects.toThrow();
+
+    // Same user, same ribbon, different slot -> blocked (a ribbon occupies exactly one slot).
+    await expect(
+      db.insert(userShowcase).values({ id: "s3", userId: "us1", ribbonId: "living-dex", slot: 1 }),
+    ).rejects.toThrow();
   });
 });

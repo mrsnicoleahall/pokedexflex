@@ -10,6 +10,7 @@ import { MyCollection } from "./pages/MyCollection";
 import { Ribbons } from "./pages/Ribbons";
 import { Settings } from "./pages/Settings";
 import { SpeciesCatalog } from "./pages/SpeciesCatalog";
+import { RosetteSprite } from "./ribbons/RosetteSprite";
 
 type View = "home" | "catalog" | AccountView;
 
@@ -29,6 +30,7 @@ function App() {
 
 	return (
 		<div className="app">
+			<RosetteSprite />
 			<TopBar
 				tab={tab}
 				onTabChange={handleTabChange}

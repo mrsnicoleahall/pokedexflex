@@ -1673,8 +1673,7 @@ a {
 	align-items: center;
 	justify-content: center;
 }
-.ribbon-frame__art,
-.ribbon-frame__art svg {
+.ribbon-frame__art {
 	width: 100%;
 	height: 100%;
 	display: block;

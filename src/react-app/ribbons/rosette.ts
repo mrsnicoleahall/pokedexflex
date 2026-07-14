@@ -15,3 +15,17 @@ export function transformRosette(raw: string): string {
 }
 
 export const ROSETTE_MARKUP = transformRosette(rawRosette);
+
+/**
+ * Returns the inner content of an `<svg ...>...</svg>` string (everything
+ * between the opening tag and the closing `</svg>`), so the geometry can be
+ * dropped into a shared `<symbol>` instead of re-declaring the wrapper.
+ */
+export function stripSvgWrapper(markup: string): string {
+	const openEnd = markup.indexOf(">");
+	const closeStart = markup.lastIndexOf("</svg>");
+	return markup.slice(openEnd + 1, closeStart);
+}
+
+/** The rosette's geometry alone, for use inside a single shared `<symbol>`. */
+export const ROSETTE_SYMBOL_INNER = stripSvgWrapper(ROSETTE_MARKUP);

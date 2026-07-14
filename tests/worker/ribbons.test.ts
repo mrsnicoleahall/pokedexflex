@@ -337,4 +337,44 @@ describe("computeRibbons", () => {
     expect(babies.earned).toBe(true);
     expect(babies.progress).toEqual({ current: 19, total: 19 });
   });
+
+  describe("Collector ribbons", () => {
+    it("earns collector-natures only when all 25 natures are owned", () => {
+      const all = new Set([
+        "hardy","lonely","brave","adamant","naughty","bold","docile","relaxed","impish","lax",
+        "timid","hasty","serious","jolly","naive","modest","mild","quiet","bashful","rash",
+        "calm","gentle","sassy","careful","quirky",
+      ]);
+      const done = byId(computeRibbons({ ...emptySummary, naturesOwned: all }, ref), "collector-natures");
+      expect(done.category).toBe("Collector");
+      expect(done.earned).toBe(true);
+      expect(done.progress).toEqual({ current: 25, total: 25 });
+
+      const partial = byId(computeRibbons({ ...emptySummary, naturesOwned: new Set(["adamant", "bogus"]) }, ref), "collector-natures");
+      expect(partial.earned).toBe(false);
+      expect(partial.progress).toEqual({ current: 1, total: 25 }); // "bogus" isn't canonical
+    });
+
+    it("earns collector-balls only when all 27 canonical balls are owned", () => {
+      const partial = byId(computeRibbons({ ...emptySummary, ballsOwned: new Set(["ultra ball", "great ball"]) }, ref), "collector-balls");
+      expect(partial.progress).toEqual({ current: 2, total: 27 });
+      expect(partial.earned).toBe(false);
+    });
+
+    it("earns level-100 and 6IV tiers by count", () => {
+      const r = computeRibbons({ ...emptySummary, level100Count: 12, sixIvCount: 1 }, ref);
+      expect(byId(r, "collector-level100-1").earned).toBe(true);
+      expect(byId(r, "collector-level100-10").earned).toBe(true);
+      expect(byId(r, "collector-level100-50").earned).toBe(false);
+      expect(byId(r, "collector-6iv-1").earned).toBe(true);
+      expect(byId(r, "collector-6iv-10").earned).toBe(false);
+    });
+
+    it("earns mega / gmax breadth milestones by owned-form count", () => {
+      const r = computeRibbons({ ...emptySummary, megaFormCount: 20, gmaxFormCount: 3 }, ref);
+      expect(byId(r, "collector-mega").earned).toBe(true);
+      expect(byId(r, "collector-gmax").earned).toBe(false);
+      expect(byId(r, "collector-gmax").progress).toEqual({ current: 3, total: 10 });
+    });
+  });
 });

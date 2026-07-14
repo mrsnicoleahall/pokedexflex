@@ -110,7 +110,14 @@ describe("ribbons API", () => {
     const res = await call("/api/ribbons", undefined, cookie);
     expect(res.status).toBe(200);
     const body = (await res.json()) as any;
-    expect(body.total).toBeGreaterThan(0);
+    const level1 = body.ribbons.find((r: any) => r.id === "collector-level100-1");
+    expect(level1.earned).toBe(true);
+    const sixiv1 = body.ribbons.find((r: any) => r.id === "collector-6iv-1");
+    expect(sixiv1.earned).toBe(true);
+    const natures = body.ribbons.find((r: any) => r.id === "collector-natures");
+    expect(natures.progress.current).toBe(1);
+    const balls = body.ribbons.find((r: any) => r.id === "collector-balls");
+    expect(balls.progress.current).toBe(1);
   });
 });
 

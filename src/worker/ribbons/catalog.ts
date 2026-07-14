@@ -9,6 +9,7 @@
 
 import {
   LEGENDARY_PROPER_IDS, MYTHICAL_IDS, FOSSIL_IDS, BABY_IDS, ULTRA_BEAST_IDS, PARADOX_IDS,
+  NATURE_NAMES, BALL_TYPES,
 } from "./species-sets";
 import { STARTER_FINAL_IDS, PSEUDO_IDS } from "../rarity/priors";
 
@@ -83,6 +84,10 @@ export function isSixIv(ivsJson: string | null): boolean {
 
 const MIN_FORM_SET_SIZE = 4;
 const TIERED_THRESHOLDS = [10, 50, 100] as const;
+const LEVEL100_TIERS = [1, 10, 50] as const;
+const SIX_IV_TIERS = [1, 10, 50] as const;
+const MEGA_MASTER_TOTAL = 20;
+const GMAX_MASTER_TOTAL = 10;
 
 /** Generation → region label, for Regional-dex ribbon flavor (dex still defined by the `generation` field). */
 const REGION_NAMES: Record<number, string> = {
@@ -177,7 +182,8 @@ const tieredResult = (
  * gens (1..9, ascending, only generations present in ref.species), national
  * dex % tiers (25/50/75/100), types (alphabetical, only types present in
  * ref.species), rarity class (starters, legendaries, mythicals, pseudo,
- * fossils, babies, ultra beasts, paradox — fixed order), form-fanatic (mega,
+ * fossils, babies, ultra beasts, paradox — fixed order), collector (natures,
+ * balls, level100 tiers, 6IV tiers, mega, gmax), form-fanatic (mega,
  * regional, gigantamax), form-sets (species with >=4 forms, sorted by
  * speciesId), shiny (10/50/100), event (10/50/100), Fun (funny/easter-egg
  * ribbons, appended last; most are `secret: true` and should render hidden as
@@ -288,6 +294,56 @@ export function computeRibbons(summary: CollectionSummary, ref: ReferenceData): 
       progress: { current: p.current, total: p.total },
     });
   }
+
+  // collector-natures / collector-balls: own the whole canonical set (case-insensitive).
+  {
+    const naturesCurrent = NATURE_NAMES.reduce((n, name) => (summary.naturesOwned.has(name) ? n + 1 : n), 0);
+    results.push({
+      id: "collector-natures", name: "Nature Lover",
+      description: "Own a Pokémon of all 25 natures.", category: "Collector",
+      earned: naturesCurrent === NATURE_NAMES.length,
+      progress: { current: naturesCurrent, total: NATURE_NAMES.length },
+    });
+    const ballsCurrent = BALL_TYPES.reduce((n, name) => (summary.ballsOwned.has(name) ? n + 1 : n), 0);
+    results.push({
+      id: "collector-balls", name: "Gotta Catch 'Em All",
+      description: "Own a Pokémon caught in every kind of Poké Ball.", category: "Collector",
+      earned: ballsCurrent === BALL_TYPES.length,
+      progress: { current: ballsCurrent, total: BALL_TYPES.length },
+    });
+  }
+
+  // collector-level100-{1,10,50}: level-100 milestones.
+  for (const tier of LEVEL100_TIERS) {
+    results.push(tieredResult(
+      "collector-level100", "Level Cap",
+      (t) => `Raise ${t} Pokémon to level 100.`, "Collector",
+      summary.level100Count, tier,
+    ));
+  }
+
+  // collector-6iv-{1,10,50}: flawless-IV milestones.
+  for (const tier of SIX_IV_TIERS) {
+    results.push(tieredResult(
+      "collector-6iv", "Flawless",
+      (t) => `Own ${t} Pokémon with perfect (6×31) IVs.`, "Collector",
+      summary.sixIvCount, tier,
+    ));
+  }
+
+  // collector-mega / collector-gmax: breadth of Mega / Gigantamax forms owned.
+  results.push({
+    id: "collector-mega", name: "Mega Evolver",
+    description: `Own ${MEGA_MASTER_TOTAL} different Mega forms.`, category: "Collector",
+    earned: summary.megaFormCount >= MEGA_MASTER_TOTAL,
+    progress: { current: Math.min(summary.megaFormCount, MEGA_MASTER_TOTAL), total: MEGA_MASTER_TOTAL },
+  });
+  results.push({
+    id: "collector-gmax", name: "Go Big",
+    description: `Own ${GMAX_MASTER_TOTAL} different Gigantamax forms.`, category: "Collector",
+    earned: summary.gmaxFormCount >= GMAX_MASTER_TOTAL,
+    progress: { current: Math.min(summary.gmaxFormCount, GMAX_MASTER_TOTAL), total: GMAX_MASTER_TOTAL },
+  });
 
   // form-fanatic-{mega,regional,gigantamax}: own every form of a form type.
   for (const { key, label } of FORM_FANATIC_TYPES) {

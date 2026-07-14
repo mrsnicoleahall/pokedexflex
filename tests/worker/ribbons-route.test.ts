@@ -180,6 +180,21 @@ describe("ribbons API", () => {
     expect(typeof firstCatch.rarityPct).toBe("number");
     expect(firstCatch.rarityPct).toBeGreaterThanOrEqual(0);
   });
+
+  it("returns nearest as the top ~5 locked, non-secret ribbons by progress ratio, sorted descending", async () => {
+    const cookie = await signIn("nudge@x.com");
+    const res = await call("/api/ribbons", undefined, cookie);
+    const body = (await res.json()) as any;
+
+    expect(Array.isArray(body.nearest)).toBe(true);
+    expect(body.nearest.length).toBeLessThanOrEqual(5);
+    for (const r of body.nearest) {
+      expect(r.earned).toBe(false);
+      expect(r.secret).not.toBe(true);
+    }
+    const ratios = body.nearest.map((r: any) => r.progress.current / r.progress.total);
+    for (let i = 1; i < ratios.length; i++) expect(ratios[i]).toBeLessThanOrEqual(ratios[i - 1]);
+  });
 });
 
 describe("ribbon showcase", () => {

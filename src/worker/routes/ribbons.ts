@@ -4,6 +4,7 @@ import { getDb } from "../db";
 import { species, forms, specimens, boxes } from "../../db/schema";
 import { getCurrentUser, requireUser } from "../auth/current-user";
 import { computeRibbons, isSixIv, type CollectionSummary, type ReferenceData } from "../ribbons/catalog";
+import { nearestRibbons } from "../ribbons/scoring";
 import {
   syncEarnedRibbons,
   loadUserRibbonRows,
@@ -156,11 +157,14 @@ ribbonRoutes.get("/", async (c) => {
     rarityPct: rarity.totalUsers > 0 ? (rarity.counts.get(r.id) ?? 0) / rarity.totalUsers : 0,
   }));
 
+  const nearest = nearestRibbons(ribbonsOut, 5);
+
   return c.json({
     ribbons: ribbonsOut,
     earnedCount: ribbons.filter((r) => r.earned).length,
     total: ribbons.length,
     showcase,
+    nearest,
   });
 });
 

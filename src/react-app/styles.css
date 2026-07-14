@@ -1691,3 +1691,12 @@ a {
 .ribbon-glyph--text { font-weight: 800; line-height: 1; }
 .ribbon-glyph--emoji { line-height: 1; }
 .ribbon-piece { flex: none; object-fit: contain; }
+
+.ribbon-card__icon {
+	display: flex;
+	justify-content: center;
+	margin-bottom: 8px;
+}
+.ribbon-card__icon--locked {
+	filter: grayscale(0.85) opacity(0.55);
+}

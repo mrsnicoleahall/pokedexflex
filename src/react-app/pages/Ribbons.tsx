@@ -17,6 +17,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { fetchRibbons, type RibbonDto } from "../api";
 import { useAuth } from "../auth/AuthProvider";
+import { RibbonIcon } from "../ribbons/RibbonIcon";
 import { typeColor } from "../theme";
 
 /** Sensible display order for ribbon categories; "Grand" (the hardest, rarest ribbons) leads. "Fun" (easter eggs) trails. */
@@ -63,6 +64,9 @@ function RibbonCard({ ribbon }: { ribbon: RibbonDto }) {
 					borderColor: `color-mix(in srgb, ${accent} 55%, var(--hairline))`,
 				}}
 			>
+				<div className="ribbon-card__icon">
+					<RibbonIcon ribbon={{ id: ribbon.id, category: ribbon.category }} size={72} />
+				</div>
 				<span className="ribbon-card__shine" style={{ color: accent }} aria-hidden="true">
 					✦
 				</span>
@@ -84,6 +88,9 @@ function RibbonCard({ ribbon }: { ribbon: RibbonDto }) {
 
 	return (
 		<article className={`ribbon-card ribbon-card--locked${hiddenSecret ? " ribbon-card--secret" : ""}`}>
+			<div className="ribbon-card__icon ribbon-card__icon--locked">
+				<RibbonIcon ribbon={{ id: ribbon.id, category: ribbon.category }} hidden={hiddenSecret} size={72} />
+			</div>
 			<h3 className="ribbon-card__name">
 				{hiddenSecret && (
 					<span className="ribbon-card__secret-icon" aria-hidden="true">

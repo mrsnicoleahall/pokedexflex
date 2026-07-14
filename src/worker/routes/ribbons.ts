@@ -4,7 +4,7 @@ import { getDb } from "../db";
 import { species, forms, specimens, boxes } from "../../db/schema";
 import { getCurrentUser, requireUser } from "../auth/current-user";
 import { computeRibbons, isSixIv, type CollectionSummary, type ReferenceData } from "../ribbons/catalog";
-import { nearestRibbons } from "../ribbons/scoring";
+import { nearestRibbons, pointsForRibbon, trainerScoreFor, rankFor } from "../ribbons/scoring";
 import {
   syncEarnedRibbons,
   loadUserRibbonRows,
@@ -155,7 +155,10 @@ ribbonRoutes.get("/", async (c) => {
     ...r,
     newlyEarned: newlyEarnedIds.has(r.id),
     rarityPct: rarity.totalUsers > 0 ? (rarity.counts.get(r.id) ?? 0) / rarity.totalUsers : 0,
+    points: pointsForRibbon(r),
   }));
+  const trainerScore = trainerScoreFor(ribbons.filter((r) => r.earned));
+  const rank = rankFor(trainerScore);
 
   const nearest = nearestRibbons(ribbonsOut, 5);
 
@@ -163,6 +166,8 @@ ribbonRoutes.get("/", async (c) => {
     ribbons: ribbonsOut,
     earnedCount: ribbons.filter((r) => r.earned).length,
     total: ribbons.length,
+    trainerScore,
+    rank,
     showcase,
     nearest,
   });

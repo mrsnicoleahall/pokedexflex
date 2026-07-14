@@ -195,6 +195,33 @@ describe("ribbons API", () => {
     const ratios = body.nearest.map((r: any) => r.progress.current / r.progress.total);
     for (let i = 1; i < ratios.length; i++) expect(ratios[i]).toBeLessThanOrEqual(ratios[i - 1]);
   });
+
+  it("computes trainerScore/rank from earned ribbons, and attaches points per ribbon", async () => {
+    const cookie = await signIn("score@x.com");
+    await postJson("/api/collection", { speciesId: 1001 }, cookie); // earns fun-first-catch (Fun, 5 pts)
+
+    const res = await call("/api/ribbons", undefined, cookie);
+    const body = (await res.json()) as any;
+
+    const firstCatch = body.ribbons.find((r: any) => r.id === "fun-first-catch");
+    expect(firstCatch.points).toBe(5);
+    expect(body.trainerScore).toBeGreaterThanOrEqual(5);
+    expect(typeof body.rank).toBe("string");
+    expect(body.rank.length).toBeGreaterThan(0);
+  });
+
+  it("scores 0 / ranks Novice for a signed-in user with nothing earned, and for logged-out requests", async () => {
+    const cookie = await signIn("score-zero@x.com");
+    const res = await call("/api/ribbons", undefined, cookie);
+    const body = (await res.json()) as any;
+    expect(body.trainerScore).toBe(0);
+    expect(body.rank).toBe("Novice");
+
+    const outRes = await call("/api/ribbons");
+    const outBody = (await outRes.json()) as any;
+    expect(outBody.trainerScore).toBe(0);
+    expect(outBody.rank).toBe("Novice");
+  });
 });
 
 describe("ribbon showcase", () => {

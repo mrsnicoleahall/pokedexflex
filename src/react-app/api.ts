@@ -276,12 +276,54 @@ export type RibbonDto = {
 	progress: { current: number; total: number };
 	/** Hidden easter-egg ribbon: the UI must not reveal name/description until earned. */
 	secret?: boolean;
+	/** Points this ribbon contributes to trainerScore once earned (Flex Phase D). */
+	points: number;
+	/** Fraction (0..1) of all registered users who have earned this ribbon. */
+	rarityPct: number;
+	/** True if earned but not yet acknowledged via `ackRibbonsSeen` — drives the earn-moment toast (Phase E). */
+	newlyEarned: boolean;
 };
 
-export async function fetchRibbons(): Promise<{ ribbons: RibbonDto[]; earnedCount: number; total: number }> {
+export type RibbonsResponse = {
+	ribbons: RibbonDto[];
+	earnedCount: number;
+	total: number;
+	/** Sum of `points` across every ribbon the signed-in user has earned; 0 when logged out. */
+	trainerScore: number;
+	/** Rank title derived from `trainerScore` (e.g. "Novice" .. "Living Legend"); "Novice" when logged out. */
+	rank: string;
+	/** 6 fixed showcase slots, in slot order; `null` for an empty slot. All-null when logged out. */
+	showcase: (string | null)[];
+	/** Top ~5 locked, non-secret ribbons closest to completion, for dashboard nudges (Phase E). */
+	nearest: RibbonDto[];
+};
+
+export async function fetchRibbons(): Promise<RibbonsResponse> {
 	const res = await fetch("/api/ribbons", { credentials: "include" });
 	if (!res.ok) throw new Error(`ribbons fetch failed: ${res.status}`);
-	return res.json() as Promise<{ ribbons: RibbonDto[]; earnedCount: number; total: number }>;
+	return res.json() as Promise<RibbonsResponse>;
+}
+
+/**
+ * Pins up to 6 earned ribbon ids (array index = slot) to the signed-in
+ * user's showcase. The server validates ownership + earned status — an
+ * unearned or duplicate id, or more than 6 ids, is rejected with a 400
+ * `{errors}` body (surfaced as `ApiValidationError` by `handleJson`).
+ */
+export async function setRibbonShowcase(ribbonIds: string[]): Promise<{ showcase: (string | null)[] }> {
+	const res = await fetch("/api/ribbons/showcase", {
+		method: "PUT",
+		credentials: "include",
+		headers: { "Content-Type": "application/json" },
+		body: JSON.stringify({ ribbonIds }),
+	});
+	return handleJson<{ showcase: (string | null)[] }>(res, "set ribbon showcase");
+}
+
+/** Acknowledges all outstanding earn moments (bumps `seenAt`) so `newlyEarned` clears on the next fetch. */
+export async function ackRibbonsSeen(): Promise<void> {
+	const res = await fetch("/api/ribbons/seen", { method: "POST", credentials: "include" });
+	await handleJson<{ ok: boolean }>(res, "ack ribbons seen");
 }
 
 /* ---------- Import / Export ---------- */

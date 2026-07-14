@@ -229,6 +229,27 @@ describe("ribbon showcase", () => {
     const dup = await putJson("/api/ribbons/showcase", { ribbonIds: ["fun-first-catch", "fun-first-catch"] }, cookie);
     expect(dup.status).toBe(400);
   });
+
+  it("POST /api/ribbons/seen acknowledges outstanding earn moments (newlyEarned flips false)", async () => {
+    const cookie = await signIn("seen-ack@x.com");
+    await postJson("/api/collection", { speciesId: 1001 }, cookie);
+
+    const before = await call("/api/ribbons", undefined, cookie);
+    const beforeBody = (await before.json()) as any;
+    expect(beforeBody.ribbons.find((r: any) => r.id === "fun-first-catch").newlyEarned).toBe(true);
+
+    const ack = await call("/api/ribbons/seen", { method: "POST" }, cookie);
+    expect(ack.status).toBe(200);
+
+    const after = await call("/api/ribbons", undefined, cookie);
+    const afterBody = (await after.json()) as any;
+    expect(afterBody.ribbons.find((r: any) => r.id === "fun-first-catch").newlyEarned).toBe(false);
+  });
+
+  it("rejects the ack when not signed in (401)", async () => {
+    const res = await call("/api/ribbons/seen", { method: "POST" });
+    expect(res.status).toBe(401);
+  });
 });
 
 /** Seeds species #129 (Magikarp) so a specimen referencing it can be created. */

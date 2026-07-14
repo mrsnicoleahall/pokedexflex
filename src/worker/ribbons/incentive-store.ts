@@ -111,3 +111,8 @@ export async function setShowcase(
   }
   return { ok: true };
 }
+
+/** Acknowledges all outstanding earn moments for a user — bumps `seenAt` to `now` for every row they own. */
+export async function markRibbonsSeen(db: Db, userId: string, now: number): Promise<void> {
+  await db.update(userRibbons).set({ seenAt: now }).where(eq(userRibbons.userId, userId));
+}

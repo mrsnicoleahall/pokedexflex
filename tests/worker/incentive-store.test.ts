@@ -4,6 +4,7 @@ import { getDb } from "../../src/worker/db";
 import { users } from "../../src/db/schema";
 import { syncEarnedRibbons, loadUserRibbonRows, ribbonRarity } from "../../src/worker/ribbons/incentive-store";
 import { getShowcase, setShowcase, SHOWCASE_SLOTS } from "../../src/worker/ribbons/incentive-store";
+import { markRibbonsSeen } from "../../src/worker/ribbons/incentive-store";
 
 describe("incentive-store: syncEarnedRibbons / loadUserRibbonRows", () => {
   it("inserts a row on first earn (earnedAt = now, seenAt = null)", async () => {
@@ -105,5 +106,34 @@ describe("incentive-store: getShowcase / setShowcase", () => {
     const second = await setShowcase(db, "sc-u4", ["shiny-10"]); // replaces, doesn't append
     expect(second.ok).toBe(true);
     expect(await getShowcase(db, "sc-u4")).toEqual(["shiny-10", null, null, null, null, null]);
+  });
+});
+
+describe("incentive-store: markRibbonsSeen", () => {
+  it("bumps seenAt to now for every row the user owns, leaving earnedAt untouched", async () => {
+    const db = getDb(env.DB);
+    await db.insert(users).values({ id: "seen-u1", email: "seen-u1@x.com", createdAt: 1 });
+    await syncEarnedRibbons(db, "seen-u1", ["living-dex", "shiny-10"], 1000);
+
+    await markRibbonsSeen(db, "seen-u1", 5000);
+
+    const rows = await loadUserRibbonRows(db, "seen-u1");
+    expect(rows.get("living-dex")).toEqual({ earnedAt: 1000, seenAt: 5000 });
+    expect(rows.get("shiny-10")).toEqual({ earnedAt: 1000, seenAt: 5000 });
+  });
+
+  it("does not affect another user's rows", async () => {
+    const db = getDb(env.DB);
+    await db.insert(users).values([
+      { id: "seen-u2", email: "seen-u2@x.com", createdAt: 1 },
+      { id: "seen-u3", email: "seen-u3@x.com", createdAt: 1 },
+    ]);
+    await syncEarnedRibbons(db, "seen-u2", ["living-dex"], 1000);
+    await syncEarnedRibbons(db, "seen-u3", ["living-dex"], 1000);
+
+    await markRibbonsSeen(db, "seen-u2", 9999);
+
+    expect((await loadUserRibbonRows(db, "seen-u2")).get("living-dex")!.seenAt).toBe(9999);
+    expect((await loadUserRibbonRows(db, "seen-u3")).get("living-dex")!.seenAt).toBeNull();
   });
 });

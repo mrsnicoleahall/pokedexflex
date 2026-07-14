@@ -11,6 +11,7 @@ import {
   getShowcase,
   setShowcase,
   SHOWCASE_SLOTS,
+  markRibbonsSeen,
 } from "../ribbons/incentive-store";
 
 export const ribbonRoutes = new Hono<{ Bindings: Env }>();
@@ -177,4 +178,11 @@ ribbonRoutes.put("/showcase", async (c) => {
   if (!result.ok) return c.json({ errors: result.errors }, 400);
 
   return c.json({ showcase: await getShowcase(db, user.id) });
+});
+
+ribbonRoutes.post("/seen", async (c) => {
+  const user = await requireUser(c);
+  const db = getDb(c.env.DB);
+  await markRibbonsSeen(db, user.id, Date.now());
+  return c.json({ ok: true });
 });

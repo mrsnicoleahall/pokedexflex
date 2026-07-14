@@ -223,8 +223,12 @@ const buildRows = (
   parsedBody: ImportBody,
   resolveSpecies: (nameOrDex: string) => number | null,
 ): { rows: RowResult[]; headers?: string[]; suggestedMapping?: FieldMapping } | null => {
+  // Strip a leading UTF-8 BOM (U+FEFF) — some exporters (e.g. .NET/PowerShell
+  // tools) prefix files with it, and it makes both JSON.parse and the CSV header
+  // row choke. Applies to every source (paste, multipart, csv, json).
+  const content = parsedBody.content!.replace(/^﻿/, "");
   if (parsedBody.format === "csv") {
-    const table = parseCsv(parsedBody.content!);
+    const table = parseCsv(content);
     const headers = table[0] ?? [];
     const dataRows = table.slice(1);
     const mapping = parsedBody.mapping ?? autoDetectMapping(headers);
@@ -232,7 +236,7 @@ const buildRows = (
     return { rows, headers, suggestedMapping: mapping };
   }
 
-  const jsonRows = parseJsonRows(parsedBody.content!);
+  const jsonRows = parseJsonRows(content);
   if (jsonRows === null) return null;
   const rows = jsonRows.map((raw) => buildJsonRow(raw, resolveSpecies));
   return { rows };

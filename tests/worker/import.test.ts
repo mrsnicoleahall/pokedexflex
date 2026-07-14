@@ -215,4 +215,23 @@ describe("import/export API", () => {
     const listBody = (await listRes.json()) as any;
     expect(listBody.total).toBe(1500);
   });
+
+  it("strips a leading UTF-8 BOM before parsing JSON and CSV import content", async () => {
+    const cookie = await signIn("bom@example.com");
+    const bom = "﻿";
+    // A real third-party export (PowerShell/.NET) can prefix the file with a BOM,
+    // which makes JSON.parse throw ("Unexpected token") and corrupts the CSV header.
+    const jsonContent = bom + JSON.stringify({ catalogue: [{ dex: 6, shiny: true, nature: "Bold", ball: "poke-ball" }] });
+    const res = await postJson("/api/import/preview", { format: "json", content: jsonContent }, cookie);
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as any;
+    expect(body.validCount).toBe(1);
+    expect(body.rows[0].input.speciesId).toBe(6);
+
+    const csvContent = bom + "Species,Nickname\ncharizard,Blaze";
+    const res2 = await postJson("/api/import/preview", { format: "csv", content: csvContent }, cookie);
+    const body2 = (await res2.json()) as any;
+    expect(body2.status ?? res2.status).toBe(200);
+    expect(body2.validCount).toBe(1);
+  });
 });

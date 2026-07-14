@@ -2,6 +2,7 @@ import { Hono } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { healthRoutes } from "./routes/health";
 import { speciesRoutes } from "./routes/species";
+import { rarityRoutes } from "./routes/rarity";
 import { eventRoutes } from "./routes/events";
 import { spriteRoutes } from "./routes/sprites";
 import { authRoutes } from "./routes/auth";
@@ -24,6 +25,7 @@ app.onError((err, c) => {
 
 app.route("/api", healthRoutes);
 app.route("/api", speciesRoutes);
+app.route("/api", rarityRoutes);
 app.route("/api", eventRoutes);
 app.route("/api/auth", authRoutes);
 app.route("/api/collection", collectionRoutes);

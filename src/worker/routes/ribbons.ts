@@ -4,6 +4,7 @@ import { getDb } from "../db";
 import { species, forms, specimens, boxes } from "../../db/schema";
 import { getCurrentUser } from "../auth/current-user";
 import { computeRibbons, isSixIv, type CollectionSummary, type ReferenceData } from "../ribbons/catalog";
+import { syncEarnedRibbons, loadUserRibbonRows } from "../ribbons/incentive-store";
 
 export const ribbonRoutes = new Hono<{ Bindings: Env }>();
 
@@ -124,5 +125,22 @@ ribbonRoutes.get("/", async (c) => {
   };
 
   const ribbons = computeRibbons(summary, ref);
-  return c.json({ ribbons, earnedCount: ribbons.filter((r) => r.earned).length, total: ribbons.length });
+
+  const newlyEarnedIds = new Set<string>();
+  if (user) {
+    const now = Date.now();
+    const earnedIds = ribbons.filter((r) => r.earned).map((r) => r.id);
+    await syncEarnedRibbons(db, user.id, earnedIds, now);
+    const userRibbonRows = await loadUserRibbonRows(db, user.id);
+    for (const r of ribbons) {
+      const row = userRibbonRows.get(r.id);
+      if (r.earned && row && (row.seenAt === null || row.earnedAt > row.seenAt)) {
+        newlyEarnedIds.add(r.id);
+      }
+    }
+  }
+
+  const ribbonsOut = ribbons.map((r) => ({ ...r, newlyEarned: newlyEarnedIds.has(r.id) }));
+
+  return c.json({ ribbons: ribbonsOut, earnedCount: ribbons.filter((r) => r.earned).length, total: ribbons.length });
 });

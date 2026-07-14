@@ -119,6 +119,32 @@ describe("ribbons API", () => {
     const balls = body.ribbons.find((r: any) => r.id === "collector-balls");
     expect(balls.progress.current).toBe(1);
   });
+
+  it("marks a ribbon newlyEarned on first earn, and it stays newlyEarned until acknowledged (Task D6)", async () => {
+    const cookie = await signIn("newly-earned@x.com");
+    const before = await call("/api/ribbons", undefined, cookie);
+    const beforeBody = (await before.json()) as any;
+    expect(beforeBody.ribbons.find((r: any) => r.id === "fun-first-catch").newlyEarned).toBe(false);
+
+    await postJson("/api/collection", { speciesId: 1001 }, cookie);
+
+    const after = await call("/api/ribbons", undefined, cookie);
+    const afterBody = (await after.json()) as any;
+    const afterFun = afterBody.ribbons.find((r: any) => r.id === "fun-first-catch");
+    expect(afterFun.earned).toBe(true);
+    expect(afterFun.newlyEarned).toBe(true);
+
+    // Fetching again with no ack yet — still newlyEarned (Task D6 adds the ack endpoint).
+    const again = await call("/api/ribbons", undefined, cookie);
+    const againBody = (await again.json()) as any;
+    expect(againBody.ribbons.find((r: any) => r.id === "fun-first-catch").newlyEarned).toBe(true);
+  });
+
+  it("logged-out requests never sync and never crash on newlyEarned (always false)", async () => {
+    const res = await call("/api/ribbons");
+    const body = (await res.json()) as any;
+    for (const r of body.ribbons) expect(r.newlyEarned).toBe(false);
+  });
 });
 
 /** Seeds species #129 (Magikarp) so a specimen referencing it can be created. */

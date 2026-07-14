@@ -28,6 +28,9 @@ const call = async (path: string, init?: RequestInit, cookie?: string) => {
 const postJson = (path: string, body: unknown, cookie?: string) =>
   call(path, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) }, cookie);
 
+const putJson = (path: string, body: unknown, cookie?: string) =>
+  call(path, { method: "PUT", headers: { "content-type": "application/json" }, body: JSON.stringify(body) }, cookie);
+
 /** Runs the real magic-link flow and returns the session cookie string for `email`. */
 const signIn = async (email: string): Promise<string> => {
   const r1 = await postJson("/api/auth/request-link", { email });
@@ -176,6 +179,55 @@ describe("ribbons API", () => {
     const firstCatch = body.ribbons.find((r: any) => r.id === "fun-first-catch");
     expect(typeof firstCatch.rarityPct).toBe("number");
     expect(firstCatch.rarityPct).toBeGreaterThanOrEqual(0);
+  });
+});
+
+describe("ribbon showcase", () => {
+  it("rejects showcase writes when not signed in (401)", async () => {
+    const res = await putJson("/api/ribbons/showcase", { ribbonIds: [] });
+    expect(res.status).toBe(401);
+  });
+
+  it("GET /api/ribbons returns an empty 6-slot showcase by default", async () => {
+    const cookie = await signIn("showcase-empty@x.com");
+    const res = await call("/api/ribbons", undefined, cookie);
+    const body = (await res.json()) as any;
+    expect(body.showcase).toEqual([null, null, null, null, null, null]);
+  });
+
+  it("rejects pinning a ribbon the user hasn't earned", async () => {
+    const cookie = await signIn("showcase-unearned@x.com");
+    const res = await putJson("/api/ribbons/showcase", { ribbonIds: ["living-dex"] }, cookie);
+    expect(res.status).toBe(400);
+    const body = (await res.json()) as any;
+    expect(body.errors[0]).toMatch(/not earned/);
+  });
+
+  it("pins earned ribbons and reflects them in slot order on the next GET", async () => {
+    const cookie = await signIn("showcase-owner@x.com");
+    await postJson("/api/collection", { speciesId: 1001 }, cookie); // earns fun-first-catch
+    await call("/api/ribbons", undefined, cookie); // sync the earn into user_ribbons
+
+    const put = await putJson("/api/ribbons/showcase", { ribbonIds: ["fun-first-catch"] }, cookie);
+    expect(put.status).toBe(200);
+    const putBody = (await put.json()) as any;
+    expect(putBody.showcase).toEqual(["fun-first-catch", null, null, null, null, null]);
+
+    const res = await call("/api/ribbons", undefined, cookie);
+    const body = (await res.json()) as any;
+    expect(body.showcase[0]).toBe("fun-first-catch");
+  });
+
+  it("rejects more than 6 ribbons and duplicate ribbon ids", async () => {
+    const cookie = await signIn("showcase-overflow@x.com");
+    await postJson("/api/collection", { speciesId: 1001 }, cookie);
+    await call("/api/ribbons", undefined, cookie);
+
+    const tooMany = await putJson("/api/ribbons/showcase", { ribbonIds: new Array(7).fill("fun-first-catch") }, cookie);
+    expect(tooMany.status).toBe(400);
+
+    const dup = await putJson("/api/ribbons/showcase", { ribbonIds: ["fun-first-catch", "fun-first-catch"] }, cookie);
+    expect(dup.status).toBe(400);
   });
 });
 

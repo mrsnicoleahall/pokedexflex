@@ -3,6 +3,7 @@ import { describe, it, expect } from "vitest";
 import { getDb } from "../../src/worker/db";
 import { users } from "../../src/db/schema";
 import { syncEarnedRibbons, loadUserRibbonRows, ribbonRarity } from "../../src/worker/ribbons/incentive-store";
+import { getShowcase, setShowcase, SHOWCASE_SLOTS } from "../../src/worker/ribbons/incentive-store";
 
 describe("incentive-store: syncEarnedRibbons / loadUserRibbonRows", () => {
   it("inserts a row on first earn (earnedAt = now, seenAt = null)", async () => {
@@ -60,5 +61,49 @@ describe("incentive-store: ribbonRarity", () => {
     expect(counts.get("shiny-10")).toBe(baseShiny10 + 1);
     expect(counts.get("never-earned-anywhere")).toBeUndefined();
     expect(totalUsers).toBeGreaterThanOrEqual(2); // other tests in the suite add users too
+  });
+});
+
+describe("incentive-store: getShowcase / setShowcase", () => {
+  it("defaults to an all-null 6-slot showcase", async () => {
+    const db = getDb(env.DB);
+    await db.insert(users).values({ id: "sc-u1", email: "sc-u1@x.com", createdAt: 1 });
+    const showcase = await getShowcase(db, "sc-u1");
+    expect(showcase).toEqual(new Array(SHOWCASE_SLOTS).fill(null));
+  });
+
+  it("rejects pinning a ribbon the user hasn't earned, and writes nothing", async () => {
+    const db = getDb(env.DB);
+    await db.insert(users).values({ id: "sc-u2", email: "sc-u2@x.com", createdAt: 1 });
+    const result = await setShowcase(db, "sc-u2", ["living-dex"]);
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.errors.join(" ")).toMatch(/not earned/);
+    expect(await getShowcase(db, "sc-u2")).toEqual(new Array(SHOWCASE_SLOTS).fill(null));
+  });
+
+  it("rejects more than 6 ribbons and duplicate ribbon ids", async () => {
+    const db = getDb(env.DB);
+    await db.insert(users).values({ id: "sc-u3", email: "sc-u3@x.com", createdAt: 1 });
+    await syncEarnedRibbons(db, "sc-u3", ["living-dex"], 1000);
+
+    const tooMany = await setShowcase(db, "sc-u3", new Array(7).fill("living-dex"));
+    expect(tooMany.ok).toBe(false);
+
+    const dup = await setShowcase(db, "sc-u3", ["living-dex", "living-dex"]);
+    expect(dup.ok).toBe(false);
+  });
+
+  it("pins earned ribbons in slot order and replaces a prior showcase wholesale", async () => {
+    const db = getDb(env.DB);
+    await db.insert(users).values({ id: "sc-u4", email: "sc-u4@x.com", createdAt: 1 });
+    await syncEarnedRibbons(db, "sc-u4", ["living-dex", "shiny-10"], 1000);
+
+    const first = await setShowcase(db, "sc-u4", ["living-dex", "shiny-10"]);
+    expect(first.ok).toBe(true);
+    expect(await getShowcase(db, "sc-u4")).toEqual(["living-dex", "shiny-10", null, null, null, null]);
+
+    const second = await setShowcase(db, "sc-u4", ["shiny-10"]); // replaces, doesn't append
+    expect(second.ok).toBe(true);
+    expect(await getShowcase(db, "sc-u4")).toEqual(["shiny-10", null, null, null, null, null]);
   });
 });

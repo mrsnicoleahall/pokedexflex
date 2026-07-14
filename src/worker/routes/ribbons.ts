@@ -2,9 +2,16 @@ import { Hono } from "hono";
 import { and, count, countDistinct, eq, isNotNull } from "drizzle-orm";
 import { getDb } from "../db";
 import { species, forms, specimens, boxes } from "../../db/schema";
-import { getCurrentUser } from "../auth/current-user";
+import { getCurrentUser, requireUser } from "../auth/current-user";
 import { computeRibbons, isSixIv, type CollectionSummary, type ReferenceData } from "../ribbons/catalog";
-import { syncEarnedRibbons, loadUserRibbonRows, ribbonRarity } from "../ribbons/incentive-store";
+import {
+  syncEarnedRibbons,
+  loadUserRibbonRows,
+  ribbonRarity,
+  getShowcase,
+  setShowcase,
+  SHOWCASE_SLOTS,
+} from "../ribbons/incentive-store";
 
 export const ribbonRoutes = new Hono<{ Bindings: Env }>();
 
@@ -141,11 +148,33 @@ ribbonRoutes.get("/", async (c) => {
   }
 
   const rarity = await ribbonRarity(db);
+  const showcase = user ? await getShowcase(db, user.id) : new Array(SHOWCASE_SLOTS).fill(null);
   const ribbonsOut = ribbons.map((r) => ({
     ...r,
     newlyEarned: newlyEarnedIds.has(r.id),
     rarityPct: rarity.totalUsers > 0 ? (rarity.counts.get(r.id) ?? 0) / rarity.totalUsers : 0,
   }));
 
-  return c.json({ ribbons: ribbonsOut, earnedCount: ribbons.filter((r) => r.earned).length, total: ribbons.length });
+  return c.json({
+    ribbons: ribbonsOut,
+    earnedCount: ribbons.filter((r) => r.earned).length,
+    total: ribbons.length,
+    showcase,
+  });
+});
+
+ribbonRoutes.put("/showcase", async (c) => {
+  const user = await requireUser(c);
+  const db = getDb(c.env.DB);
+
+  const body = await c.req.json().catch(() => null);
+  const ribbonIds = Array.isArray(body?.ribbonIds) ? body.ribbonIds : null;
+  if (!ribbonIds || !ribbonIds.every((id: unknown) => typeof id === "string")) {
+    return c.json({ errors: ["ribbonIds must be an array of strings"] }, 400);
+  }
+
+  const result = await setShowcase(db, user.id, ribbonIds);
+  if (!result.ok) return c.json({ errors: result.errors }, 400);
+
+  return c.json({ showcase: await getShowcase(db, user.id) });
 });

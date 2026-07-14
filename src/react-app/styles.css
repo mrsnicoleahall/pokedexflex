@@ -1680,7 +1680,7 @@ a {
 }
 .ribbon-frame__glyph {
 	position: absolute;
-	top: 42%;
+	top: 48%;
 	left: 50%;
 	transform: translate(-50%, -50%);
 	display: inline-flex;

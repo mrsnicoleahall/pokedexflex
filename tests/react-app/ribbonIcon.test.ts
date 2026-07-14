@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { resolveRibbonIcon } from "../../src/react-app/ribbons/ribbonIcon";
+import { resolveRibbonIcon } from "../../src/react-app/ribbons/ribbonIconResolver";
 import { typeColor } from "../../src/react-app/theme";
 
 describe("resolveRibbonIcon", () => {

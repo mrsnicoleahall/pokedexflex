@@ -5,7 +5,7 @@
 import { TypeIcon } from "../components/TypeIcon";
 import { typeColor } from "../theme";
 import { RibbonFrame } from "./RibbonFrame";
-import { resolveRibbonIcon, type RibbonGlyph } from "./ribbonIcon";
+import { resolveRibbonIcon, type RibbonGlyph } from "./ribbonIconResolver";
 
 function Glyph({ glyph, color, size }: { glyph: RibbonGlyph; color: string; size: number }) {
 	if (glyph.kind === "type") return <TypeIcon type={glyph.type} color={color} size={size} />;

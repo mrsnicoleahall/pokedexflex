@@ -7,6 +7,11 @@
  * reusable from the route layer (see Task 2).
  */
 
+import {
+  LEGENDARY_PROPER_IDS, MYTHICAL_IDS, FOSSIL_IDS, BABY_IDS, ULTRA_BEAST_IDS, PARADOX_IDS,
+} from "./species-sets";
+import { STARTER_FINAL_IDS, PSEUDO_IDS } from "../rarity/priors";
+
 export type CollectionSummary = {
   speciesIds: Set<number>;
   formIds: Set<number>;
@@ -171,11 +176,12 @@ const tieredResult = (
  * Order (stable, deterministic): living-dex, complete-dex-forms, regional
  * gens (1..9, ascending, only generations present in ref.species), national
  * dex % tiers (25/50/75/100), types (alphabetical, only types present in
- * ref.species), form-fanatic (mega, regional,
- * gigantamax), form-sets (species with >=4 forms, sorted by speciesId),
- * shiny (10/50/100), event (10/50/100), Fun (funny/easter-egg ribbons,
- * appended last; most are `secret: true` and should render hidden as "???"
- * in the UI until earned).
+ * ref.species), rarity class (starters, legendaries, mythicals, pseudo,
+ * fossils, babies, ultra beasts, paradox — fixed order), form-fanatic (mega,
+ * regional, gigantamax), form-sets (species with >=4 forms, sorted by
+ * speciesId), shiny (10/50/100), event (10/50/100), Fun (funny/easter-egg
+ * ribbons, appended last; most are `secret: true` and should render hidden as
+ * "???" in the UI until earned).
  */
 export function computeRibbons(summary: CollectionSummary, ref: ReferenceData): RibbonResult[] {
   const results: RibbonResult[] = [];
@@ -255,6 +261,29 @@ export function computeRibbons(summary: CollectionSummary, ref: ReferenceData): 
       name: `${capitalize(type)} Type Master`,
       description: `Own every ${type}-type species.`,
       category: "Type",
+      earned: p.earned,
+      progress: { current: p.current, total: p.total },
+    });
+  }
+
+  // rarity-{class}: own every member of a curated rarity-class set.
+  const RARITY_SETS: { id: string; name: string; label: string; ids: readonly number[] }[] = [
+    { id: "rarity-starters", name: "Starter Squad", label: "final-stage starter", ids: [...STARTER_FINAL_IDS] },
+    { id: "rarity-legendaries", name: "Legendary Keeper", label: "Legendary", ids: LEGENDARY_PROPER_IDS },
+    { id: "rarity-mythicals", name: "Mythic Hoard", label: "Mythical", ids: MYTHICAL_IDS },
+    { id: "rarity-pseudo", name: "Pseudo Powerhouse", label: "pseudo-legendary", ids: [...PSEUDO_IDS] },
+    { id: "rarity-fossils", name: "Fossil Restorer", label: "Fossil", ids: FOSSIL_IDS },
+    { id: "rarity-babies", name: "Baby Boom", label: "Baby", ids: BABY_IDS },
+    { id: "rarity-ultra-beasts", name: "Beyond the Wormhole", label: "Ultra Beast", ids: ULTRA_BEAST_IDS },
+    { id: "rarity-paradox", name: "Temporal Anomaly", label: "Paradox", ids: PARADOX_IDS },
+  ];
+  for (const set of RARITY_SETS) {
+    const p = progressFor(summary.speciesIds, [...set.ids]);
+    results.push({
+      id: set.id,
+      name: set.name,
+      description: `Own every ${set.label} Pokémon.`,
+      category: "Rarity Class",
       earned: p.earned,
       progress: { current: p.current, total: p.total },
     });

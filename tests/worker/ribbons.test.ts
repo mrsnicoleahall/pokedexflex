@@ -316,4 +316,25 @@ describe("computeRibbons", () => {
     expect(byId(results, "national-dex-75").earned).toBe(false);
     expect(byId(results, "national-dex-100").earned).toBe(false);
   });
+
+  it("adds eight Rarity Class ribbons, each earned only when the whole set is owned", () => {
+    const results = computeRibbons(emptySummary, ref);
+    const ids = results.filter((r) => r.category === "Rarity Class").map((r) => r.id);
+    expect(ids).toEqual([
+      "rarity-starters", "rarity-legendaries", "rarity-mythicals", "rarity-pseudo",
+      "rarity-fossils", "rarity-babies", "rarity-ultra-beasts", "rarity-paradox",
+    ]);
+    // total reflects the curated set size regardless of ref contents.
+    const ub = results.find((r) => r.id === "rarity-ultra-beasts")!;
+    expect(ub.progress.total).toBe(11);
+    expect(ub.earned).toBe(false);
+  });
+
+  it("earns rarity-babies once every baby species id is owned", () => {
+    const babyIds = [172, 173, 174, 175, 236, 238, 239, 240, 298, 360, 406, 433, 438, 439, 440, 446, 447, 458, 848];
+    const results = computeRibbons({ ...emptySummary, speciesIds: new Set(babyIds) }, ref);
+    const babies = results.find((r) => r.id === "rarity-babies")!;
+    expect(babies.earned).toBe(true);
+    expect(babies.progress).toEqual({ current: 19, total: 19 });
+  });
 });

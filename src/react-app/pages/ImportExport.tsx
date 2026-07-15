@@ -590,7 +590,7 @@ export function ImportExport() {
 			<section className="settings-section impexp-section">
 				<h2 className="settings-section__title">Import</h2>
 				<p className="settings-section__hint">
-					Bring in specimens from a CSV (e.g. exported from a spreadsheet) or a PokeDexFlex JSON export.
+					Bring in specimens from a CSV (e.g. exported from a spreadsheet) or a PokéDexFlex JSON export.
 				</p>
 
 				<div className="tabs" role="tablist" aria-label="Import format">
@@ -779,7 +779,7 @@ export function ImportExport() {
 
 				{photoVisionUnavailable && (
 					<p className="photo-import__unavailable" role="status">
-						📷 Photo recognition activates once PokeDexFlex is deployed with the AI service. For now, use
+						📷 Photo recognition activates once PokéDexFlex is deployed with the AI service. For now, use
 						CSV/JSON import or add Pokémon manually.
 					</p>
 				)}

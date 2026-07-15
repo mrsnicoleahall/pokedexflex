@@ -15,7 +15,7 @@ import { fetchPublicProfile, type PublicProfileDto } from "../api";
 import { Avatar } from "../components/Avatar";
 import { FavoritesStrip } from "../components/FavoritesStrip";
 import { RankBadge } from "../components/RankBadge";
-import { ThemeToggle } from "../components/ThemeToggle";
+import { PublicHeader } from "../components/PublicHeader";
 import { RibbonIcon } from "../ribbons/RibbonIcon";
 import { PATHS, versusPath } from "../routes";
 
@@ -24,21 +24,6 @@ type LoadState =
 	| { status: "not_found" }
 	| { status: "error" }
 	| { status: "ok"; profile: PublicProfileDto };
-
-function PublicHeader() {
-	return (
-		<header className="toolbar public-profile__bar">
-			<div className="toolbar__inner container">
-				<Link className="wordmark" to={PATHS.home}>
-					PokeDexFlex
-				</Link>
-				<div className="toolbar__controls">
-					<ThemeToggle />
-				</div>
-			</div>
-		</header>
-	);
-}
 
 export function PublicProfile() {
 	const { handle } = useParams<{ handle: string }>();
@@ -71,7 +56,7 @@ export function PublicProfile() {
 						<p className="state__title">Trainer not found</p>
 						<p className="state__hint">
 							This profile doesn't exist or is private.{" "}
-							<Link to={PATHS.home}>Back to PokeDexFlex</Link>
+							<Link to={PATHS.home}>Back to PokéDexFlex</Link>
 						</p>
 					</div>
 				)}
@@ -80,7 +65,7 @@ export function PublicProfile() {
 					<div className="state">
 						<p className="state__title">Something went wrong</p>
 						<p className="state__hint">
-							Couldn't load this profile. <Link to={PATHS.home}>Back to PokeDexFlex</Link>
+							Couldn't load this profile. <Link to={PATHS.home}>Back to PokéDexFlex</Link>
 						</p>
 					</div>
 				)}

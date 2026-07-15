@@ -14,7 +14,7 @@ import { fetchVersus, saveRivalry, type VersusDto, type VersusRoundDto, type Ver
 import { Avatar } from "../components/Avatar";
 import { FavoritesStrip } from "../components/FavoritesStrip";
 import { RankBadge } from "../components/RankBadge";
-import { ThemeToggle } from "../components/ThemeToggle";
+import { PublicHeader } from "../components/PublicHeader";
 import { TypeIcon } from "../components/TypeIcon";
 import { RibbonIcon } from "../ribbons/RibbonIcon";
 import { PATHS } from "../routes";
@@ -34,21 +34,6 @@ type LoadState =
 	| { status: "not_found" }
 	| { status: "error" }
 	| { status: "ok"; versus: VersusDto };
-
-function PublicHeader() {
-	return (
-		<header className="toolbar public-profile__bar">
-			<div className="toolbar__inner container">
-				<Link className="wordmark" to={PATHS.home}>
-					PokeDexFlex
-				</Link>
-				<div className="toolbar__controls">
-					<ThemeToggle />
-				</div>
-			</div>
-		</header>
-	);
-}
 
 export function Versus() {
 	const { a, b } = useParams<{ a: string; b: string }>();
@@ -81,7 +66,7 @@ export function Versus() {
 						<p className="state__title">Matchup unavailable</p>
 						<p className="state__hint">
 							One or both trainers don't exist or are private.{" "}
-							<Link to={PATHS.home}>Back to PokeDexFlex</Link>
+							<Link to={PATHS.home}>Back to PokéDexFlex</Link>
 						</p>
 					</div>
 				)}
@@ -90,7 +75,7 @@ export function Versus() {
 					<div className="state">
 						<p className="state__title">Something went wrong</p>
 						<p className="state__hint">
-							Couldn't load this matchup. <Link to={PATHS.home}>Back to PokeDexFlex</Link>
+							Couldn't load this matchup. <Link to={PATHS.home}>Back to PokéDexFlex</Link>
 						</p>
 					</div>
 				)}

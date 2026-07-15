@@ -30,9 +30,9 @@ class ResendEmailSender implements EmailSender {
       body: JSON.stringify({
         from: this.from,
         to: [email],
-        subject: "Your PokeDexFlex login link",
-        text: `Sign in to PokeDexFlex: ${link}\n\nThis link expires in 15 minutes.`,
-        html: `<p>Sign in to <strong>PokeDexFlex</strong>:</p><p><a href="${link}">${link}</a></p><p>This link expires in 15 minutes.</p>`,
+        subject: "Your PokéDexFlex login link",
+        text: `Sign in to PokéDexFlex: ${link}\n\nThis link expires in 15 minutes.`,
+        html: `<p>Sign in to <strong>PokéDexFlex</strong>:</p><p><a href="${link}">${link}</a></p><p>This link expires in 15 minutes.</p>`,
       }),
     });
     if (!res.ok) {
@@ -57,6 +57,6 @@ type EmailEnv = { RESEND_API_KEY?: string; EMAIL_FROM?: string };
 export const getEmailSender = (env: Env): EmailSender => {
   const e = env as unknown as EmailEnv;
   if (!e.RESEND_API_KEY) return new DevEmailSender();
-  const from = e.EMAIL_FROM ?? "PokeDexFlex <onboarding@resend.dev>";
+  const from = e.EMAIL_FROM ?? "PokéDexFlex <onboarding@resend.dev>";
   return new ResendEmailSender(e.RESEND_API_KEY, from);
 };

@@ -15,7 +15,7 @@ import { useAuth } from "../auth/AuthProvider";
 import { fetchLeaderboard, type LeaderboardEntryDto, type LeaderboardResponse } from "../api";
 import { Avatar } from "../components/Avatar";
 import { RankBadge } from "../components/RankBadge";
-import { ThemeToggle } from "../components/ThemeToggle";
+import { PublicHeader } from "../components/PublicHeader";
 import { PATHS, publicProfilePath } from "../routes";
 import {
 	LEADERBOARD_TABS,
@@ -28,21 +28,6 @@ type LoadState =
 	| { status: "loading" }
 	| { status: "error" }
 	| { status: "ok"; data: LeaderboardResponse };
-
-function PublicHeader() {
-	return (
-		<header className="toolbar public-profile__bar">
-			<div className="toolbar__inner container">
-				<Link className="wordmark" to={PATHS.home}>
-					PokeDexFlex
-				</Link>
-				<div className="toolbar__controls">
-					<ThemeToggle />
-				</div>
-			</div>
-		</header>
-	);
-}
 
 export function Leaderboard() {
 	const { user } = useAuth();
@@ -101,7 +86,7 @@ export function Leaderboard() {
 					<div className="state">
 						<p className="state__title">No trainers yet</p>
 						<p className="state__hint">
-							Be the first — set a public handle in Settings. <Link to={PATHS.home}>Back home</Link>
+							Be the first. Set a public handle in Settings. <Link to={PATHS.home}>Back home</Link>
 						</p>
 					</div>
 				)}

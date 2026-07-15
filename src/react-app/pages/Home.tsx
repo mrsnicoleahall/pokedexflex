@@ -67,7 +67,6 @@ export function Home({ onBrowse, onNavigate }: HomeProps) {
 					</div>
 				) : (
 					<div className="landing__hero-inner">
-						<img src="/brand/icon-512.png" alt="" className="landing__emblem" />
 						<div className="hero__intro">
 							<p className="hero__eyebrow">PokéDexFlex</p>
 							<h1 className="hero__title">Catch &apos;em all. Then flex &apos;em all.</h1>

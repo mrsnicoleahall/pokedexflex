@@ -2573,27 +2573,6 @@ a {
 	flex-wrap: wrap;
 }
 
-.landing__emblem {
-	width: clamp(80px, 11vw, 128px);
-	height: auto;
-	flex: none;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-	.landing__emblem {
-		animation: landing-emblem-sheen 6s ease-in-out infinite;
-	}
-}
-
-@keyframes landing-emblem-sheen {
-	0%,
-	100% {
-		filter: drop-shadow(0 0 0 transparent);
-	}
-	50% {
-		filter: drop-shadow(0 0 24px color-mix(in srgb, var(--brand-cyan) 55%, transparent));
-	}
-}
 
 .landing__stats {
 	display: flex;

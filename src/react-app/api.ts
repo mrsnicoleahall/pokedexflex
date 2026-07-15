@@ -650,3 +650,62 @@ export async function fetchPublicProfile(handle: string): Promise<PublicProfileD
 	const body = await handleJson<{ profile: PublicProfileDto }>(res, "fetch public profile");
 	return body.profile;
 }
+
+/* ---------- Versus (Flex Phase G) ---------- */
+
+export type VersusRoundDto = {
+	key: "strength" | "diversity" | "completion" | "shiny" | "ribbons" | "rarity";
+	label: string;
+	/** "percent" values are 0..1 fractions the UI renders as a percentage; "int" are raw counts. */
+	format: "int" | "percent";
+	a: number;
+	b: number;
+	winner: "a" | "b" | "tie";
+};
+
+export type VersusOutcomeDto = {
+	winner: "a" | "b" | "tie";
+	aWins: number;
+	bWins: number;
+	ties: number;
+};
+
+export type VersusSideDto = {
+	/** Only used to build the public avatar URL (`avatarUrl(userId)`); no other user id is exposed. */
+	userId: string;
+	handle: string;
+	displayName: string | null;
+	gender: string | null;
+	hasAvatar: boolean;
+	trainerScore: number;
+	rank: string;
+	favorites: FavoriteDto[];
+	showcase: PublicShowcaseRibbon[];
+	stats: PublicProfileStats;
+	/** Owned distinct-species count per lowercase type (sparse — only present types). */
+	byType: Record<string, number>;
+	/** Owned distinct-species count per generation, keyed by the number as a string (sparse). */
+	byGen: Record<string, number>;
+};
+
+export type VersusDto = {
+	a: VersusSideDto;
+	b: VersusSideDto;
+	rounds: VersusRoundDto[];
+	outcome: VersusOutcomeDto;
+	verdict: string;
+};
+
+/**
+ * Fetches a public head-to-head comparison of two trainers by handle. Returns
+ * `null` for a 404 — which covers an unknown handle OR a private trainer on
+ * either side (the server makes them indistinguishable on purpose). Never
+ * sends credentials; the endpoint is public and returns no account-private
+ * data for either side.
+ */
+export async function fetchVersus(a: string, b: string): Promise<VersusDto | null> {
+	const res = await fetch(`/api/versus/${encodeURIComponent(a)}/${encodeURIComponent(b)}`);
+	if (res.status === 404) return null;
+	const body = await handleJson<{ versus: VersusDto }>(res, "fetch versus");
+	return body.versus;
+}

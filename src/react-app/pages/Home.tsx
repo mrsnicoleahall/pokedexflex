@@ -12,6 +12,7 @@ import { EarnMomentToast } from "../components/EarnMomentToast";
 import { RankBadge } from "../components/RankBadge";
 import { SignInPanel } from "../components/SignInPanel";
 import { useAuth } from "../auth/AuthProvider";
+import { NudgeList } from "../ribbons/NudgeList";
 import { TrophyWall } from "../ribbons/TrophyWall";
 import { useRibbonsData } from "../ribbons/useRibbonsData";
 import { heroAura } from "../theme";
@@ -24,7 +25,7 @@ type HomeProps = {
 export function Home({ onBrowse, onNavigate }: HomeProps) {
 	const { user } = useAuth();
 	const [signInOpen, setSignInOpen] = useState(false);
-	const { trainerScore, rank, showcase, ribbons, newlyEarned, ackSeen } = useRibbonsData();
+	const { trainerScore, rank, showcase, ribbons, nearest, newlyEarned, ackSeen } = useRibbonsData();
 
 	return (
 		<div className="container page">
@@ -70,6 +71,7 @@ export function Home({ onBrowse, onNavigate }: HomeProps) {
 				)}
 			</section>
 			{user && <TrophyWall showcase={showcase} ribbons={ribbons} />}
+			{user && <NudgeList nearest={nearest} />}
 			{signInOpen && <SignInPanel onClose={() => setSignInOpen(false)} />}
 		</div>
 	);

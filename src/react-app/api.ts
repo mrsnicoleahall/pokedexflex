@@ -709,3 +709,42 @@ export async function fetchVersus(a: string, b: string): Promise<VersusDto | nul
 	const body = await handleJson<{ versus: VersusDto }>(res, "fetch versus");
 	return body.versus;
 }
+
+export type RivalryDto = {
+	id: string;
+	/** Stable opponent id — build the avatar URL / read-only references from this, never a handle. */
+	opponentUserId: string;
+	/** The opponent's CURRENT handle (may have changed since you saved them); null if they cleared it. */
+	handle: string | null;
+	displayName: string | null;
+	hasAvatar: boolean;
+	/** False if the opponent has since gone private — a rematch link would 404. */
+	isPublic: boolean;
+	createdAt: number;
+};
+
+/** Saves a rivalry against a public trainer by handle. Returns the refreshed list. */
+export async function saveRivalry(handle: string): Promise<{ rivalries: RivalryDto[] }> {
+	const res = await fetch("/api/rivalries", {
+		method: "POST",
+		credentials: "include",
+		headers: { "Content-Type": "application/json" },
+		body: JSON.stringify({ handle }),
+	});
+	return handleJson<{ rivalries: RivalryDto[] }>(res, "save rivalry");
+}
+
+/** Lists the signed-in user's saved rivalries (newest first). */
+export async function listRivalries(): Promise<{ rivalries: RivalryDto[] }> {
+	const res = await fetch("/api/rivalries", { credentials: "include" });
+	return handleJson<{ rivalries: RivalryDto[] }>(res, "list rivalries");
+}
+
+/** Deletes one saved rivalry by id. */
+export async function deleteRivalry(id: string): Promise<void> {
+	const res = await fetch(`/api/rivalries/${encodeURIComponent(id)}`, {
+		method: "DELETE",
+		credentials: "include",
+	});
+	await handleJson<{ ok: boolean }>(res, "delete rivalry");
+}

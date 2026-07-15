@@ -2,7 +2,7 @@ import { env } from "cloudflare:test";
 import { describe, it, expect } from "vitest";
 import { eq } from "drizzle-orm";
 import { getDb } from "../../src/worker/db";
-import { species, forms, users, boxes, specimens, events, userRibbons, userShowcase, userFavorites } from "../../src/db/schema";
+import { species, forms, users, boxes, specimens, events, userRibbons, userShowcase, userFavorites, rivalries } from "../../src/db/schema";
 
 describe("reference schema", () => {
   it("inserts a species with a form", async () => {
@@ -247,6 +247,25 @@ describe("public profile schema (handle + isPublic)", () => {
     await db.insert(users).values({ id: "puA", email: "puA@x.com", handle: "dupe-handle", createdAt: 1 });
     await expect(
       db.insert(users).values({ id: "puB", email: "puB@x.com", handle: "dupe-handle", createdAt: 1 }),
+    ).rejects.toThrow();
+  });
+});
+
+describe("rivalries schema", () => {
+  it("round-trips a rivalry and enforces (userId, opponentUserId) uniqueness", async () => {
+    const db = getDb(env.DB);
+    await db.insert(users).values([
+      { id: "riv-owner", email: "riv-owner@x.com", createdAt: 1 },
+      { id: "riv-opp", email: "riv-opp@x.com", createdAt: 1 },
+    ]);
+    await db.insert(rivalries).values({ id: "riv-1", userId: "riv-owner", opponentUserId: "riv-opp", createdAt: 10 });
+
+    const [row] = await db.select().from(rivalries).where(eq(rivalries.id, "riv-1"));
+    expect(row.userId).toBe("riv-owner");
+    expect(row.opponentUserId).toBe("riv-opp");
+
+    await expect(
+      db.insert(rivalries).values({ id: "riv-2", userId: "riv-owner", opponentUserId: "riv-opp", createdAt: 11 }),
     ).rejects.toThrow();
   });
 });

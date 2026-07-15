@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { deleteCookie, getSignedCookie, setSignedCookie } from "hono/cookie";
-import { and, eq, gt, isNull } from "drizzle-orm";
-import { boxes, importJobs, loginTokens, specimens, sessions as sessionsTable, users } from "../../db/schema";
+import { and, eq, gt, isNull, or } from "drizzle-orm";
+import { boxes, importJobs, loginTokens, rivalries, specimens, sessions as sessionsTable, users } from "../../db/schema";
 import { getDb } from "../db";
 import { generateToken, hashToken } from "../auth/tokens";
 import { createSession, deleteSession, SESSION_COOKIE } from "../auth/session";
@@ -98,6 +98,7 @@ authRoutes.delete("/account", async (c) => {
     db.delete(boxes).where(eq(boxes.userId, user.id)),
     db.delete(sessionsTable).where(eq(sessionsTable.userId, user.id)),
     db.delete(loginTokens).where(eq(loginTokens.email, user.email)),
+    db.delete(rivalries).where(or(eq(rivalries.userId, user.id), eq(rivalries.opponentUserId, user.id))),
     db.delete(users).where(eq(users.id, user.id)),
   ]);
   deleteCookie(c, SESSION_COOKIE, { path: "/" });

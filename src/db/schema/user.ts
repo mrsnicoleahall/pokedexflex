@@ -135,3 +135,22 @@ export const userFavorites = sqliteTable(
     unique("user_favorites_user_id_species_id_unique").on(t.userId, t.speciesId),
   ],
 );
+
+/**
+ * A signed-in user's saved rivalries. The opponent is stored by the STABLE
+ * `opponentUserId` (resolved from their handle at save time), NOT by handle —
+ * handles are user-editable (Settings), so a handle would break the saved
+ * rivalry the moment the opponent renamed themselves. The opponent's CURRENT
+ * handle/name is joined from `users` at read time. Unique per (owner,
+ * opponent) so the same rival can't be saved twice.
+ */
+export const rivalries = sqliteTable(
+  "rivalries",
+  {
+    id: text("id").primaryKey(),
+    userId: text("user_id").notNull().references(() => users.id),
+    opponentUserId: text("opponent_user_id").notNull().references(() => users.id),
+    createdAt: integer("created_at").notNull(),
+  },
+  (t) => [unique("rivalries_user_id_opponent_user_id_unique").on(t.userId, t.opponentUserId)],
+);

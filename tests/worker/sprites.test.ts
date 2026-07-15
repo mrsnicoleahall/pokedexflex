@@ -52,11 +52,26 @@ describe("sprite routes", () => {
     expect(res.headers.get("content-type")).toContain("image/png");
   });
 
-  it("400s a non-numeric id", async () => {
-    const res = await call("/sprites/home/abc");
+  it("400s a key with invalid characters", async () => {
+    const res = await call("/sprites/home/ABC"); // uppercase is outside the slug charset
     expect(res.status).toBe(400);
     const body = await res.json();
     expect(body).toEqual({ error: "bad_id" });
+  });
+
+  it("serves a HOME 3D sprite by form slug (cosmetic variants live here too)", async () => {
+    globalThis.fetch = (async (input: RequestInfo | URL) => {
+      const url = String(input);
+      expect(url).toBe(
+        "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/home/669-blue.png",
+      );
+      return new Response(FAKE_PNG, { status: 200, headers: { "content-type": "image/png" } });
+    }) as typeof globalThis.fetch;
+
+    const res = await call("/sprites/home/669-blue");
+    expect(res.status).toBe(200);
+    const cached = await env.SPRITES.get("home/669-blue.png");
+    expect(cached).not.toBeNull();
   });
 
   it("404s when upstream returns non-200", async () => {

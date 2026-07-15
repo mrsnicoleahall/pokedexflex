@@ -113,8 +113,18 @@ export function spriteUrl(homeId: number, shiny = false): string {
 }
 
 /**
+ * URL for a HOME 3D sprite by key — a numeric national id OR a form slug
+ * ("669-blue", "666-icy-snow"). HOME renders exist for cosmetic variants under
+ * these slugs, so the Forms gallery can show 3D instead of the 2D sprite.
+ */
+export function homeSpriteUrl(key: string | number): string {
+	return `/sprites/home/${key}`;
+}
+
+/**
  * URL for an alternate-form sprite (Forms gallery) via the 2D-default-set
  * proxy route. `slug` is the PokeAPI sprite filename stem (e.g. "666-icy-snow").
+ * Used only as a fallback when no HOME render exists.
  */
 export function formSpriteUrl(slug: string): string {
 	return `/sprites/form/${slug}`;

@@ -14,7 +14,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "../auth/AuthProvider";
 import { createSpecimen, fetchForms } from "../api";
 import { groupForms, type GalleryForm, type GalleryGroup } from "../forms/formsDisplay";
-import { formSpriteUrl, spriteUrl } from "../theme";
+import { formSpriteUrl, homeSpriteUrl } from "../theme";
 
 type LoadState =
 	| { status: "loading" }
@@ -131,7 +131,7 @@ export function Forms() {
 
 // Grayed-out fallback shown when a form has no sprite anywhere: the base
 // Pikachu sprite (served natively through our proxy) rendered as a silhouette.
-const SILHOUETTE_URL = spriteUrl(25);
+const SILHOUETTE_URL = homeSpriteUrl(25);
 
 /**
  * A form's sprite with a graceful fallback chain: the large HOME 3D render if
@@ -142,7 +142,11 @@ const SILHOUETTE_URL = spriteUrl(25);
 function FormSprite({ form, size, frameClassName }: { form: GalleryForm; size: number; frameClassName: string }) {
 	const sources = useMemo(() => {
 		const s: Array<{ url: string; pixel: boolean }> = [];
-		if (form.homeId !== null) s.push({ url: spriteUrl(form.homeId), pixel: false });
+		// Prefer the 3D HOME render. It exists for cosmetic variants too, keyed by
+		// the sprite slug ("669-blue", "666-icy-snow"), not just numeric ids — so
+		// try the slug first, then the numeric home id, before the pixel 2D sprite.
+		if (form.slug) s.push({ url: homeSpriteUrl(form.slug), pixel: false });
+		if (form.homeId !== null) s.push({ url: homeSpriteUrl(form.homeId), pixel: false });
 		if (form.slug) s.push({ url: formSpriteUrl(form.slug), pixel: true });
 		return s;
 	}, [form.homeId, form.slug]);

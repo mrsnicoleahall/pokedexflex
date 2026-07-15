@@ -44,7 +44,7 @@ const FAKE_PNG = new Uint8Array([0x89, 0x50, 0x4e, 0x47, 1, 2, 3, 4]);
 const signIn = async (email: string): Promise<string> => {
   const r1 = await postJson("/api/auth/request-link", { email });
   const { devLink } = (await r1.json()) as any;
-  const path = new URL(devLink).pathname + new URL(devLink).search;
+  const path = `/api/auth/verify?token=${new URL(devLink).searchParams.get("token")}`;
   const verify = await call(path, { redirect: "manual" } as any);
   const setCookie = verify.headers.get("set-cookie")!;
   return setCookie.split(";")[0];

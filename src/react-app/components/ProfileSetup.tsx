@@ -62,7 +62,7 @@ export function ProfileSetup() {
 			<p className="profile-setup__hint">
 				Before you dive in, tell us a bit about yourself. Your name and gender are required; a
 				photo and favorites are optional and can be added later from Settings. We'll also set up a
-				public trainer page for you — you can customize its link or make it private anytime in
+				public trainer page for you. You can customize its link or make it private anytime in
 				Settings.
 			</p>
 			{error && (

@@ -58,7 +58,7 @@ function ribbonAccentColor(ribbon: RibbonDto): string {
 
 /** Secret ribbons stay unrevealed until earned: no name, no criteria, just a nudge to keep playing. */
 const SECRET_HIDDEN_NAME = "???";
-const SECRET_HIDDEN_DESC = "Secret ribbon — keep collecting to reveal it.";
+const SECRET_HIDDEN_DESC = "Secret ribbon. Keep collecting to reveal it.";
 
 function RibbonCard({ ribbon }: { ribbon: RibbonDto }) {
 	const { current, total } = ribbon.progress;

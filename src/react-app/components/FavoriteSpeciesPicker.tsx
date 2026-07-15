@@ -79,7 +79,7 @@ export function FavoriteSpeciesPicker({
 					{selected.length} / {MAX_FAVORITES}
 				</span>
 			</div>
-			<p className="favorites-picker__hint">Optional — pin up to 3 species to show on your trainer card.</p>
+			<p className="favorites-picker__hint">Optional. Pin up to 3 species to show on your trainer card.</p>
 			{error && (
 				<p className="error-banner" role="alert">
 					Error: {error}

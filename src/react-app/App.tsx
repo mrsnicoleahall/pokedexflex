@@ -18,6 +18,7 @@ import { Home } from "./pages/Home";
 import { ImportExport } from "./pages/ImportExport";
 import { Leaderboard } from "./pages/Leaderboard";
 import { MyCollection } from "./pages/MyCollection";
+import { SignInVerify } from "./pages/SignInVerify";
 import { Progress } from "./pages/Progress";
 import { Ribbons } from "./pages/Ribbons";
 import { Settings } from "./pages/Settings";
@@ -57,6 +58,7 @@ function App() {
 				<Route path="/u/:handle" element={<PublicProfile />} />
 				<Route path="/versus/:a/:b" element={<Versus />} />
 				<Route path="/leaderboard" element={<Leaderboard />} />
+				<Route path="/signin" element={<SignInVerify />} />
 				<Route element={<AppLayout />}>
 					<Route index element={<HomeRoute />} />
 					<Route path="species" element={<SpeciesRoute />} />

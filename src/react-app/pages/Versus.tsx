@@ -137,7 +137,7 @@ function VersusBody({ versus }: { versus: VersusDto }) {
 							{saveState === "saved" ? "Rivalry saved" : saveState === "saving" ? "Saving…" : "Save rivalry"}
 						</button>
 					)}
-					{saveState === "error" && <p className="state__hint">Couldn't save — try again.</p>}
+					{saveState === "error" && <p className="state__hint">Couldn't save. Try again.</p>}
 				</div>
 
 				<div className="versus-card__side">

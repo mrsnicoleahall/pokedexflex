@@ -13,6 +13,11 @@ const call = async (path: string, init?: RequestInit, cookie?: string) => {
   await waitOnExecutionContext(ctx); return res;
 };
 
+// The emailed magic link now points at the client /signin page; the API verify
+// endpoint it calls is /api/auth/verify with the same token.
+const verifyPath = (devLink: string) =>
+  `/api/auth/verify?token=${new URL(devLink).searchParams.get("token")}`;
+
 describe("auth helpers", () => {
   it("token is random hex and hash is stable", async () => {
     const a = generateToken(), b = generateToken();
@@ -31,8 +36,8 @@ describe("auth helpers", () => {
   it("magic-link flow issues a session and /me returns the user", async () => {
     const r1 = await call("/api/auth/request-link", { method: "POST", headers: {"content-type":"application/json"}, body: JSON.stringify({ email: "new@x.com" }) });
     const { devLink } = await r1.json() as any;
-    expect(devLink).toContain("/api/auth/verify?token=");
-    const verify = await call(new URL(devLink).pathname + new URL(devLink).search, { redirect: "manual" } as any);
+    expect(devLink).toContain("/signin?token=");
+    const verify = await call(verifyPath(devLink), { redirect: "manual" } as any);
     const setCookie = verify.headers.get("set-cookie")!;
     expect(setCookie).toContain("pfd_session=");
     const cookie = setCookie.split(";")[0];
@@ -48,7 +53,7 @@ describe("auth helpers", () => {
     // token stays valid (issuing a fresh session each time) until it expires.
     const r1 = await call("/api/auth/request-link", { method: "POST", headers: {"content-type":"application/json"}, body: JSON.stringify({ email: "once@x.com" }) });
     const { devLink } = await r1.json() as any;
-    const path = new URL(devLink).pathname + new URL(devLink).search;
+    const path = verifyPath(devLink);
     const verify1 = await call(path, { redirect: "manual" } as any);
     expect(verify1.status).toBe(302);
     expect(verify1.headers.get("set-cookie")).toContain("pfd_session=");
@@ -65,7 +70,7 @@ describe("auth helpers", () => {
   it("normalizes email casing/whitespace on request-link so verify resolves to the lowercased email", async () => {
     const r1 = await call("/api/auth/request-link", { method: "POST", headers: {"content-type":"application/json"}, body: JSON.stringify({ email: "  Foo@X.COM  " }) });
     const { devLink } = await r1.json() as any;
-    const path = new URL(devLink).pathname + new URL(devLink).search;
+    const path = verifyPath(devLink);
     const verify = await call(path, { redirect: "manual" } as any);
     const cookie = verify.headers.get("set-cookie")!.split(";")[0];
     const me = await call("/api/auth/me", undefined, cookie);
@@ -74,7 +79,7 @@ describe("auth helpers", () => {
   it("/me returns gender=null and hasAvatar=false for a freshly created user", async () => {
     const r1 = await call("/api/auth/request-link", { method: "POST", headers: {"content-type":"application/json"}, body: JSON.stringify({ email: "profile-fresh@x.com" }) });
     const { devLink } = await r1.json() as any;
-    const path = new URL(devLink).pathname + new URL(devLink).search;
+    const path = verifyPath(devLink);
     const verify = await call(path, { redirect: "manual" } as any);
     const cookie = verify.headers.get("set-cookie")!.split(";")[0];
     const me = await call("/api/auth/me", undefined, cookie);
@@ -87,7 +92,7 @@ describe("auth helpers", () => {
   it("deleting an account with an avatar also removes the R2 object (best-effort)", async () => {
     const r1 = await call("/api/auth/request-link", { method: "POST", headers: {"content-type":"application/json"}, body: JSON.stringify({ email: "delete-with-avatar@x.com" }) });
     const { devLink } = await r1.json() as any;
-    const verify = await call(new URL(devLink).pathname + new URL(devLink).search, { redirect: "manual" } as any);
+    const verify = await call(verifyPath(devLink), { redirect: "manual" } as any);
     const cookie = verify.headers.get("set-cookie")!.split(";")[0];
     const me = await call("/api/auth/me", undefined, cookie);
     const userId = ((await me.json()) as any).user.id;
@@ -109,7 +114,7 @@ describe("auth helpers", () => {
   it("/me includes an empty favorites array by default", async () => {
     const r1 = await call("/api/auth/request-link", { method: "POST", headers: {"content-type":"application/json"}, body: JSON.stringify({ email: "favorites-fresh@x.com" }) });
     const { devLink } = await r1.json() as any;
-    const path = new URL(devLink).pathname + new URL(devLink).search;
+    const path = verifyPath(devLink);
     const verify = await call(path, { redirect: "manual" } as any);
     const cookie = verify.headers.get("set-cookie")!.split(";")[0];
     const me = await call("/api/auth/me", undefined, cookie);
@@ -119,7 +124,7 @@ describe("auth helpers", () => {
   it("/me returns handle=null and isPublic=true for a freshly created user", async () => {
     const r1 = await call("/api/auth/request-link", { method: "POST", headers: {"content-type":"application/json"}, body: JSON.stringify({ email: "handle-fresh@x.com" }) });
     const { devLink } = await r1.json() as any;
-    const path = new URL(devLink).pathname + new URL(devLink).search;
+    const path = verifyPath(devLink);
     const verify = await call(path, { redirect: "manual" } as any);
     const cookie = verify.headers.get("set-cookie")!.split(";")[0];
     const me = await call("/api/auth/me", undefined, cookie);

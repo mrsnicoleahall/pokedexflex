@@ -85,7 +85,7 @@ const PREVIEW_DISPLAY_LIMIT = 25;
 
 /** Message extraction shared by every async action below: a session-expiry hint for 401s, else the error's own message. */
 function describeError(err: unknown): string {
-	if (err instanceof AuthRequiredError) return "Your session expired — please sign in again.";
+	if (err instanceof AuthRequiredError) return "Your session expired. Please sign in again.";
 	return err instanceof Error ? err.message : String(err);
 }
 

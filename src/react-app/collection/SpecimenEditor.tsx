@@ -233,7 +233,7 @@ export function SpecimenEditor({ mode, initial, specimenId, onSaved, onClose }: 
 				if (cancelled) return;
 				setLoadError(
 					err instanceof AuthRequiredError
-						? "Your session expired — please sign in again."
+						? "Your session expired. Please sign in again."
 						: err instanceof Error
 							? err.message
 							: String(err),
@@ -348,7 +348,7 @@ export function SpecimenEditor({ mode, initial, specimenId, onSaved, onClose }: 
 			onSaved();
 		} catch (err) {
 			if (err instanceof ApiValidationError) setServerErrors(err.errors);
-			else if (err instanceof AuthRequiredError) setServerErrors(["Your session expired — please sign in again."]);
+			else if (err instanceof AuthRequiredError) setServerErrors(["Your session expired. Please sign in again."]);
 			else setServerErrors([err instanceof Error ? err.message : "Something went wrong. Please try again."]);
 		} finally {
 			setSaving(false);

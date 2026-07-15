@@ -144,7 +144,7 @@ export function MyCollection({ onBrowseSpecies }: MyCollectionProps) {
 					if (cancelled) return;
 					setError(
 						err instanceof AuthRequiredError
-							? "Your session expired — please sign in again."
+							? "Your session expired. Please sign in again."
 							: err instanceof Error
 								? err.message
 								: String(err),
@@ -183,7 +183,7 @@ export function MyCollection({ onBrowseSpecies }: MyCollectionProps) {
 			<div className="container page">
 				<div className="state">
 					<p className="state__title">Sign in to build your collection</p>
-					<p>Track every specimen you own — nicknames, IVs, ribbons, and more.</p>
+					<p>Track every specimen you own: nicknames, IVs, ribbons, and more.</p>
 					<button type="button" className="button button--primary" onClick={() => setSignInOpen(true)}>
 						Sign in
 					</button>
@@ -237,7 +237,7 @@ export function MyCollection({ onBrowseSpecies }: MyCollectionProps) {
 
 			{!loading && !error && items.length === 0 && isUnfiltered && (
 				<div className="state">
-					<p className="state__title">Your collection is empty — browse the dex and add your first Pokémon.</p>
+					<p className="state__title">Your collection is empty. Browse the dex and add your first Pokémon.</p>
 					<button type="button" className="button button--primary" onClick={onBrowseSpecies}>
 						Browse the Dex
 					</button>
@@ -246,7 +246,7 @@ export function MyCollection({ onBrowseSpecies }: MyCollectionProps) {
 
 			{!loading && !error && items.length === 0 && !isUnfiltered && (
 				<div className="state">
-					<span className="state__title">No specimens match — try another search or box.</span>
+					<span className="state__title">No specimens match. Try another search or box.</span>
 				</div>
 			)}
 

@@ -21,7 +21,7 @@ const putJson = (path: string, body: unknown, cookie?: string) =>
 const signIn = async (email: string): Promise<string> => {
   const r1 = await postJson("/api/auth/request-link", { email });
   const { devLink } = (await r1.json()) as any;
-  const path = new URL(devLink).pathname + new URL(devLink).search;
+  const path = `/api/auth/verify?token=${new URL(devLink).searchParams.get("token")}`;
   const verify = await call(path, { redirect: "manual" } as any);
   return verify.headers.get("set-cookie")!.split(";")[0];
 };

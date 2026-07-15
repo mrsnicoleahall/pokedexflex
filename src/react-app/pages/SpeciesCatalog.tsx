@@ -204,7 +204,7 @@ export function SpeciesCatalog({ q, gen }: SpeciesCatalogProps) {
 			{!loading && !error && items.length === 0 && (
 				<div className="state">
 					<span className="state__title">
-						{filtersActive ? "No Pokémon match these filters." : "No Pokémon match — try another name."}
+						{filtersActive ? "No Pokémon match these filters." : "No Pokémon match. Try another name."}
 					</span>
 				</div>
 			)}

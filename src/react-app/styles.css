@@ -1746,7 +1746,20 @@ a {
 
 @media (max-width: 640px) {
 	.toolbar__inner {
-		padding: 10px 16px;
+		padding: 12px 16px;
+		gap: 10px 12px;
+	}
+
+	/* Tabs become a full-width, evenly-split nav bar instead of a left-huddled
+	   cluster — reads as an intentional bar and uses the space. */
+	.tabs {
+		width: 100%;
+	}
+
+	.tab {
+		flex: 1;
+		text-align: center;
+		padding: 8px 10px;
 	}
 
 	.toolbar__controls {

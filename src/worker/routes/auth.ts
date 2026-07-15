@@ -28,7 +28,12 @@ authRoutes.post("/request-link", async (c) => {
     createdAt: Date.now(),
   });
 
-  const link = `${new URL(c.req.url).origin}/api/auth/verify?token=${raw}`;
+  // Point at the client /signin page, NOT the API endpoint directly. Clicking a
+  // magic link is a cross-site top-level navigation, and browsers do not
+  // reliably persist the SameSite=Lax session cookie set on that navigation's
+  // redirect. The /signin page instead completes sign-in with a SAME-ORIGIN
+  // fetch to /api/auth/verify, which sets the cookie reliably.
+  const link = `${new URL(c.req.url).origin}/signin?token=${raw}`;
   const { devLink } = await getEmailSender(c.env).sendLoginLink(email, link);
   return c.json({ ok: true, devLink });
 });

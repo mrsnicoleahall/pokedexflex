@@ -16,9 +16,9 @@ type SignInPanelProps = {
 };
 
 export function SignInPanel({ onClose }: SignInPanelProps) {
-	const { requestLink, refresh } = useAuth();
+	const { requestLink } = useAuth();
 	const [email, setEmail] = useState("");
-	const [status, setStatus] = useState<"idle" | "sending" | "sent" | "verifying">("idle");
+	const [status, setStatus] = useState<"idle" | "sending" | "sent">("idle");
 	const [devLink, setDevLink] = useState<string | undefined>(undefined);
 	const [error, setError] = useState<string | null>(null);
 	const inputRef = useRef<HTMLInputElement>(null);
@@ -51,21 +51,11 @@ export function SignInPanel({ onClose }: SignInPanelProps) {
 		}
 	}
 
-	// Complete the dev sign-in by fetching the verify endpoint (which sets the
-	// session cookie) rather than a full-page navigation — the latter can be
-	// intercepted by the dev server's SPA fallback. Then refresh the session.
-	async function handleDevVerify() {
-		if (!devLink) return;
-		setStatus("verifying");
-		setError(null);
-		try {
-			await fetch(devLink, { credentials: "include", redirect: "manual" });
-			await refresh();
-			onClose();
-		} catch {
-			setStatus("sent");
-			setError("Couldn't complete sign-in. Please try again.");
-		}
+	// Navigate to the /signin landing (same page the emailed magic link opens),
+	// which completes sign-in via a same-origin fetch. This exercises the exact
+	// production path rather than a dev-only shortcut.
+	function handleDevVerify() {
+		if (devLink) window.location.assign(devLink);
 	}
 
 	return createPortal(
@@ -86,18 +76,13 @@ export function SignInPanel({ onClose }: SignInPanelProps) {
 					</button>
 				</div>
 
-				{status === "sent" || status === "verifying" ? (
+				{status === "sent" ? (
 					<div className="modal__body">
 						{devLink ? (
 							<>
 								<p>Dev magic link ready:</p>
-								<button
-									type="button"
-									className="button button--primary"
-									onClick={handleDevVerify}
-									disabled={status === "verifying"}
-								>
-									{status === "verifying" ? "Signing in…" : "Sign in →"}
+								<button type="button" className="button button--primary" onClick={handleDevVerify}>
+									Sign in →
 								</button>
 							</>
 						) : (

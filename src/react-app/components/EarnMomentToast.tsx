@@ -23,7 +23,9 @@ export function EarnMomentToast({ ribbons, onDismiss }: { ribbons: RibbonDto[]; 
 					{ribbons.map((r) => (
 						<div className="earn-toast__item" key={r.id}>
 							<RibbonIcon ribbon={{ id: r.id, category: r.category }} size={56} />
-							<span className="earn-toast__name">{r.secret ? "???" : r.name}</span>
+							{/* Every ribbon here is freshly earned, so reveal its real name — this
+							    IS the payoff moment for secret/easter-egg ribbons (don't show "???"). */}
+							<span className="earn-toast__name">{r.name}</span>
 						</div>
 					))}
 				</div>

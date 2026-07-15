@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { eq, like, and, count, inArray } from "drizzle-orm";
+import { eq, like, and, count, inArray, asc, exists, notExists } from "drizzle-orm";
 import { getDb } from "../db";
 import { species, forms, specimens } from "../../db/schema";
 import { getCurrentUser } from "../auth/current-user";
@@ -16,9 +16,11 @@ const shape = (s: any, f: any[], owned: boolean, rarity: RarityTier) => ({
   rarity,
 });
 
-/** Fetches the current user's owned species-id set, once per request. Empty set for logged-out users. */
-const ownedSpeciesIds = async (c: any, db: ReturnType<typeof getDb>): Promise<Set<number>> => {
-  const user = await getCurrentUser(c);
+/** The given user's owned species-id set. Empty for a logged-out (null) user. */
+const ownedSpeciesIds = async (
+  db: ReturnType<typeof getDb>,
+  user: { id: string } | null,
+): Promise<Set<number>> => {
   if (!user) return new Set();
   const rows = await db
     .selectDistinct({ speciesId: specimens.speciesId })
@@ -31,19 +33,44 @@ speciesRoutes.get("/species", async (c) => {
   const db = getDb(c.env.DB);
   const q = c.req.query("q");
   const gen = c.req.query("gen");
+  const type = c.req.query("type");
+  const ownedFilter = c.req.query("owned"); // "owned" | "missing" | (else = all)
+  const sort = c.req.query("sort"); // "name" | (else = "dex", id asc)
   const limit = Math.min(Number(c.req.query("limit") ?? 60), 200);
   const offset = Number(c.req.query("offset") ?? 0);
+
+  // Resolve the caller once: needed both for the per-row `owned` flag and for
+  // the owned/missing filter's correlated subquery.
+  const user = await getCurrentUser(c);
+
   const conds = [];
   if (q) conds.push(like(species.name, `%${q.toLowerCase()}%`));
   if (gen) conds.push(eq(species.generation, Number(gen)));
+  // `types` is a JSON text array like ["fire","flying"]. Match the QUOTED slug
+  // so a type can't partial-match another; the 18 type tokens are mutually
+  // non-substring, so this LIKE is exact enough. Part of the shared WHERE, so
+  // `total` (the count query below) stays consistent with the page.
+  if (type) conds.push(like(species.types, `%"${type.toLowerCase()}"%`));
+  // owned/missing only when signed in; a signed-out request is treated as "all".
+  if (user && (ownedFilter === "owned" || ownedFilter === "missing")) {
+    const ownedSub = db
+      .select({ id: specimens.id })
+      .from(specimens)
+      .where(and(eq(specimens.userId, user.id), eq(specimens.speciesId, species.id)));
+    conds.push(ownedFilter === "owned" ? exists(ownedSub) : notExists(ownedSub));
+  }
   const where = conds.length ? and(...conds) : undefined;
-  const rows = await db.select().from(species).where(where).limit(limit).offset(offset);
+
+  const orderBy = sort === "name" ? asc(species.name) : asc(species.id);
+  const rows = await db.select().from(species).where(where).orderBy(orderBy).limit(limit).offset(offset);
   const [{ value: total }] = await db.select({ value: count() }).from(species).where(where);
-  const ids = rows.map(r => r.id);
+  const ids = rows.map((r) => r.id);
   const allForms = ids.length ? await db.select().from(forms).where(inArray(forms.speciesId, ids)) : [];
-  const owned = await ownedSpeciesIds(c, db);
+  const owned = await ownedSpeciesIds(db, user);
   const rarityMap = await getRarityMap(db);
-  const items = rows.map(s => shape(s, allForms.filter(f => f.speciesId === s.id), owned.has(s.id), rarityMap.get(s.id) ?? "common"));
+  const items = rows.map((s) =>
+    shape(s, allForms.filter((f) => f.speciesId === s.id), owned.has(s.id), rarityMap.get(s.id) ?? "common"),
+  );
   return c.json({ items, total });
 });
 
@@ -53,7 +80,8 @@ speciesRoutes.get("/species/:id", async (c) => {
   const [s] = await db.select().from(species).where(eq(species.id, id));
   if (!s) return c.json({ error: "not_found" }, 404);
   const f = await db.select().from(forms).where(eq(forms.speciesId, id));
-  const owned = await ownedSpeciesIds(c, db);
+  const user = await getCurrentUser(c);
+  const owned = await ownedSpeciesIds(db, user);
   const rarityMap = await getRarityMap(db);
   return c.json(shape(s, f, owned.has(id), rarityMap.get(id) ?? "common"));
 });

@@ -8,10 +8,10 @@ every species/form + event distribution, track your specimens, earn ribbons, imp
 and (in progress) a public "flex" layer with rarity, stats, profiles, and Versus.
 
 - **Repo:** `/Users/nicole/Projects/PokeWebBank` (folder name predates the product name)
-- **Working branch:** `flex-layer` @ **ca6dcc1** — NOT merged to `main` yet. All work committed.
+- **Working branch:** `flex-layer` @ **9082b96** — NOT merged to `main` yet. All work committed.
 - **Run locally:** `npm run db:local` (migrate + seed) then `npm run dev` → http://localhost:5173.
   Dev sign-in: enter any email; the magic-link appears on-screen — click it.
-- **Stack:** Cloudflare Workers + Hono · D1 (Drizzle) · R2 (sprite cache) · Workers AI (photo import, deploy-only) · Vite + React + TS. Tests: Vitest + `@cloudflare/vitest-pool-workers`. **Verify of record: `npx tsc -b` + `npm run build` + `npx vitest run` (currently 263 passing).**
+- **Stack:** Cloudflare Workers + Hono · D1 (Drizzle) · R2 (sprite cache) · Workers AI (photo import, deploy-only) · Vite + React + TS. Tests: Vitest + `@cloudflare/vitest-pool-workers`. **Verify of record: `npx tsc -b` + `npm run build` + `npx vitest run` (currently 311 passing).**
 
 ## The big arc: "Ribbons & Rivalry" expansion
 - **Spec (approved):** `docs/superpowers/specs/2026-07-14-ribbons-and-rivalry-design.md`
@@ -27,21 +27,11 @@ and (in progress) a public "flex" layer with rarity, stats, profiles, and Versus
 - **Side deliverables:** subtle app footer Cash App tip link `cash.app/$NicoleGetsTheStrap` (committed). Interactive **Versus + stats mockups** rendered via the `visualize` tool (WoW-Pet-Guide-style: dual stat bars, rarity/dex donuts, per-type/gen breakdown, head-to-head table, share card, spice-scaled trash-talk verdict pool) — this is the **visual spec** for the real Versus (G) + stats dashboard.
 - **Build/tsconfig reconcile (ca6dcc1):** react-app tests now compile under a DOM-libbed `tests/tsconfig.react.json` (root references it; `tests/tsconfig.json` excludes `react-app`). **The old build-gate gotcha is RESOLVED** — react-app tests may import `api.ts` types freely now.
 
+- **Phase P — Trainer Profile (DONE this session, commits `b1fa5ad..9082b96`, all 7 tasks + whole-phase review + browser visual pass):** `users.gender`/`avatar_key` (migration 0007) + `user_favorites` (migration 0008); `PUT /api/profile` (name+gender, validated `boy|girl|ditto`), avatar upload/serve via `SPRITES` R2 (`avatars/{userId}`, best-effort delete on account-deletion), `PUT /api/profile/favorites` (top-3, server-validated); `GET /api/auth/me` extended additively with `gender`/`hasAvatar`/`favorites`. Required blocking onboarding gate (`ProfileSetup` in `App.tsx`, no nav escape), Settings profile editor, and display wiring — AccountMenu/Home show avatar + `displayName ?? "Trainer"`, **never email** (only remaining `user.email` in the client is Settings' Account section). New `FavoritesStrip` on Home. Whole-phase review verdict: **SHIP-WITH-NOTED-DEFERRALS** (one landmine — `PUT /api/profile` had omitted the now-required `favorites` field — fixed in `9082b96`). Verified in-browser (light+dark, signed-in): onboarding gate blocks → releases on name+gender save; Home avatar/name/rank/favorites; Settings editor pre-seeds. **Deferred Minors (triaged fine-to-defer, in the ledger):** add `X-Content-Type-Options: nosniff` + magic-byte sniff on avatar serve; two object-URL blob leaks (ProfileSetup unmount, Settings save); stale "Saved" label after new-photo pick; `.favorites-strip__name` unstyled; consolidate the 3 `Gender` union declarations; brief onboarding-flash during initial auth `loading`.
+
 ## REMAINING WORK (in order)
 
-### Phase P — Trainer Profile  ← DO THIS NEXT (it's a Phase F prerequisite)
-**Why:** the app shows the raw EMAIL as the display name ("this is simply not it"). Collect name + gender + photo + top-3 favorite mon.
-- **Plan:** `docs/superpowers/plans/2026-07-14-flex-P-trainer-profile.md` — **COMPLETE (commit 08c6ba6), 7 tasks P1–P7 + Self-Review. Ready to execute** via subagent-driven-development (build gate is resolved, so react-app tests may import `api.ts` freely).
-  - P1 migration+schema (`users.gender`, `users.avatar_key` → migration 0007) + `GET /api/auth/me` + client `UserDto`.
-  - P2 `PUT /api/profile` (displayName + gender validated to `boy|girl|ditto`).
-  - P3 avatar upload/serve (`POST /api/profile/avatar`, `GET /api/profile/avatar/:userId`) via R2 (`SPRITES` bucket, `avatars/{userId}` key).
-  - P4 **top-3 favorite Pokémon** (`user_favorites` table → migration 0008 + `PUT /api/profile/favorites`; reuses `SpeciesPicker`).
-  - P5 **required-onboarding gate** (`ProfileSetup`: name, gender, optional photo + favorites; wired via AuthProvider/App).
-  - P6 **Settings profile editor**. P7 **display wiring** — TopBar/AccountMenu/Home show avatar + name (never email); favorites on the trainer card.
-  - Plan risks to watch (from its Self-Review): no "remove photo" endpoint yet; 60s avatar cache-control → brief stale image after replace; a `Gender` cast in Settings relies on server validation; favorites kept out of the hot-path `CurrentUser`.
-- **DECISIONS (locked):** gender options = **Boy / Girl / Ditto**. Onboarding = **required first step**. `users.display_name` already exists. Photo optional (initials fallback). Photo → R2.
-
-### Phase F — Public profiles + routing (includes the custom URL)
+### Phase F — Public profiles + routing (includes the custom URL)  ← DO THIS NEXT
 Add lightweight URL routing (app currently uses in-page tab state); `users.handle` (unique) + `users.isPublic`; public `GET /api/u/:handle` (+ collection); page at `/u/:handle`. **User-EDITABLE custom handle** (the "customize the trailing /url" request — validate lowercase alnum+dashes, length, reserved-word blocklist, uniqueness; suggest an initial handle at onboarding). Public profile shows name + avatar + **top-3 favorites** + ribbon showcase + rank/score/stats — **never email**. Private toggle. Needs a spec/plan (author like the others).
 
 ### Phase G — Versus (real)
@@ -64,5 +54,5 @@ Add lightweight URL routing (app currently uses in-page tab state); `users.handl
 ## How to resume (new chat)
 1. Read this file + the spec + `.superpowers/sdd/flex-progress.md` (the ledger has everything).
 2. `git checkout flex-layer` (likely already there), `npm run db:local && npm run dev`.
-3. **Finish the Phase P plan** (add onboarding gate + Settings + display wiring + Self-Review), then execute it via subagent-driven-development. Then Phase F (spec→plan→execute), then G.
+3. **Phase P is DONE + reviewed + visually verified.** Next: author Phase F (spec→plan→execute via subagent-driven-development), then G. Fold the deferred Phase-P Minors (in the ledger) into the pre-merge branch review.
 4. Keep the ledger updated as you go; one dev server on :5173 for controller visual review; build subagents verify via tsc/tests/build (not their own dev server).

@@ -8,10 +8,12 @@ every species/form + event distribution, track your specimens, earn ribbons, imp
 and (in progress) a public "flex" layer with rarity, stats, profiles, and Versus.
 
 - **Repo:** `/Users/nicole/Projects/PokeWebBank` (folder name predates the product name)
-- **Working branch:** `flex-layer` @ **d32ccfa** — NOT merged to `main` yet. All work committed.
+- **Branch:** `main` @ **762749d** (flex-layer merged in and kept in sync; deploy from `main`). **LIVE** at https://pokedexflex.mrsnicoleahall.workers.dev (Cloudflare Workers). All work committed + pushed to origin.
 - **Run locally:** `npm run db:local` (migrate + seed) then `npm run dev` → http://localhost:5173.
   Dev sign-in: enter any email; the magic-link appears on-screen — click it.
-- **Stack:** Cloudflare Workers + Hono · D1 (Drizzle) · R2 (sprite cache) · Workers AI (photo import, deploy-only) · Vite + React + TS. Tests: Vitest + `@cloudflare/vitest-pool-workers`. **Verify of record: `npx tsc -b` + `npm run build` + `npx vitest run` (currently 395 passing).**
+- **Stack:** Cloudflare Workers + Hono · D1 (Drizzle) · R2 (sprite cache) · Workers AI (photo import, deploy-only) · Vite + React + TS. Tests: Vitest + `@cloudflare/vitest-pool-workers`. **Verify of record: `npx tsc -b` + `npm run build` + `npx vitest run` (currently 408 passing).**
+
+> **STATUS (2026-07-15, late):** Product is DEPLOYED & LIVE, rebranded to PokéDexFlex, GitHub repo renamed to `mrsnicoleahall/pokedexflex`. Phases A–H done + reviewed. **Growth roadmap in progress:** H (Stats dashboard) ✅ done. Next: **I** (dex filters + "missing only"), **J** (leaderboards), **K** (share/OG images) — see `.superpowers/sdd/flex-progress.md` "GROWTH ROADMAP". **Launch hygiene pending:** verify `pokedexflex.com` in Resend + attach custom domain (both gated on the CF zone going Active — set `EMAIL_FROM` + uncomment `wrangler.jsonc` routes then rebuild/deploy); final pre-merge Minor sweep; the user also flagged a "something else" launch item (awaiting detail). Deploy = `npm run build && npx wrangler deploy` (build FIRST). Login email currently only reaches the owner's Resend address until the domain is verified.
 
 ## The big arc: "Ribbons & Rivalry" expansion
 - **Spec (approved):** `docs/superpowers/specs/2026-07-14-ribbons-and-rivalry-design.md`

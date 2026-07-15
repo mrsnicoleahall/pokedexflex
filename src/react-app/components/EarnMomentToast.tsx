@@ -26,6 +26,8 @@ export function EarnMomentToast({ ribbons, onDismiss }: { ribbons: RibbonDto[]; 
 							{/* Every ribbon here is freshly earned, so reveal its real name — this
 							    IS the payoff moment for secret/easter-egg ribbons (don't show "???"). */}
 							<span className="earn-toast__name">{r.name}</span>
+							{/* Say WHY it was earned (the ribbon's criteria), not just the name. */}
+							<span className="earn-toast__desc">{r.description}</span>
 						</div>
 					))}
 				</div>

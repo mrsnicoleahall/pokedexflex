@@ -1995,3 +1995,11 @@ a {
 	font-size: 0.72rem;
 	color: var(--muted);
 }
+
+/* Earn-moment: the ribbon's criteria ("why you got it"), under its name. */
+.earn-toast__desc {
+	font-size: 0.8rem;
+	color: var(--muted);
+	line-height: 1.35;
+	max-width: 30ch;
+}

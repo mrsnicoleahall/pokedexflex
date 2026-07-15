@@ -16,6 +16,7 @@ export const PATHS = {
 	progress: "/progress",
 	importExport: "/import-export",
 	settings: "/settings",
+	leaderboard: "/leaderboard",
 } as const;
 
 /** The account-menu destinations (unchanged set from Phase P's AccountMenu, plus Phase H's Progress dashboard). */
@@ -42,6 +43,11 @@ export function publicProfilePath(handle: string): string {
 /** Head-to-head comparison path for two trainer handles. */
 export function versusPath(a: string, b: string): string {
 	return `/versus/${a}/${b}`;
+}
+
+/** Public leaderboard path. */
+export function leaderboardPath(): string {
+	return PATHS.leaderboard;
 }
 
 /** Which catalog tab a path represents (drives TopBar's tab highlight). */

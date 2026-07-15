@@ -18,7 +18,7 @@ import { SignInPanel } from "../components/SignInPanel";
 import { useAuth } from "../auth/AuthProvider";
 import { listRivalries, deleteRivalry, type RivalryDto } from "../api";
 import { NAME_PLACEHOLDER } from "../profile/display";
-import { publicProfilePath, versusPath } from "../routes";
+import { PATHS, publicProfilePath, versusPath } from "../routes";
 import { NudgeList } from "../ribbons/NudgeList";
 import { TrophyWall } from "../ribbons/TrophyWall";
 import { useRibbonsData } from "../ribbons/useRibbonsData";
@@ -63,6 +63,9 @@ export function Home({ onBrowse, onNavigate }: HomeProps) {
 							<button type="button" className="button" onClick={() => onNavigate("progress")}>
 								Progress
 							</button>
+							<Link className="button" to={PATHS.leaderboard}>
+								Leaderboard
+							</Link>
 						</div>
 					</div>
 				) : (
@@ -86,6 +89,9 @@ export function Home({ onBrowse, onNavigate }: HomeProps) {
 								<button type="button" className="button" onClick={() => setSignInOpen(true)}>
 									Sign in
 								</button>
+								<Link className="button" to={PATHS.leaderboard}>
+									Leaderboard
+								</Link>
 							</div>
 						</div>
 					</div>

@@ -14,6 +14,7 @@ import { Versus } from "./pages/Versus";
 import { EventsCatalog } from "./pages/EventsCatalog";
 import { Home } from "./pages/Home";
 import { ImportExport } from "./pages/ImportExport";
+import { Leaderboard } from "./pages/Leaderboard";
 import { MyCollection } from "./pages/MyCollection";
 import { Progress } from "./pages/Progress";
 import { Ribbons } from "./pages/Ribbons";
@@ -51,6 +52,7 @@ function App() {
 		<Routes>
 			<Route path="/u/:handle" element={<PublicProfile />} />
 			<Route path="/versus/:a/:b" element={<Versus />} />
+			<Route path="/leaderboard" element={<Leaderboard />} />
 			<Route element={<AppLayout />}>
 				<Route index element={<HomeRoute />} />
 				<Route path="species" element={<SpeciesRoute />} />

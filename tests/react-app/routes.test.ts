@@ -6,6 +6,7 @@ import {
 	tabForPath,
 	showFiltersForPath,
 	versusPath,
+	leaderboardPath,
 } from "../../src/react-app/routes";
 
 describe("PATHS", () => {
@@ -19,6 +20,7 @@ describe("PATHS", () => {
 			progress: "/progress",
 			importExport: "/import-export",
 			settings: "/settings",
+			leaderboard: "/leaderboard",
 		});
 	});
 });
@@ -69,5 +71,15 @@ describe("progress path", () => {
 
 	it("maps the 'progress' account view to /progress", () => {
 		expect(pathForAccountView("progress")).toBe("/progress");
+	});
+});
+
+describe("leaderboard path", () => {
+	it("exposes PATHS.leaderboard", () => {
+		expect(PATHS.leaderboard).toBe("/leaderboard");
+	});
+
+	it("leaderboardPath() returns the leaderboard route", () => {
+		expect(leaderboardPath()).toBe("/leaderboard");
 	});
 });

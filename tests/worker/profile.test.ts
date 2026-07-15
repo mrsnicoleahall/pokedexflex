@@ -64,11 +64,28 @@ describe("PUT /api/profile", () => {
     expect(body.user.displayName).toBe("Ash");
     expect(body.user.gender).toBe("boy");
     expect(body.user.email).toBe("profile-set@x.com");
+    expect(body.user.favorites).toEqual([]);
 
     const me = await call("/api/auth/me", undefined, cookie);
     const meBody = (await me.json()) as any;
     expect(meBody.user.displayName).toBe("Ash");
     expect(meBody.user.gender).toBe("boy");
+  });
+
+  it("includes the user's enriched favorites in the response, matching /me", async () => {
+    const cookie = await signIn("profile-withfavs@x.com");
+    await putJson("/api/profile/favorites", { speciesIds: [6001, 6002] }, cookie);
+
+    const res = await putJson("/api/profile", { displayName: "Brock" }, cookie);
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as any;
+    expect(body.user.favorites).toEqual([
+      { speciesId: 6001, name: "favroutea", homeId: 6001 },
+      { speciesId: 6002, name: "favrouteb", homeId: null },
+    ]);
+
+    const me = await call("/api/auth/me", undefined, cookie);
+    expect(((await me.json()) as any).user.favorites).toEqual(body.user.favorites);
   });
 
   it("supports a partial update without clobbering the other field", async () => {

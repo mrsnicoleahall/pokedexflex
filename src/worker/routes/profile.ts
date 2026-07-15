@@ -36,6 +36,7 @@ profileRoutes.put("/", async (c) => {
       displayName: updated.displayName,
       gender: updated.gender,
       hasAvatar: updated.avatarKey !== null,
+      favorites: await getFavoritesEnriched(db, updated.id),
     },
   });
 });

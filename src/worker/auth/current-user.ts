@@ -10,6 +10,8 @@ export interface CurrentUser {
   id: string;
   email: string;
   displayName: string | null;
+  gender: string | null;
+  hasAvatar: boolean;
 }
 
 type AppContext = Context<{ Bindings: Env }>;
@@ -24,7 +26,13 @@ export const getCurrentUser = async (c: AppContext): Promise<CurrentUser | null>
   const rows = await db.select().from(users).where(eq(users.id, session.userId)).limit(1);
   const user = rows[0];
   if (!user) return null;
-  return { id: user.id, email: user.email, displayName: user.displayName };
+  return {
+    id: user.id,
+    email: user.email,
+    displayName: user.displayName,
+    gender: user.gender,
+    hasAvatar: user.avatarKey !== null,
+  };
 };
 
 /** Resolves the current user or throws a 401 HTTPException. */

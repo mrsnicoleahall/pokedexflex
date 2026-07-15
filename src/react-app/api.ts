@@ -490,6 +490,8 @@ export type UserDto = {
 	id: string;
 	email: string;
 	displayName: string | null;
+	gender: string | null;
+	hasAvatar: boolean;
 };
 
 export async function authRequestLink(

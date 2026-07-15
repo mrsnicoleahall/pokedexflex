@@ -49,7 +49,7 @@ authRoutes.get("/verify", async (c) => {
   const existing = await db.select().from(users).where(eq(users.email, tokenRow.email)).limit(1);
   let user = existing[0];
   if (!user) {
-    user = { id: generateToken(), email: tokenRow.email, displayName: null, createdAt: now };
+    user = { id: generateToken(), email: tokenRow.email, displayName: null, gender: null, avatarKey: null, createdAt: now };
     await db.insert(users).values(user);
   }
 

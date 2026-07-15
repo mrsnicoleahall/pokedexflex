@@ -182,3 +182,23 @@ describe("ribbon incentive schema", () => {
     ).rejects.toThrow();
   });
 });
+
+describe("trainer profile schema", () => {
+  it("users: gender and avatar_key default to null and round-trip once set", async () => {
+    const db = getDb(env.DB);
+    await db.insert(users).values({ id: "prof1", email: "prof1@x.com", createdAt: 1 });
+
+    const [before] = await db.select().from(users).where(eq(users.id, "prof1"));
+    expect(before.gender).toBeNull();
+    expect(before.avatarKey).toBeNull();
+
+    await db
+      .update(users)
+      .set({ gender: "ditto", avatarKey: "avatars/prof1" })
+      .where(eq(users.id, "prof1"));
+
+    const [after] = await db.select().from(users).where(eq(users.id, "prof1"));
+    expect(after.gender).toBe("ditto");
+    expect(after.avatarKey).toBe("avatars/prof1");
+  });
+});

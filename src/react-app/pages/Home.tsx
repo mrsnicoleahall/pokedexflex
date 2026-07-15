@@ -67,12 +67,17 @@ export function Home({ onBrowse, onNavigate }: HomeProps) {
 					</div>
 				) : (
 					<div className="landing__hero-inner">
+						<img src="/brand/icon-512.png" alt="" className="landing__emblem" />
 						<div className="hero__intro">
 							<p className="hero__eyebrow">PokéDexFlex</p>
-							<h1 className="hero__title">Catch &apos;em all. Then flex &apos;em all.</h1>
+							<h1 className="hero__title">
+								Catch &apos;em all.
+								<br />
+								Then flex &apos;em all.
+							</h1>
 							<p className="hero__subcopy">
 								Track every species, form, and event distribution. Build your living dex, earn 166
-								ribbons, climb the ranks — and go head-to-head with rival trainers.
+								ribbons, climb the ranks, then go head-to-head with rival trainers.
 							</p>
 							<div className="hero__actions">
 								<button type="button" className="button button--primary" onClick={onBrowse}>
@@ -109,15 +114,22 @@ export function Home({ onBrowse, onNavigate }: HomeProps) {
 						<div className="landing__feature-card">
 							<h3 className="landing__feature-title">Living Dex</h3>
 							<p className="landing__feature-copy">
-								Track every specimen you own — IVs, nature, OT, shiny status — organized into boxes
+								Track every specimen you own (IVs, nature, OT, shiny status) organized into boxes
 								just like the games.
 							</p>
 						</div>
 						<div className="landing__feature-card">
-							<h3 className="landing__feature-title">166 Ribbons</h3>
+							<h3 className="landing__feature-title">166 Ribbons to chase</h3>
 							<p className="landing__feature-copy">
-								Earn achievements for completion milestones, rare catches, and shiny hunts. Pin your
-								favorites to a trophy wall.
+								Ribbons are the flex. Earn them for completion milestones, rare catches, and shiny
+								hunts, then show off your rarest on your trophy wall and climb the ribbon leaderboard.
+							</p>
+						</div>
+						<div className="landing__feature-card">
+							<h3 className="landing__feature-title">Import in seconds</h3>
+							<p className="landing__feature-copy">
+								Already have a collection? Upload a CSV, snap a screenshot of your Pokémon Home
+								boxes, or drop in an Ultra Sun / Ultra Moon save file.
 							</p>
 						</div>
 						<div className="landing__feature-card">
@@ -136,10 +148,10 @@ export function Home({ onBrowse, onNavigate }: HomeProps) {
 							<div className="versus-cta__avatar versus-cta__avatar--rival">?</div>
 						</div>
 						<div className="versus-cta__copy">
-							<h2 className="versus-cta__title">Versus — settle it head-to-head.</h2>
+							<h2 className="versus-cta__title">Versus. Settle it head-to-head.</h2>
 							<p>
-								Compare any two public trainers across six scored rounds — Strength, Diversity,
-								Completion, Shiny, Ribbon Score, and Rarity Crown — get a winner and a trash-talk
+								Compare any two public trainers across six scored rounds (Strength, Diversity,
+								Completion, Shiny, Ribbon Score, and Rarity Crown), get a winner and a trash-talk
 								verdict, then save the rivalry for a rematch.
 							</p>
 							<button type="button" className="button button--primary" onClick={() => setSignInOpen(true)}>

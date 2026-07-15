@@ -2574,6 +2574,11 @@ a {
 	gap: 32px;
 	flex-wrap: wrap;
 }
+.landing__emblem {
+	width: clamp(72px, 9vw, 104px);
+	height: auto;
+	flex: none;
+}
 
 
 .landing__stats {
@@ -2592,7 +2597,9 @@ a {
 	padding: 10px 18px;
 	border: 1px solid color-mix(in srgb, white 18%, transparent);
 	border-radius: var(--radius-control);
-	background: color-mix(in srgb, white 6%, transparent);
+	/* Solid dark tile so the numbers stay readable over the busy collage backdrop. */
+	background: rgba(9, 14, 26, 0.72);
+	backdrop-filter: blur(3px);
 }
 
 .landing__stat-value {

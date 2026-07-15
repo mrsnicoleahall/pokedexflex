@@ -18,6 +18,7 @@ import { useMemo } from "react";
 import type { RibbonDto } from "../api";
 import { useAuth } from "../auth/AuthProvider";
 import { RankBadge } from "../components/RankBadge";
+import { formatRarityPct, isRareFlex } from "../ribbons/incentiveDisplay";
 import { RibbonIcon } from "../ribbons/RibbonIcon";
 import { useRibbonsData } from "../ribbons/useRibbonsData";
 import { typeColor } from "../theme";
@@ -64,9 +65,10 @@ function RibbonCard({ ribbon }: { ribbon: RibbonDto }) {
 
 	if (ribbon.earned) {
 		const accent = ribbonAccentColor(ribbon);
+		const rareFlex = isRareFlex(ribbon.rarityPct);
 		return (
 			<article
-				className="ribbon-card ribbon-card--earned"
+				className={`ribbon-card ribbon-card--earned${rareFlex ? " ribbon-card--rare-flex" : ""}`}
 				style={{
 					background: `linear-gradient(135deg, ${accent}4D 0%, ${accent}1F 55%, transparent 100%), var(--surface)`,
 					borderColor: `color-mix(in srgb, ${accent} 55%, var(--hairline))`,
@@ -88,8 +90,14 @@ function RibbonCard({ ribbon }: { ribbon: RibbonDto }) {
 							Secret
 						</span>
 					)}
+					{rareFlex && (
+						<span className="ribbon-card__rare-tag" style={{ color: accent, borderColor: accent }}>
+							Rare
+						</span>
+					)}
 				</h3>
 				<p className="ribbon-card__desc">{ribbon.description}</p>
+				<p className="ribbon-card__rarity">{formatRarityPct(ribbon.rarityPct)}</p>
 			</article>
 		);
 	}
@@ -108,6 +116,7 @@ function RibbonCard({ ribbon }: { ribbon: RibbonDto }) {
 				{hiddenSecret ? SECRET_HIDDEN_NAME : ribbon.name}
 			</h3>
 			<p className="ribbon-card__desc">{hiddenSecret ? SECRET_HIDDEN_DESC : ribbon.description}</p>
+			{!hiddenSecret && <p className="ribbon-card__rarity">{formatRarityPct(ribbon.rarityPct)}</p>}
 			<div className="ribbon-progress">
 				<div
 					className="ribbon-progress__track"

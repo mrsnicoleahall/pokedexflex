@@ -1591,6 +1591,29 @@ a {
 	font-weight: 600;
 }
 
+.ribbon-card__rarity {
+	font-size: 0.72rem;
+	font-family: var(--font-mono);
+	color: var(--muted);
+	letter-spacing: 0.01em;
+}
+
+.ribbon-card--rare-flex {
+	box-shadow: var(--shadow-card-hover);
+}
+
+.ribbon-card__rare-tag {
+	margin-left: 8px;
+	padding: 1px 7px;
+	border: 1px solid;
+	border-radius: 999px;
+	font-size: 0.62rem;
+	font-family: var(--font-mono);
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+	font-weight: 600;
+}
+
 .ribbon-progress {
 	display: flex;
 	flex-direction: column;

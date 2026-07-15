@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import { deleteCookie, getSignedCookie, setSignedCookie } from "hono/cookie";
-import { and, eq, gt, isNull, or } from "drizzle-orm";
+import { and, eq, gt, or } from "drizzle-orm";
 import { boxes, importJobs, loginTokens, rivalries, specimens, sessions as sessionsTable, users } from "../../db/schema";
 import { getDb } from "../db";
 import { generateToken, hashToken } from "../auth/tokens";
@@ -40,13 +40,20 @@ authRoutes.get("/verify", async (c) => {
   const db = getDb(c.env.DB);
   const tokenHash = await hashToken(token);
   const now = Date.now();
-  const consumed = await db
-    .update(loginTokens)
-    .set({ usedAt: now })
-    .where(and(eq(loginTokens.tokenHash, tokenHash), isNull(loginTokens.usedAt), gt(loginTokens.expiresAt, now)))
-    .returning();
-  const tokenRow = consumed[0];
+  // Match on hash + expiry only, NOT usedAt. Email security scanners (Microsoft
+  // 365 Safe Links, Gmail, etc.) pre-fetch links to check them, which would
+  // consume a strictly single-use token before the human ever clicks — leaving
+  // them unable to sign in. The token still expires in 15 minutes, so allowing
+  // reuse within that short window is the standard, safe trade-off.
+  const [tokenRow] = await db
+    .select()
+    .from(loginTokens)
+    .where(and(eq(loginTokens.tokenHash, tokenHash), gt(loginTokens.expiresAt, now)))
+    .limit(1);
   if (!tokenRow) return c.json({ error: "invalid_or_expired" }, 400);
+  if (tokenRow.usedAt === null) {
+    await db.update(loginTokens).set({ usedAt: now }).where(eq(loginTokens.id, tokenRow.id));
+  }
 
   const existing = await db.select().from(users).where(eq(users.email, tokenRow.email)).limit(1);
   let user = existing[0];

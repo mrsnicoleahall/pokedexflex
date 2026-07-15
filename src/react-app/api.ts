@@ -39,6 +39,28 @@ export async function fetchSpeciesById(id: number): Promise<SpeciesDto> {
 	return res.json() as Promise<SpeciesDto>;
 }
 
+/** One alternate form as returned by GET /api/forms (Forms gallery). */
+export type FormGalleryItem = {
+	formId: number;
+	speciesId: number;
+	name: string;
+	formType: string;
+	homeId: number | null;
+	slug: string | null;
+	owned: boolean;
+};
+
+/**
+ * The whole alternate-form catalog for the Forms gallery. Sends credentials so
+ * the `owned` flags reflect the signed-in trainer's collection (all false when
+ * signed out).
+ */
+export async function fetchForms(): Promise<{ forms: FormGalleryItem[] }> {
+	const res = await fetch("/api/forms", { credentials: "include" });
+	if (!res.ok) throw new Error(`forms fetch failed: ${res.status}`);
+	return res.json() as Promise<{ forms: FormGalleryItem[] }>;
+}
+
 export type EventDto = {
 	id: number;
 	slug: string;

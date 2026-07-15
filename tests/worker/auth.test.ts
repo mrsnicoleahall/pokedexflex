@@ -42,16 +42,25 @@ describe("auth helpers", () => {
   it("/me is null without a cookie", async () => {
     expect((await (await call("/api/auth/me")).json() as any).user).toBeNull();
   });
-  it("a verify link can only be used once (single-use token)", async () => {
+  it("a verify link is reusable within its expiry window (survives email link-scanners)", async () => {
+    // A single-use token would be consumed by Microsoft 365 Safe Links / Gmail
+    // pre-fetching the link before the human clicks, locking them out. So a
+    // token stays valid (issuing a fresh session each time) until it expires.
     const r1 = await call("/api/auth/request-link", { method: "POST", headers: {"content-type":"application/json"}, body: JSON.stringify({ email: "once@x.com" }) });
     const { devLink } = await r1.json() as any;
     const path = new URL(devLink).pathname + new URL(devLink).search;
     const verify1 = await call(path, { redirect: "manual" } as any);
     expect(verify1.status).toBe(302);
     expect(verify1.headers.get("set-cookie")).toContain("pfd_session=");
+    // Second hit (the real user, after a scanner already fetched it) still works.
     const verify2 = await call(path, { redirect: "manual" } as any);
-    expect(verify2.status).toBe(400);
-    expect((await verify2.json() as any).error).toBe("invalid_or_expired");
+    expect(verify2.status).toBe(302);
+    expect(verify2.headers.get("set-cookie")).toContain("pfd_session=");
+  });
+  it("rejects a bogus / unknown verify token", async () => {
+    const verify = await call("/api/auth/verify?token=deadbeef", { redirect: "manual" } as any);
+    expect(verify.status).toBe(400);
+    expect((await verify.json() as any).error).toBe("invalid_or_expired");
   });
   it("normalizes email casing/whitespace on request-link so verify resolves to the lowercased email", async () => {
     const r1 = await call("/api/auth/request-link", { method: "POST", headers: {"content-type":"application/json"}, body: JSON.stringify({ email: "  Foo@X.COM  " }) });

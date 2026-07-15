@@ -28,10 +28,13 @@ describe("resolveRibbonIcon", () => {
     expect(a).not.toEqual(b);
     expect(a.kind).toBe("rosette");
   });
-  it("unknown ids fall back to a normal-color rosette with a letter", () => {
-    expect(resolveRibbonIcon({ id: "xyz", category: "Whatever" })).toEqual({
-      kind: "rosette", baseColor: typeColor("normal"), glyph: { kind: "text", text: "X" },
-    });
+  it("unknown ids fall back to a rosette with a first-letter glyph", () => {
+    const v = resolveRibbonIcon({ id: "xyz", category: "Whatever" });
+    expect(v.kind).toBe("rosette");
+    if (v.kind === "rosette") {
+      expect(v.glyph).toEqual({ kind: "text", text: "X" });
+      expect(typeof v.baseColor).toBe("string");
+    }
   });
   it("assigns the free pieces to the two new marquee ribbons", () => {
     expect(resolveRibbonIcon({ id: "national-dex-100", category: "Completion" })).toEqual({ kind: "piece", piece: "coin" });

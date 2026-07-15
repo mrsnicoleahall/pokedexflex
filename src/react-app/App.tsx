@@ -9,6 +9,7 @@
 
 import { Routes, Route, useNavigate, useOutletContext } from "react-router-dom";
 import { AppLayout, type LayoutContext } from "./components/AppLayout";
+import { BrandCorner } from "./components/BrandCorner";
 import { PublicProfile } from "./pages/PublicProfile";
 import { Versus } from "./pages/Versus";
 import { EventsCatalog } from "./pages/EventsCatalog";
@@ -50,23 +51,26 @@ function SettingsRoute() {
 
 function App() {
 	return (
-		<Routes>
-			<Route path="/u/:handle" element={<PublicProfile />} />
-			<Route path="/versus/:a/:b" element={<Versus />} />
-			<Route path="/leaderboard" element={<Leaderboard />} />
-			<Route element={<AppLayout />}>
-				<Route index element={<HomeRoute />} />
-				<Route path="species" element={<SpeciesRoute />} />
-				<Route path="events" element={<EventsRoute />} />
-				<Route path="forms" element={<Forms />} />
-				<Route path="collection" element={<CollectionRoute />} />
-				<Route path="ribbons" element={<Ribbons />} />
-				<Route path="progress" element={<Progress />} />
-				<Route path="import-export" element={<ImportExport />} />
-				<Route path="settings" element={<SettingsRoute />} />
-				<Route path="*" element={<HomeRoute />} />
-			</Route>
-		</Routes>
+		<>
+			<BrandCorner />
+			<Routes>
+				<Route path="/u/:handle" element={<PublicProfile />} />
+				<Route path="/versus/:a/:b" element={<Versus />} />
+				<Route path="/leaderboard" element={<Leaderboard />} />
+				<Route element={<AppLayout />}>
+					<Route index element={<HomeRoute />} />
+					<Route path="species" element={<SpeciesRoute />} />
+					<Route path="events" element={<EventsRoute />} />
+					<Route path="forms" element={<Forms />} />
+					<Route path="collection" element={<CollectionRoute />} />
+					<Route path="ribbons" element={<Ribbons />} />
+					<Route path="progress" element={<Progress />} />
+					<Route path="import-export" element={<ImportExport />} />
+					<Route path="settings" element={<SettingsRoute />} />
+					<Route path="*" element={<HomeRoute />} />
+				</Route>
+			</Routes>
+		</>
 	);
 }
 

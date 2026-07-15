@@ -63,6 +63,15 @@ export function Home({ onBrowse, onNavigate }: HomeProps) {
 							<button type="button" className="button" onClick={() => onNavigate("progress")}>
 								Progress
 							</button>
+							<button
+								type="button"
+								className="button"
+								onClick={() =>
+									document.getElementById("versus")?.scrollIntoView({ behavior: "smooth", block: "start" })
+								}
+							>
+								Versus
+							</button>
 							<Link className="button" to={PATHS.leaderboard}>
 								Leaderboard
 							</Link>
@@ -168,10 +177,10 @@ export function Home({ onBrowse, onNavigate }: HomeProps) {
 				</>
 			)}
 
+			{user && <Rivals />}
 			{user && <FavoritesStrip favorites={user.favorites} />}
 			{user && <TrophyWall showcase={showcase} ribbons={ribbons} />}
 			{user && <NudgeList nearest={nearest} />}
-			{user && <Rivals />}
 			{signInOpen && <SignInPanel onClose={() => setSignInOpen(false)} />}
 		</div>
 	);
@@ -208,7 +217,7 @@ function Rivals() {
 	}
 
 	return (
-		<section className="rivals" aria-label="Versus and rivals">
+		<section id="versus" className="rivals" aria-label="Versus and rivals">
 			<h2 className="ribbon-section__title">Versus &amp; Rivals</h2>
 			<p className="rivals__hint">
 				Compare your dex against any public trainer across six scored rounds, then save your best
@@ -216,19 +225,33 @@ function Rivals() {
 			</p>
 
 			{user?.handle ? (
-				<div className="rivals__compare">
+				<form
+					className="rivals__compare"
+					onSubmit={(e) => {
+						e.preventDefault();
+						startCompare();
+					}}
+				>
 					<input
 						className="input"
 						value={handle}
 						placeholder="a trainer's handle"
 						onChange={(e) => setHandle(e.target.value)}
+						aria-label="Opponent's handle"
 					/>
-					<button type="button" className="button button--primary" onClick={startCompare} disabled={!handle.trim()}>
+					<button type="submit" className="button button--primary" disabled={!handle.trim()}>
 						Compare
 					</button>
-				</div>
+				</form>
 			) : (
 				<p className="state__hint">Set a public handle in Settings to compare with other trainers.</p>
+			)}
+
+			{user?.handle && rivals.length === 0 && (
+				<p className="state__hint rivals__empty">
+					No saved rivalries yet. Challenge a trainer above, or{" "}
+					<Link to={PATHS.leaderboard}>find someone on the leaderboard</Link>.
+				</p>
 			)}
 
 			{rivals.length > 0 && (

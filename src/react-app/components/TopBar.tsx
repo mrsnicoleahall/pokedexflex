@@ -34,7 +34,6 @@ export function TopBar({
 		<header className="toolbar">
 			<div className="toolbar__inner container">
 				<button type="button" className="brandmark" onClick={onLogoClick} aria-label="PokéDexFlex home">
-					<img src="/brand/icon-128.png" alt="" className="brandmark__icon" />
 					<span className="brandmark__text">PokéDexFlex</span>
 				</button>
 

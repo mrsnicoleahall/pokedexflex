@@ -129,16 +129,49 @@ export function Forms() {
 	);
 }
 
-/** Prefer the large HOME 3D render; fall back to the 2D sprite for cosmetic forms. */
-function formImageUrl(form: GalleryForm): string | null {
-	if (form.homeId !== null) return spriteUrl(form.homeId);
-	if (form.slug) return formSpriteUrl(form.slug);
-	return null;
+// Grayed-out fallback shown when a form has no sprite anywhere: the base
+// Pikachu sprite (served natively through our proxy) rendered as a silhouette.
+const SILHOUETTE_URL = spriteUrl(25);
+
+/**
+ * A form's sprite with a graceful fallback chain: the large HOME 3D render if
+ * it exists, else the 2D sprite (some cosmetic/cosplay forms have only 2D and
+ * a couple have neither), else a grayed Pikachu silhouette. Each source is
+ * tried in turn on error so a 404 never leaves an empty frame.
+ */
+function FormSprite({ form, size, frameClassName }: { form: GalleryForm; size: number; frameClassName: string }) {
+	const sources = useMemo(() => {
+		const s: Array<{ url: string; pixel: boolean }> = [];
+		if (form.homeId !== null) s.push({ url: spriteUrl(form.homeId), pixel: false });
+		if (form.slug) s.push({ url: formSpriteUrl(form.slug), pixel: true });
+		return s;
+	}, [form.homeId, form.slug]);
+	const [idx, setIdx] = useState(0);
+	const [loaded, setLoaded] = useState(false);
+	const exhausted = idx >= sources.length;
+	const current = exhausted ? { url: SILHOUETTE_URL, pixel: false } : sources[idx];
+
+	return (
+		<div className={`${frameClassName}${loaded ? "" : " is-loading"}`}>
+			<img
+				key={current.url}
+				className={`form-img${loaded ? " is-loaded" : ""}${current.pixel ? " form-img--pixel" : ""}${exhausted ? " form-img--silhouette" : ""}`}
+				src={current.url}
+				alt={form.display}
+				loading="lazy"
+				width={size}
+				height={size}
+				onLoad={() => setLoaded(true)}
+				onError={() => {
+					setLoaded(false);
+					setIdx((i) => i + 1);
+				}}
+			/>
+		</div>
+	);
 }
 
 function FormTile({ form, onOpen }: { form: GalleryForm; onOpen: () => void }) {
-	const [loaded, setLoaded] = useState(false);
-	const url = formImageUrl(form);
 	return (
 		<li className="forms-tile">
 			<button type="button" className="forms-tile__button" onClick={onOpen}>
@@ -147,20 +180,7 @@ function FormTile({ form, onOpen }: { form: GalleryForm; onOpen: () => void }) {
 						✓
 					</span>
 				)}
-				<div className={`forms-tile__sprite${loaded ? "" : " is-loading"}`}>
-					{url && (
-						<img
-							className={`forms-tile__img${loaded ? " is-loaded" : ""}${form.homeId === null ? " forms-tile__img--pixel" : ""}`}
-							src={url}
-							alt={form.display}
-							loading="lazy"
-							width={120}
-							height={120}
-							onLoad={() => setLoaded(true)}
-							onError={() => setLoaded(true)}
-						/>
-					)}
-				</div>
+				<FormSprite form={form} size={120} frameClassName="forms-tile__sprite" />
 				<span className="forms-tile__name">{form.display}</span>
 			</button>
 		</li>
@@ -181,7 +201,6 @@ function FormDetail({
 	const { user } = useAuth();
 	const [adding, setAdding] = useState(false);
 	const [error, setError] = useState(false);
-	const url = formImageUrl(form);
 
 	async function add() {
 		setAdding(true);
@@ -202,9 +221,7 @@ function FormDetail({
 				<button type="button" className="form-sheet__close" onClick={onClose} aria-label="Close">
 					×
 				</button>
-				<div className={`form-sheet__sprite${form.homeId === null ? " form-sheet__sprite--pixel" : ""}`}>
-					{url && <img src={url} alt={form.display} width={200} height={200} />}
-				</div>
+				<FormSprite form={form} size={200} frameClassName="form-sheet__sprite" />
 				<p className="form-sheet__family">{group.label}</p>
 				<h2 className="form-sheet__name">{form.display}</h2>
 				<h3 className="form-sheet__label">How to get it</h3>

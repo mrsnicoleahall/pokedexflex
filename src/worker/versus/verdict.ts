@@ -14,7 +14,7 @@ export type VerdictTier = "draw" | "nailbiter" | "solid" | "decisive" | "shutout
  */
 export const VERDICT_POOLS: Record<VerdictTier, readonly string[]> = {
   draw: [
-    "Dead heat — {a} and {b} are the same trainer in different hats.",
+    "Dead heat. {a} and {b} are the same trainer in different hats.",
     "It's a tie. Somebody go catch one more Pokémon and settle this.",
     "Too close to call. This is exactly what the rematch button is for.",
     "Perfectly balanced, as all collections should be.",
@@ -22,7 +22,7 @@ export const VERDICT_POOLS: Record<VerdictTier, readonly string[]> = {
   nailbiter: [
     "{winner} edges out {loser} by a whisker. Screenshot it fast.",
     "{winner} takes the photo finish; {loser} was one shiny away.",
-    "A one-round nail-biter — {winner} wins it, {loser} takes notes.",
+    "A one-round nail-biter. {winner} wins it, {loser} takes notes.",
     "{winner} squeaks past {loser}. Rematch practically guaranteed.",
   ],
   solid: [
@@ -34,11 +34,11 @@ export const VERDICT_POOLS: Record<VerdictTier, readonly string[]> = {
   decisive: [
     "{winner} runs the table on {loser}. Not much to debate.",
     "{winner} well clear of {loser}. Time for the tall grass, {loser}.",
-    "Lopsided — {winner} was in a different tier than {loser} today.",
+    "Lopsided. {winner} was in a different tier than {loser} today.",
     "{winner} makes it look easy against {loser}.",
   ],
   shutout: [
-    "Clean sweep — {winner} shuts out {loser} six-for-six.",
+    "Clean sweep. {winner} shuts out {loser} six-for-six.",
     "{winner} six, {loser} zero. Someone go check on {loser}.",
     "Total domination: {winner} leaves {loser} nothing.",
     "Flawless victory for {winner}. {loser} gets a participation ribbon.",

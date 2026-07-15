@@ -47,7 +47,7 @@ export function SignInPanel({ onClose }: SignInPanelProps) {
 			setStatus("sent");
 		} catch {
 			setStatus("idle");
-			setError("Couldn't send the sign-in link. Please try again.");
+			setError("Couldn't send the magic link. Please try again.");
 		}
 	}
 
@@ -90,7 +90,7 @@ export function SignInPanel({ onClose }: SignInPanelProps) {
 					<div className="modal__body">
 						{devLink ? (
 							<>
-								<p>Dev sign-in link ready:</p>
+								<p>Dev magic link ready:</p>
 								<button
 									type="button"
 									className="button button--primary"
@@ -101,7 +101,9 @@ export function SignInPanel({ onClose }: SignInPanelProps) {
 								</button>
 							</>
 						) : (
-							<p>Check your email for a sign-in link.</p>
+							<p>
+								Check your email for a magic link. Open it in this browser to finish signing in.
+							</p>
 						)}
 					</div>
 				) : (
@@ -125,7 +127,7 @@ export function SignInPanel({ onClose }: SignInPanelProps) {
 							</p>
 						)}
 						<button type="submit" className="button button--primary" disabled={status === "sending"}>
-							{status === "sending" ? "Sending…" : "Send sign-in link"}
+							{status === "sending" ? "Sending…" : "Send magic link"}
 						</button>
 					</form>
 				)}

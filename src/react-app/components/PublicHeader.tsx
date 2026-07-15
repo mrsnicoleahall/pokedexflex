@@ -15,7 +15,6 @@ export function PublicHeader() {
 		<header className="toolbar public-profile__bar">
 			<div className="toolbar__inner container">
 				<Link className="brandmark" to={PATHS.home} aria-label="PokéDexFlex home">
-					<img src="/brand/icon-128.png" alt="" className="brandmark__icon" />
 					<span className="brandmark__text">PokéDexFlex</span>
 				</Link>
 				<div className="toolbar__controls">

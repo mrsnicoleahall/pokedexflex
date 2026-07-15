@@ -144,6 +144,35 @@ a {
 	min-height: 100%;
 	display: flex;
 	flex-direction: column;
+	/* Sit above the ambient .brand-corner watermark. */
+	position: relative;
+	z-index: 1;
+}
+
+/* Ambient brand watermark: large, faded, slowly rotating icon anchored off the
+   bottom-right corner. Decorative only — behind all content, no interaction. */
+.brand-corner {
+	position: fixed;
+	right: clamp(-90px, -6vw, -40px);
+	bottom: clamp(-90px, -6vw, -40px);
+	width: clamp(200px, 30vw, 380px);
+	height: auto;
+	opacity: 0.05;
+	pointer-events: none;
+	user-select: none;
+	z-index: 0;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+	.brand-corner {
+		animation: brand-corner-spin 70s linear infinite;
+	}
+}
+
+@keyframes brand-corner-spin {
+	to {
+		transform: rotate(360deg);
+	}
 }
 
 .container {
@@ -1725,9 +1754,15 @@ a {
 		margin-left: 0;
 	}
 
+	/* Search takes its own full-width row so it isn't crushed by the
+	   generation select / theme toggle / account menu beside it. */
 	.input {
 		width: 100%;
-		flex: 1;
+		flex: 1 1 100%;
+	}
+
+	.select {
+		flex: 1 1 auto;
 	}
 
 	.container {
@@ -2525,6 +2560,7 @@ a {
 	gap: 8px;
 	cursor: pointer;
 	white-space: nowrap;
+	text-decoration: none;
 }
 
 .brandmark__icon {
@@ -2556,6 +2592,12 @@ a {
 .rivals {
 	position: relative;
 	overflow: hidden;
+	/* Clear the sticky toolbar when the hero "Versus" button scrolls here. */
+	scroll-margin-top: 84px;
+}
+
+.rivals__empty {
+	margin-top: 0.75rem;
 }
 
 .trophy-wall::before,
@@ -3267,18 +3309,25 @@ a {
 	background: color-mix(in srgb, var(--ink) 6%, transparent);
 }
 
-.forms-tile__img {
-	width: 120px;
-	height: 120px;
+/* Shared sprite <img> for the Forms gallery (tile + detail sheet). Fills its
+   frame; pixelated for 2D sprites; silhouette filter for the missing-sprite
+   fallback. */
+.form-img {
+	width: 100%;
+	height: 100%;
 	object-fit: contain;
 	opacity: 0;
 }
 
-.forms-tile__img--pixel {
+.form-img--pixel {
 	image-rendering: pixelated;
 }
 
-.forms-tile__img.is-loaded {
+.form-img--silhouette {
+	filter: brightness(0) invert(0.4);
+}
+
+.form-img.is-loaded {
 	opacity: 1;
 }
 
@@ -3291,7 +3340,7 @@ a {
 }
 
 @media (prefers-reduced-motion: no-preference) {
-	.forms-tile__img {
+	.form-img {
 		transition: opacity 0.35s ease;
 	}
 
@@ -3368,16 +3417,6 @@ a {
 		color-mix(in srgb, var(--brand-cyan) 14%, transparent) 0%,
 		transparent 70%
 	);
-}
-
-.form-sheet__sprite img {
-	width: 200px;
-	height: 200px;
-	object-fit: contain;
-}
-
-.form-sheet__sprite--pixel img {
-	image-rendering: pixelated;
 }
 
 .form-sheet__family {

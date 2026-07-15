@@ -3,23 +3,23 @@
   <defs>
     <style>
       .cls-1 {
-        fill: #e52369;
+        fill: #2f88c9;
       }
 
       .cls-2 {
-        fill: #d30750;
+        fill: #2f6fb0;
       }
 
       .cls-3 {
-        fill: #ea2f7b;
+        fill: #57a6d8;
       }
 
       .cls-4 {
-        fill: #ba004c;
+        fill: #1c3a63;
       }
 
       .cls-5 {
-        fill: #ffc0da;
+        fill: #cfeaf5;
       }
     </style>
   </defs>

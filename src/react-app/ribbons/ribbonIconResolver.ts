@@ -15,20 +15,36 @@ export type RibbonVisual =
 
 const ROMAN = ["", "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX"];
 
-/** Per-generation base hues (distinct, roughly evoking each region's palette). */
-const GEN_COLORS: Record<number, string> = {
-	1: "#EF5350", 2: "#FFB300", 3: "#43A047", 4: "#26C6DA",
-	5: "#5C6BC0", 6: "#EC407A", 7: "#FF7043", 8: "#AB47BC", 9: "#8D6E63",
+// Brand-analogous ribbon palette — a blue→teal→green metallic family echoing the
+// PokéDexFlex logo. Non-type families are distinguished by their position on this
+// ramp plus their center glyph, rather than a full rainbow, so the trophy wall
+// reads as one cohesive collection. (Type ribbons intentionally keep their
+// official per-type colors — see resolveRibbonIcon.)
+const BRAND = {
+	green: "#33b06a",
+	teal: "#1f9a8a",
+	aqua: "#2bb3b0",
+	cyan: "#4aa8dd",
+	blue: "#2f6fb0",
+	deep: "#1c3a63",
+	steel: "#7fb0cf", // polished steel-cyan for rare/precious tiers
+	slate: "#4a6b8a", // neutral fallback
+} as const;
+
+/** 9-step green→teal→cyan→blue ramp for generation/regional ribbons (distinct but analogous). */
+const GEN_RAMP: Record<number, string> = {
+	1: "#35b06a", 2: "#23a986", 3: "#1f9a97", 4: "#2493b5",
+	5: "#2f88c9", 6: "#3273bd", 7: "#3660b0", 8: "#2f50a0", 9: "#294486",
 };
 
 /** Emoji for the three form-fanatic ribbons. */
 const FORM_EMOJI: Record<string, string> = { mega: "🧬", regional: "🗺️", gigantamax: "🌀" };
 
-// Per-generation base hues reused for Regional ribbons (region == generation).
-const REGION_COLORS: Record<number, string> = GEN_COLORS;
+// Regional ribbons reuse the generation ramp (region == generation).
+const REGION_COLORS: Record<number, string> = GEN_RAMP;
 
-// Metallic tone for rarity-class ribbons.
-const RARITY_METAL = "#C0A062";
+// Metallic tone for rarity-class ribbons — polished steel-cyan, in the logo's vein.
+const RARITY_METAL = BRAND.steel;
 
 export function resolveRibbonIcon(ribbon: { id: string; category: string }): RibbonVisual {
 	const { id, category } = ribbon;
@@ -60,32 +76,32 @@ export function resolveRibbonIcon(ribbon: { id: string; category: string }): Rib
 
 	if (category === "Shiny") {
 		if (id === "shiny-100") return { kind: "piece", piece: "starribbon" };
-		return { kind: "rosette", baseColor: typeColor("fairy"), glyph: { kind: "emoji", emoji: "✦" } };
+		return { kind: "rosette", baseColor: BRAND.cyan, glyph: { kind: "emoji", emoji: "✦" } };
 	}
 
 	if (category === "Events") {
 		if (id === "event-100") return { kind: "piece", piece: "gift" };
-		return { kind: "rosette", baseColor: typeColor("grass"), glyph: { kind: "emoji", emoji: "🎁" } };
+		return { kind: "rosette", baseColor: BRAND.teal, glyph: { kind: "emoji", emoji: "🎁" } };
 	}
 
 	if (category === "Forms") {
 		const key = id.replace("form-fanatic-", "");
-		return { kind: "rosette", baseColor: typeColor("psychic"), glyph: { kind: "emoji", emoji: FORM_EMOJI[key] ?? "✨" } };
+		return { kind: "rosette", baseColor: BRAND.blue, glyph: { kind: "emoji", emoji: FORM_EMOJI[key] ?? "✨" } };
 	}
 
 	if (category === "Form Sets") {
 		const spId = Number(id.replace("formset-", "")) || 0;
-		const hue = (spId * 47) % 360;
-		return { kind: "rosette", baseColor: `hsl(${hue} 68% 55%)`, glyph: { kind: "emoji", emoji: "🎴" } };
+		const hue = 160 + ((spId * 37) % 70);
+		return { kind: "rosette", baseColor: `hsl(${hue} 52% 50%)`, glyph: { kind: "emoji", emoji: "🎴" } };
 	}
 
 	if (category === "Fun") {
-		return { kind: "rosette", baseColor: typeColor("poison"), glyph: { kind: "emoji", emoji: "🎉" } };
+		return { kind: "rosette", baseColor: BRAND.aqua, glyph: { kind: "emoji", emoji: "🎉" } };
 	}
 
 	if (category === "Completion" && id.startsWith("national-dex-")) {
 		const pct = id.slice("national-dex-".length);
-		return { kind: "rosette", baseColor: typeColor("electric"), glyph: { kind: "text", text: `${pct}%` } };
+		return { kind: "rosette", baseColor: BRAND.deep, glyph: { kind: "text", text: `${pct}%` } };
 	}
 
 	if (category === "Rarity Class") {
@@ -100,10 +116,10 @@ export function resolveRibbonIcon(ribbon: { id: string; category: string }): Rib
 			id.startsWith("collector-6iv") ? "⭐" :
 			id === "collector-mega" ? "🧬" :
 			id === "collector-gmax" ? "🔺" : "📦";
-		return { kind: "rosette", baseColor: typeColor("steel"), glyph: { kind: "emoji", emoji } };
+		return { kind: "rosette", baseColor: BRAND.green, glyph: { kind: "emoji", emoji } };
 	}
 
 	if (category === "Grand") return { kind: "piece", piece: "trophy" };
 
-	return { kind: "rosette", baseColor: typeColor("normal"), glyph: { kind: "text", text: (id[0] ?? "?").toUpperCase() } };
+	return { kind: "rosette", baseColor: BRAND.slate, glyph: { kind: "text", text: (id[0] ?? "?").toUpperCase() } };
 }

@@ -1,6 +1,6 @@
 // src/react-app/pages/SpeciesCatalog.tsx
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { fetchSpecies, type SpeciesDto } from "../api";
 import { useAuth } from "../auth/AuthProvider";
 import { PokemonCard } from "../components/PokemonCard";
@@ -12,22 +12,29 @@ type SpeciesCatalogProps = {
 	gen: number | undefined;
 };
 
+/** Page size for the living-dex grid. The worker caps a single page at 200. */
+const PAGE_SIZE = 60;
+
 export function SpeciesCatalog({ q, gen }: SpeciesCatalogProps) {
 	const { user } = useAuth();
 	const [items, setItems] = useState<SpeciesDto[]>([]);
 	const [total, setTotal] = useState<number | null>(null);
 	const [error, setError] = useState<string | null>(null);
 	const [loading, setLoading] = useState(true);
+	const [loadingMore, setLoadingMore] = useState(false);
 	const [refreshKey, setRefreshKey] = useState(0);
 	const [signInOpen, setSignInOpen] = useState(false);
 	const [addTarget, setAddTarget] = useState<SpeciesDto | null>(null);
+	const loadingMoreRef = useRef(false);
+	const sentinelRef = useRef<HTMLDivElement>(null);
 
+	// First page — resets whenever the search/gen filter changes (debounced) or
+	// a specimen is added (refreshKey).
 	useEffect(() => {
 		let cancelled = false;
-
 		const t = setTimeout(() => {
 			setLoading(true);
-			fetchSpecies({ q, gen })
+			fetchSpecies({ q, gen, limit: PAGE_SIZE, offset: 0 })
 				.then((r) => {
 					if (cancelled) return;
 					setItems(r.items);
@@ -39,16 +46,46 @@ export function SpeciesCatalog({ q, gen }: SpeciesCatalogProps) {
 					setError(err instanceof Error ? err.message : String(err));
 				})
 				.finally(() => {
-					if (cancelled) return;
-					setLoading(false);
+					if (!cancelled) setLoading(false);
 				});
 		}, 250);
-
 		return () => {
 			cancelled = true;
 			clearTimeout(t);
 		};
 	}, [q, gen, refreshKey]);
+
+	const hasMore = total !== null && items.length < total;
+
+	const loadMore = useCallback(() => {
+		if (loadingMoreRef.current || total === null || items.length >= total) return;
+		loadingMoreRef.current = true;
+		setLoadingMore(true);
+		fetchSpecies({ q, gen, limit: PAGE_SIZE, offset: items.length })
+			.then((r) => setItems((prev) => [...prev, ...r.items]))
+			.catch(() => {
+				/* keep what's loaded; the sentinel stays and can retry on next scroll */
+			})
+			.finally(() => {
+				loadingMoreRef.current = false;
+				setLoadingMore(false);
+			});
+	}, [q, gen, items.length, total]);
+
+	// Auto-load the next page when the sentinel scrolls into view.
+	useEffect(() => {
+		if (!hasMore) return;
+		const el = sentinelRef.current;
+		if (!el) return;
+		const io = new IntersectionObserver(
+			(entries) => {
+				if (entries[0]?.isIntersecting) loadMore();
+			},
+			{ rootMargin: "600px" },
+		);
+		io.observe(el);
+		return () => io.disconnect();
+	}, [hasMore, loadMore]);
 
 	function handleAddClick(species: SpeciesDto) {
 		if (!user) {
@@ -64,7 +101,7 @@ export function SpeciesCatalog({ q, gen }: SpeciesCatalogProps) {
 				<h1 className="page__title">Living Dex</h1>
 				{total !== null && !error && (
 					<span>
-						{total} {total === 1 ? "Pokémon" : "Pokémon"} found
+						{items.length < total ? `Showing ${items.length} of ${total}` : `${total} Pokémon`}
 					</span>
 				)}
 			</div>
@@ -88,6 +125,15 @@ export function SpeciesCatalog({ q, gen }: SpeciesCatalogProps) {
 					{items.map((species) => (
 						<PokemonCard key={species.id} species={species} onAdd={() => handleAddClick(species)} />
 					))}
+				</div>
+			)}
+
+			{/* Infinite-scroll sentinel + manual fallback (keyboard/reduced-motion accessible). */}
+			{hasMore && (
+				<div ref={sentinelRef} className="load-more">
+					<button type="button" className="button" onClick={loadMore} disabled={loadingMore}>
+						{loadingMore ? "Loading…" : `Load more (${items.length} of ${total})`}
+					</button>
 				</div>
 			)}
 

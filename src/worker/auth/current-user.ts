@@ -12,6 +12,8 @@ export interface CurrentUser {
   displayName: string | null;
   gender: string | null;
   hasAvatar: boolean;
+  handle: string | null;
+  isPublic: boolean;
 }
 
 type AppContext = Context<{ Bindings: Env }>;
@@ -32,6 +34,8 @@ export const getCurrentUser = async (c: AppContext): Promise<CurrentUser | null>
     displayName: user.displayName,
     gender: user.gender,
     hasAvatar: user.avatarKey !== null,
+    handle: user.handle,
+    isPublic: user.isPublic === 1,
   };
 };
 

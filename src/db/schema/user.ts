@@ -7,6 +7,8 @@ export const users = sqliteTable("users", {
   displayName: text("display_name"),
   gender: text("gender"),
   avatarKey: text("avatar_key"),
+  handle: text("handle").unique(),
+  isPublic: integer("is_public").notNull().default(1),
   createdAt: integer("created_at").notNull(),
 });
 

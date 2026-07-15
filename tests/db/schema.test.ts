@@ -226,3 +226,27 @@ describe("favorites schema", () => {
     ).rejects.toThrow();
   });
 });
+
+describe("public profile schema (handle + isPublic)", () => {
+  it("users: handle defaults to null, is_public defaults to 1, and both round-trip", async () => {
+    const db = getDb(env.DB);
+    await db.insert(users).values({ id: "pub1", email: "pub1@x.com", createdAt: 1 });
+
+    const [before] = await db.select().from(users).where(eq(users.id, "pub1"));
+    expect(before.handle).toBeNull();
+    expect(before.isPublic).toBe(1);
+
+    await db.update(users).set({ handle: "pub-one", isPublic: 0 }).where(eq(users.id, "pub1"));
+    const [after] = await db.select().from(users).where(eq(users.id, "pub1"));
+    expect(after.handle).toBe("pub-one");
+    expect(after.isPublic).toBe(0);
+  });
+
+  it("users: handle is unique across users", async () => {
+    const db = getDb(env.DB);
+    await db.insert(users).values({ id: "puA", email: "puA@x.com", handle: "dupe-handle", createdAt: 1 });
+    await expect(
+      db.insert(users).values({ id: "puB", email: "puB@x.com", handle: "dupe-handle", createdAt: 1 }),
+    ).rejects.toThrow();
+  });
+});

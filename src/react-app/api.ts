@@ -499,6 +499,8 @@ export type UserDto = {
 	gender: string | null;
 	hasAvatar: boolean;
 	favorites: FavoriteDto[];
+	handle: string | null;
+	isPublic: boolean;
 };
 
 /**

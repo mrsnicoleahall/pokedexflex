@@ -11,8 +11,9 @@ import { useAuth } from "../auth/AuthProvider";
 import { Avatar } from "./Avatar";
 import { NAME_PLACEHOLDER } from "../profile/display";
 import { SignInPanel } from "./SignInPanel";
+import { type AccountView } from "../routes";
 
-export type AccountView = "collection" | "ribbons" | "importExport" | "settings";
+export type { AccountView };
 
 type AccountMenuProps = {
 	onNavigate: (view: AccountView) => void;

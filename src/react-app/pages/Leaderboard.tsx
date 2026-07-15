@@ -136,8 +136,8 @@ function LeaderboardTable({
 				</ol>
 			</div>
 			<p className="state__hint leaderboard__note">
-				Trainer Score and Rarity reflect each trainer's last visit to their Ribbons page; Completion and
-				Shiny are live.
+				Trainer Score, Ribbons, and Rarity reflect each trainer's last visit to their Ribbons page.
+				Completion and Shiny are live.
 			</p>
 		</>
 	);

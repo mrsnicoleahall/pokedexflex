@@ -494,6 +494,22 @@ export type UserDto = {
 	hasAvatar: boolean;
 };
 
+/**
+ * Updates the signed-in user's display name and/or gender (a partial update —
+ * either field may be omitted). Server validates gender against
+ * `{boy, girl, ditto}` and trims/length-caps displayName; an invalid or
+ * empty body throws `ApiValidationError` via `handleJson`.
+ */
+export async function updateProfile(input: { displayName?: string; gender?: string }): Promise<{ user: UserDto }> {
+	const res = await fetch("/api/profile", {
+		method: "PUT",
+		credentials: "include",
+		headers: { "Content-Type": "application/json" },
+		body: JSON.stringify(input),
+	});
+	return handleJson<{ user: UserDto }>(res, "update profile");
+}
+
 export async function authRequestLink(
 	email: string,
 ): Promise<{ ok: boolean; devLink?: string }> {

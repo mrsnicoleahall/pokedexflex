@@ -8,10 +8,10 @@ every species/form + event distribution, track your specimens, earn ribbons, imp
 and (in progress) a public "flex" layer with rarity, stats, profiles, and Versus.
 
 - **Repo:** `/Users/nicole/Projects/PokeWebBank` (folder name predates the product name)
-- **Working branch:** `flex-layer` @ **9082b96** — NOT merged to `main` yet. All work committed.
+- **Working branch:** `flex-layer` @ **4660717** — NOT merged to `main` yet. All work committed.
 - **Run locally:** `npm run db:local` (migrate + seed) then `npm run dev` → http://localhost:5173.
   Dev sign-in: enter any email; the magic-link appears on-screen — click it.
-- **Stack:** Cloudflare Workers + Hono · D1 (Drizzle) · R2 (sprite cache) · Workers AI (photo import, deploy-only) · Vite + React + TS. Tests: Vitest + `@cloudflare/vitest-pool-workers`. **Verify of record: `npx tsc -b` + `npm run build` + `npx vitest run` (currently 311 passing).**
+- **Stack:** Cloudflare Workers + Hono · D1 (Drizzle) · R2 (sprite cache) · Workers AI (photo import, deploy-only) · Vite + React + TS. Tests: Vitest + `@cloudflare/vitest-pool-workers`. **Verify of record: `npx tsc -b` + `npm run build` + `npx vitest run` (currently 354 passing).**
 
 ## The big arc: "Ribbons & Rivalry" expansion
 - **Spec (approved):** `docs/superpowers/specs/2026-07-14-ribbons-and-rivalry-design.md`
@@ -29,19 +29,18 @@ and (in progress) a public "flex" layer with rarity, stats, profiles, and Versus
 
 - **Phase P — Trainer Profile (DONE this session, commits `b1fa5ad..9082b96`, all 7 tasks + whole-phase review + browser visual pass):** `users.gender`/`avatar_key` (migration 0007) + `user_favorites` (migration 0008); `PUT /api/profile` (name+gender, validated `boy|girl|ditto`), avatar upload/serve via `SPRITES` R2 (`avatars/{userId}`, best-effort delete on account-deletion), `PUT /api/profile/favorites` (top-3, server-validated); `GET /api/auth/me` extended additively with `gender`/`hasAvatar`/`favorites`. Required blocking onboarding gate (`ProfileSetup` in `App.tsx`, no nav escape), Settings profile editor, and display wiring — AccountMenu/Home show avatar + `displayName ?? "Trainer"`, **never email** (only remaining `user.email` in the client is Settings' Account section). New `FavoritesStrip` on Home. Whole-phase review verdict: **SHIP-WITH-NOTED-DEFERRALS** (one landmine — `PUT /api/profile` had omitted the now-required `favorites` field — fixed in `9082b96`). Verified in-browser (light+dark, signed-in): onboarding gate blocks → releases on name+gender save; Home avatar/name/rank/favorites; Settings editor pre-seeds. **Deferred Minors (triaged fine-to-defer, in the ledger):** add `X-Content-Type-Options: nosniff` + magic-byte sniff on avatar serve; two object-URL blob leaks (ProfileSetup unmount, Settings save); stale "Saved" label after new-photo pick; `.favorites-strip__name` unstyled; consolidate the 3 `Gender` union declarations; brief onboarding-flash during initial auth `loading`.
 
+- **Phase F — Public Profiles + Routing (DONE this session, commits `e832abe..4660717`, all 6 tasks F1–F6 + whole-phase review + browser visual pass):** `users.handle` (unique, nullable) + `users.isPublic` (default 1) via migration 0009; `PUT /api/profile/handle` + `PUT /api/profile/visibility` + a handle **backfill** on `PUT /api/profile` (derives a unique slug from displayName at onboarding — the "customize the /url" is done in Settings); public unauthenticated `GET /api/u/:handle` reusing the extracted `buildCollectionSummary`/`buildReferenceData` (pulled verbatim out of `routes/ribbons.ts` — behavior-preserving, seeds Phase G's `stats.ts`) + scoring + showcase + favorites — **never email**, private/unknown both return an identical 404. Migrated the client from in-page tab state to **`react-router-dom@7.18.1`**: pure `routes.ts` helpers, an `AppLayout` shell that owns the blocking onboarding gate + `<Outlet>`, and `/u/:handle` as a top-level **ungated** route. `PublicProfile` page (avatar/handle/name/rank/stats/favorites/showcase, minimal header, no account chrome). Settings gained a handle editor + public/private toggle + copy-able share link. Whole-phase review: **SHIP-WITH-NOTED-DEFERRALS**, no fixes needed. Verified in-browser: set handle → `/u/ash-ketchum` renders; unknown/private → "Trainer not found"; deep-links + SPA fallback + gate all work. **Deferred Minors (in the ledger):** handle-uniqueness check-then-write race surfaces as 500 not 400 (unique index backstops it); `generateUniqueHandle` >30-char skip (unreachable); public route sequential `await` (latency nit); Settings back→Home + tab-highlight resets (plan-verbatim); `.state__hint`/`.favorites-strip__name` unstyled; dead guard + no debounce in Settings handle input.
+
 ## REMAINING WORK (in order)
 
-### Phase F — Public profiles + routing (includes the custom URL)  ← DO THIS NEXT
-Add lightweight URL routing (app currently uses in-page tab state); `users.handle` (unique) + `users.isPublic`; public `GET /api/u/:handle` (+ collection); page at `/u/:handle`. **User-EDITABLE custom handle** (the "customize the trailing /url" request — validate lowercase alnum+dashes, length, reserved-word blocklist, uniqueness; suggest an initial handle at onboarding). Public profile shows name + avatar + **top-3 favorites** + ribbon showcase + rank/score/stats — **never email**. Private toggle. Needs a spec/plan (author like the others).
-
-### Phase G — Versus (real)
-`/versus/:a/:b`: the mockup is the spec — 6 scored rounds (Strength, Diversity, Completion, Shiny, Ribbon score, Rarity Crown), per-type/gen breakdown, share card, saved rivalries, spice-by-margin trash-talk verdicts. Depends on F (handles/routing) + a per-user stats aggregator (`stats.ts`, not yet built).
+### Phase G — Versus (real)  ← DO THIS NEXT
+`/versus/:a/:b`: the mockup is the spec — 6 scored rounds (Strength, Diversity, Completion, Shiny, Ribbon score, Rarity Crown), per-type/gen breakdown, share card, saved rivalries, spice-by-margin trash-talk verdicts. F is done (handles/routing + `react-router-dom` in place); still needs a per-user stats aggregator (`stats.ts`, not yet built — but F3's `buildCollectionSummary`/`buildReferenceData` in `src/worker/ribbons/collection-summary.ts` are the foundation to build it on). Needs a spec/plan (author like the others). Two `/u/:a` handles → a `/versus/:a/:b` route reusing the public read path.
 
 ### Homepage redesign — still pending (from the original Flex spec).
 
 ## Gotchas / must-remember
 - **`npm run db:local` re-seeds and WIPES the sessions table → logs you out** in dev; sign in again. It can also hit a FK error on stale local D1 — fix by wiping `.wrangler/state` and re-running.
-- **Migrations = `npx drizzle-kit generate`** (edit schema first), never hand-write SQL; `_journal.json` + snapshot auto-update. Next index: **0007**.
+- **Migrations = `npx drizzle-kit generate`** (edit schema first), never hand-write SQL; `_journal.json` + snapshot auto-update. Highest existing is **0009** (Phase F); next index **0010** — confirm against `migrations/meta/_journal.json`.
 - **Browser-pane quirk:** screenshots go blank at non-zero scroll on long pages and `computer scroll` times out. Verify long pages via `resize_window` tall + `scrollTo(0,0)`, not scrolling.
 - **Worker test files accumulate D1 state across `it()` blocks** (reset only between files) — assert deltas/unique ids, not absolute counts.
 - `npm run dev` needs `cloudflare({ remoteBindings: false })` in `vite.config.ts` (already set) — the AI binding has no local simulator.
@@ -54,5 +53,6 @@ Add lightweight URL routing (app currently uses in-page tab state); `users.handl
 ## How to resume (new chat)
 1. Read this file + the spec + `.superpowers/sdd/flex-progress.md` (the ledger has everything).
 2. `git checkout flex-layer` (likely already there), `npm run db:local && npm run dev`.
-3. **Phase P is DONE + reviewed + visually verified.** Next: author Phase F (spec→plan→execute via subagent-driven-development), then G. Fold the deferred Phase-P Minors (in the ledger) into the pre-merge branch review.
+3. **Phases P and F are DONE + reviewed + visually verified.** Next: author Phase G (Versus) — spec→plan→execute via subagent-driven-development, building the per-user `stats.ts` aggregator on F3's `collection-summary.ts`. Then the homepage redesign. Fold the deferred Phase-P and Phase-F Minors (in the ledger) into the final pre-merge branch review before merging flex-layer→main.
+4. **Dev-server gotcha (new this session):** after `npm install`-ing a client dep mid-session (e.g. react-router-dom), RESTART the dev server before trusting the browser — a stale Vite optimizeDeps cache throws a spurious "duplicate React / invalid hook call" that a restart clears.
 4. Keep the ledger updated as you go; one dev server on :5173 for controller visual review; build subagents verify via tsc/tests/build (not their own dev server).

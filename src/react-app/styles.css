@@ -269,12 +269,50 @@ a {
 
 .page__meta {
 	display: flex;
-	align-items: baseline;
+	align-items: center;
 	justify-content: space-between;
 	gap: 12px;
+	flex-wrap: wrap;
 	margin-bottom: 16px;
 	color: var(--muted);
 	font-size: 0.85rem;
+}
+
+.rank-badge {
+	display: inline-flex;
+	align-items: center;
+	gap: 10px;
+	padding: 6px 14px;
+	border: 1px solid var(--hairline);
+	border-radius: 999px;
+	background: var(--surface);
+	box-shadow: var(--shadow-card-rest);
+}
+
+.rank-badge--sm {
+	padding: 4px 10px;
+	gap: 8px;
+}
+
+.rank-badge__rank {
+	font-family: var(--font-display);
+	font-weight: 700;
+	font-size: 0.85rem;
+}
+
+.rank-badge--sm .rank-badge__rank {
+	font-size: 0.78rem;
+}
+
+.rank-badge__score {
+	font-family: var(--font-mono);
+	font-size: 0.8rem;
+	color: var(--muted);
+	white-space: nowrap;
+}
+
+.rank-badge__score small {
+	font-size: 0.72rem;
 }
 
 .page__title {

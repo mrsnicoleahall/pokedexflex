@@ -14,10 +14,12 @@
 // per multi-form species) so it renders behind a native <details> disclosure,
 // collapsed by default, labeled with its own earned/total count.
 
-import { useEffect, useMemo, useState } from "react";
-import { fetchRibbons, type RibbonDto } from "../api";
+import { useMemo } from "react";
+import type { RibbonDto } from "../api";
 import { useAuth } from "../auth/AuthProvider";
+import { RankBadge } from "../components/RankBadge";
 import { RibbonIcon } from "../ribbons/RibbonIcon";
+import { useRibbonsData } from "../ribbons/useRibbonsData";
 import { typeColor } from "../theme";
 
 /** Sensible display order for ribbon categories; "Grand" (the hardest, rarest ribbons) leads. "Fun" (easter eggs) trails. */
@@ -171,35 +173,7 @@ function RibbonSection({ category, ribbons }: { category: string; ribbons: Ribbo
 
 export function Ribbons() {
 	const { user } = useAuth();
-	const [ribbons, setRibbons] = useState<RibbonDto[]>([]);
-	const [earnedCount, setEarnedCount] = useState(0);
-	const [total, setTotal] = useState(0);
-	const [loading, setLoading] = useState(true);
-	const [error, setError] = useState<string | null>(null);
-
-	useEffect(() => {
-		let cancelled = false;
-		setLoading(true);
-		fetchRibbons()
-			.then((r) => {
-				if (cancelled) return;
-				setRibbons(r.ribbons);
-				setEarnedCount(r.earnedCount);
-				setTotal(r.total);
-				setError(null);
-			})
-			.catch((err: unknown) => {
-				if (cancelled) return;
-				setError(err instanceof Error ? err.message : String(err));
-			})
-			.finally(() => {
-				if (cancelled) return;
-				setLoading(false);
-			});
-		return () => {
-			cancelled = true;
-		};
-	}, [user]);
+	const { ribbons, earnedCount, total, trainerScore, rank, loading, error } = useRibbonsData();
 
 	const grouped = useMemo(() => {
 		const byCategory = new Map<string, RibbonDto[]>();
@@ -221,6 +195,7 @@ export function Ribbons() {
 		<div className="container page">
 			<div className="page__meta">
 				<h1 className="page__title">Ribbons</h1>
+				{user && <RankBadge trainerScore={trainerScore} rank={rank} />}
 			</div>
 
 			{error && (

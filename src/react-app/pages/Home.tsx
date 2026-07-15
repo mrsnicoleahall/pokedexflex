@@ -8,8 +8,10 @@
 
 import { useState } from "react";
 import type { AccountView } from "../components/AccountMenu";
+import { RankBadge } from "../components/RankBadge";
 import { SignInPanel } from "../components/SignInPanel";
 import { useAuth } from "../auth/AuthProvider";
+import { useRibbonsData } from "../ribbons/useRibbonsData";
 import { heroAura } from "../theme";
 
 type HomeProps = {
@@ -20,6 +22,7 @@ type HomeProps = {
 export function Home({ onBrowse, onNavigate }: HomeProps) {
 	const { user } = useAuth();
 	const [signInOpen, setSignInOpen] = useState(false);
+	const { trainerScore, rank } = useRibbonsData();
 
 	return (
 		<div className="container page">
@@ -28,6 +31,7 @@ export function Home({ onBrowse, onNavigate }: HomeProps) {
 					<div className="hero__welcome">
 						<p className="hero__eyebrow">Welcome back</p>
 						<h1 className="hero__title hero__title--slim">{user.displayName ?? user.email}</h1>
+						<RankBadge trainerScore={trainerScore} rank={rank} size="sm" />
 						<div className="hero__actions">
 							<button
 								type="button"

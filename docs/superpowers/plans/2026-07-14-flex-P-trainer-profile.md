@@ -1961,3 +1961,469 @@ git commit -m "feat(flex-P): required onboarding gate (ProfileSetup: name, gende
 ```
 
 ---
+
+### Task P6: Settings profile editor (reuse `ProfileFields` + `FavoriteSpeciesPicker`)
+
+**Files:**
+- Modify: `src/react-app/pages/Settings.tsx` (add a "Profile" section + the favorites picker, above the existing "Account"/"Delete account" sections)
+- Verify only: `npx tsc -b` + `npm run build` (no component-test harness — see Global Constraints)
+
+**Interfaces:**
+- Consumes: `ProfileFields`, `FavoriteSpeciesPicker` (Task P5); `updateProfile`, `uploadAvatar` (Task P2/P3); `useAuth().refresh` (existing).
+
+- [ ] **Step 1: Rewrite `src/react-app/pages/Settings.tsx`**
+
+```tsx
+// src/react-app/pages/Settings.tsx
+//
+// Signed-in-only settings view: profile editing (name/gender/photo/top-3
+// favorites — Flex Phase P), the account email + sign-out, and a
+// destructive delete-account flow gated behind a typed "delete"
+// confirmation.
+
+import { useState } from "react";
+import { authDeleteAccount, updateProfile, uploadAvatar } from "../api";
+import { useAuth } from "../auth/AuthProvider";
+import { FavoriteSpeciesPicker } from "../components/FavoriteSpeciesPicker";
+import { ProfileFields, type Gender } from "../components/ProfileFields";
+
+type SettingsProps = {
+	onBack: () => void;
+};
+
+const CONFIRM_WORD = "delete";
+
+export function Settings({ onBack }: SettingsProps) {
+	const { user, logout, refresh } = useAuth();
+	const [confirmText, setConfirmText] = useState("");
+	const [deleting, setDeleting] = useState(false);
+	const [error, setError] = useState<string | null>(null);
+
+	// Profile-editing local state, seeded from the current user (both are
+	// guaranteed non-null past onboarding, but Settings still guards below).
+	const [displayName, setDisplayName] = useState(user?.displayName ?? "");
+	const [gender, setGender] = useState<Gender | null>((user?.gender as Gender | null) ?? null);
+	const [file, setFile] = useState<File | null>(null);
+	const [localPreviewUrl, setLocalPreviewUrl] = useState<string | null>(null);
+	const [savingProfile, setSavingProfile] = useState(false);
+	const [profileError, setProfileError] = useState<string | null>(null);
+	const [profileSaved, setProfileSaved] = useState(false);
+
+	if (!user) {
+		return (
+			<div className="page container">
+				<div className="state">
+					<p className="state__title">You're signed out</p>
+					<button type="button" className="button" onClick={onBack}>
+						Back
+					</button>
+				</div>
+			</div>
+		);
+	}
+
+	function onFileSelected(f: File | null) {
+		setFile(f);
+		setLocalPreviewUrl((prev) => {
+			if (prev) URL.revokeObjectURL(prev);
+			return f ? URL.createObjectURL(f) : null;
+		});
+	}
+
+	async function handleSaveProfile() {
+		setProfileError(null);
+		setProfileSaved(false);
+		if (!displayName.trim() || !gender) {
+			setProfileError("A trainer name and a gender are both required.");
+			return;
+		}
+		setSavingProfile(true);
+		try {
+			await updateProfile({ displayName: displayName.trim(), gender });
+			if (file) await uploadAvatar(file);
+			await refresh();
+			setFile(null);
+			setLocalPreviewUrl(null);
+			setProfileSaved(true);
+		} catch (err) {
+			setProfileError(err instanceof Error ? err.message : String(err));
+		} finally {
+			setSavingProfile(false);
+		}
+	}
+
+	async function handleSignOut() {
+		await logout();
+		onBack();
+	}
+
+	async function handleDelete() {
+		setError(null);
+		setDeleting(true);
+		try {
+			await authDeleteAccount();
+			await refresh();
+			onBack();
+		} catch {
+			setError("Couldn't delete your account. Please try again.");
+			setDeleting(false);
+		}
+	}
+
+	return (
+		<div className="page container settings-page">
+			<div className="page__meta">
+				<button type="button" className="button" onClick={onBack}>
+					← Back
+				</button>
+			</div>
+			<h1 className="page__title">Settings</h1>
+
+			<section className="settings-section">
+				<h2 className="settings-section__title">Profile</h2>
+				{profileError && (
+					<p className="error-banner" role="alert">
+						{profileError}
+					</p>
+				)}
+				<ProfileFields
+					idPrefix="settings"
+					displayName={displayName}
+					onDisplayNameChange={(v) => {
+						setDisplayName(v);
+						setProfileSaved(false);
+					}}
+					gender={gender}
+					onGenderChange={(v) => {
+						setGender(v);
+						setProfileSaved(false);
+					}}
+					userId={user.id}
+					hasAvatar={user.hasAvatar}
+					localPreviewUrl={localPreviewUrl}
+					onFileSelected={onFileSelected}
+				/>
+				<button
+					type="button"
+					className="button button--primary"
+					onClick={handleSaveProfile}
+					disabled={savingProfile}
+				>
+					{savingProfile ? "Saving…" : profileSaved ? "Saved" : "Save profile"}
+				</button>
+			</section>
+
+			<FavoriteSpeciesPicker favorites={user.favorites} onSaved={() => void refresh()} />
+
+			<section className="settings-section">
+				<h2 className="settings-section__title">Account</h2>
+				<p className="settings-section__row">
+					<span className="field-label">Email</span>
+					<span>{user.email}</span>
+				</p>
+				<button type="button" className="button" onClick={handleSignOut}>
+					Sign out
+				</button>
+			</section>
+
+			<section className="settings-section settings-section--danger">
+				<h2 className="settings-section__title">Delete account</h2>
+				<p className="settings-section__hint">
+					This permanently deletes your account, boxes, specimens, and import history. This
+					cannot be undone.
+				</p>
+				<label className="field-label" htmlFor="confirm-delete">
+					Type "{CONFIRM_WORD}" to confirm
+				</label>
+				<input
+					id="confirm-delete"
+					className="input input--full"
+					value={confirmText}
+					onChange={(e) => setConfirmText(e.target.value)}
+					placeholder={CONFIRM_WORD}
+				/>
+				{error && (
+					<p className="error-banner" role="alert">
+						{error}
+					</p>
+				)}
+				<button
+					type="button"
+					className="button button--danger"
+					disabled={confirmText.trim().toLowerCase() !== CONFIRM_WORD || deleting}
+					onClick={handleDelete}
+				>
+					{deleting ? "Deleting…" : "Delete account"}
+				</button>
+			</section>
+		</div>
+	);
+}
+```
+
+(`FavoriteSpeciesPicker`'s `onSaved` prop is typed `(favorites: FavoriteDto[]) => void`; `() => void refresh()` structurally satisfies that — TS allows a callback with fewer parameters than the declared type. Re-running `refresh()` re-fetches `/api/auth/me`, which updates `user.favorites` through `AuthProvider`, so the picker's own `useEffect(() => setSelected(favorites), [favorites])` re-syncs from the new prop — no separate local-favorites state needed in `Settings`.)
+
+- [ ] **Step 2: Verify + commit**
+
+Run: `npx tsc -b && npm run build`
+Expected: clean typecheck, successful build. No behavior test exists for this page today (`Settings.tsx` had none before this task either) — verified by build success only, per the Global Constraints.
+
+```bash
+git add src/react-app/pages/Settings.tsx
+git commit -m "feat(flex-P): Settings profile editor (name/gender/photo/favorites)"
+```
+
+---
+
+### Task P7: Display wiring — `TopBar`/`AccountMenu`/`Home` show avatar + display name (never email); favorites on the trainer card
+
+**Files:**
+- Modify: `src/react-app/components/AccountMenu.tsx` (trigger shows `Avatar` + `displayName ?? NAME_PLACEHOLDER`, never email)
+- Modify: `src/react-app/pages/Home.tsx` (hero shows `Avatar` + `displayName ?? NAME_PLACEHOLDER`; renders `FavoritesStrip`)
+- Create: `src/react-app/components/FavoritesStrip.tsx` (read-only top-3 favorites display — the "trainer card")
+- Modify: `src/react-app/styles.css` (append `.hero__identity`, `.favorites-strip`; adjust `.account-menu__trigger` to a flex row + add `.account-menu__label`)
+- Verify only: `npx tsc -b` + `npm run build`
+
+**Interfaces:**
+- Consumes: `Avatar` (Task P5), `avatarUrl`/`NAME_PLACEHOLDER` (`../profile/display`, Task P5), `UserDto.favorites` (Task P4).
+
+- [ ] **Step 1: Update `src/react-app/components/AccountMenu.tsx`**
+
+Update the file header comment and the signed-in trigger button:
+
+```tsx
+// src/react-app/components/AccountMenu.tsx
+//
+// Lives in the TopBar's control cluster. Signed-out renders a "Sign in"
+// button that opens the SignInPanel modal. Signed-in renders a button
+// showing the user's avatar + display name (never email — see
+// src/react-app/profile/display.ts's NAME_PLACEHOLDER), which opens a menu
+// with links to Collection/Ribbons/Import-Export/Settings and Sign out.
+```
+
+Add the imports:
+
+```ts
+import { Avatar } from "./Avatar";
+import { NAME_PLACEHOLDER } from "../profile/display";
+```
+
+Replace the trigger button's contents:
+
+```tsx
+			<button
+				ref={buttonRef}
+				type="button"
+				className="button account-menu__trigger"
+				aria-haspopup="menu"
+				aria-expanded={menuOpen}
+				onClick={() => setMenuOpen((open) => !open)}
+			>
+				<Avatar userId={user.id} displayName={user.displayName} hasAvatar={user.hasAvatar} size="sm" />
+				<span className="account-menu__label">{user.displayName ?? NAME_PLACEHOLDER}</span>
+			</button>
+```
+
+- [ ] **Step 2: Update `src/react-app/pages/Home.tsx`**
+
+Add the imports:
+
+```ts
+import { Avatar } from "../components/Avatar";
+import { FavoritesStrip } from "../components/FavoritesStrip";
+import { NAME_PLACEHOLDER } from "../profile/display";
+```
+
+Replace the signed-in hero block:
+
+```tsx
+					<div className="hero__welcome">
+						<div className="hero__identity">
+							<Avatar userId={user.id} displayName={user.displayName} hasAvatar={user.hasAvatar} size="lg" />
+							<div>
+								<p className="hero__eyebrow">Welcome back</p>
+								<h1 className="hero__title hero__title--slim">{user.displayName ?? NAME_PLACEHOLDER}</h1>
+							</div>
+						</div>
+						<RankBadge trainerScore={trainerScore} rank={rank} size="sm" />
+						<div className="hero__actions">
+							<button
+								type="button"
+								className="button button--primary"
+								onClick={() => onNavigate("collection")}
+							>
+								My Collection
+							</button>
+							<button type="button" className="button" onClick={() => onNavigate("ribbons")}>
+								Ribbons
+							</button>
+						</div>
+					</div>
+```
+
+Add `FavoritesStrip` right after the `hero` section (before `{user && <TrophyWall .../>}`):
+
+```tsx
+				</section>
+				{user && <FavoritesStrip favorites={user.favorites} />}
+				{user && <TrophyWall showcase={showcase} ribbons={ribbons} />}
+```
+
+- [ ] **Step 3: Create `src/react-app/components/FavoritesStrip.tsx`**
+
+```tsx
+// src/react-app/components/FavoritesStrip.tsx
+//
+// Read-only display of a user's top-3 favorite species (set via
+// FavoriteSpeciesPicker in ProfileSetup/Settings) — the "trainer card"
+// strip on the signed-in Home dashboard. Renders nothing if the user
+// hasn't picked any favorites (they're entirely optional, not a required
+// part of onboarding).
+
+import type { FavoriteDto } from "../api";
+import { Sprite } from "./Sprite";
+import { formatName } from "../theme";
+
+export function FavoritesStrip({ favorites }: { favorites: FavoriteDto[] }) {
+	if (favorites.length === 0) return null;
+	return (
+		<section className="favorites-strip" aria-label="Favorite Pokémon">
+			<h2 className="favorites-strip__title">Favorites</h2>
+			<div className="favorites-strip__list">
+				{favorites.map((f) => (
+					<div key={f.speciesId} className="favorites-strip__item">
+						<Sprite homeId={f.homeId ?? f.speciesId} alt={formatName(f.name)} />
+						<span className="favorites-strip__name">{formatName(f.name)}</span>
+					</div>
+				))}
+			</div>
+		</section>
+	);
+}
+```
+
+- [ ] **Step 4: Update `src/react-app/styles.css`**
+
+Change the existing `.account-menu__trigger` rule to a flex row and add a label class (keep the rule name, just replace its body):
+
+```css
+.account-menu__trigger {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	max-width: 220px;
+}
+
+.account-menu__label {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+```
+
+Append:
+
+```css
+/* ---------- Home hero identity + favorites strip ---------- */
+
+.hero__identity {
+	display: flex;
+	align-items: center;
+	gap: 1rem;
+	margin-bottom: 0.5rem;
+}
+
+.favorites-strip {
+	margin: 1.5rem 0;
+}
+
+.favorites-strip__title {
+	font-size: 1rem;
+	color: var(--muted);
+	margin-bottom: 0.75rem;
+}
+
+.favorites-strip__list {
+	display: flex;
+	gap: 1.5rem;
+	flex-wrap: wrap;
+}
+
+.favorites-strip__item {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 0.25rem;
+	font-size: 0.85rem;
+}
+```
+
+- [ ] **Step 5: Final verify + commit**
+
+Run: `npx vitest run && npx tsc -b && npm run build`
+Expected: full suite green (nothing in this task adds new test files — `AccountMenu.tsx`/`Home.tsx` have no existing component tests to update, consistent with the Global Constraints), clean typecheck, successful build.
+
+Manually confirm (by reading the rendered JSX, since no dev server is started per the Global Constraints — visual review happens separately) that **no code path in `AccountMenu.tsx` or `Home.tsx` still references `user.email`** as a display fallback; the only remaining `user.email` reference in the whole `src/react-app` tree should be `Settings.tsx`'s "Account" section.
+
+```bash
+git add src/react-app/components/AccountMenu.tsx src/react-app/pages/Home.tsx src/react-app/components/FavoritesStrip.tsx src/react-app/styles.css
+git commit -m "feat(flex-P): TopBar/AccountMenu/Home show avatar+displayName (never email); favorites strip"
+```
+
+---
+
+## Self-Review
+
+**Spec coverage:**
+
+| Spec item | Task | Status |
+| --- | --- | --- |
+| Stop showing email as the display name anywhere public | P5 (gate ensures displayName always set past onboarding), P7 (AccountMenu/Home swapped to `displayName ?? NAME_PLACEHOLDER`) | ✓ — only remaining `user.email` reference in `src/react-app` is Settings' Account section (login identity, explicitly allowed) |
+| Collect name, gender, photo | P1 (schema), P2 (name+gender endpoint), P3 (photo endpoint) | ✓ |
+| Gender = exactly Boy/Girl/Ditto, stored lowercased, validated | P2 (`GENDERS`, `validateProfileInput`) | ✓ |
+| Required onboarding: blocks the app until name+gender set; photo optional | P5 (`needsOnboarding`, `ProfileSetup`, `App.tsx` gate) | ✓ |
+| `users.displayName` reused as-is; add gender + avatar ref | P1 (`gender`, `avatar_key` columns) | ✓ |
+| Never leak email via new profile endpoints | P3 (`GET /api/profile/avatar/:userId` returns only image bytes or a fixed `{error}` 404 — Task P3 test asserts the 404 shape, and the route has no code path that touches `email`) | ✓ |
+| Migration via `drizzle-kit generate`, no hand-written SQL | P1 (0007: `gender`/`avatar_key`), P4 (0008: `user_favorites`) | ✓ — two migrations, since P1's `users`-table change and P4's new table are independent concerns (see P4's data-model write-up) |
+| `GET /api/auth/me` extended with displayName/gender/avatar info | P1 (`gender`, `hasAvatar`), P4 (`favorites`) | ✓ |
+| `PUT /api/profile` (name+gender), auth-scoped, validated | P2 | ✓ |
+| Avatar upload/serve, R2, size/type guard, photo optional | P3 (`POST /api/profile/avatar`, `GET /api/profile/avatar/:userId`) | ✓ |
+| `api.ts` client wrappers (`updateProfile`, `uploadAvatar`) + extended user type | P2, P3 | ✓ |
+| Required onboarding gate component | P5 | ✓ |
+| Settings profile editor | P6 | ✓ |
+| Display wiring (TopBar/AccountMenu/Home) | P7 | ✓ |
+| **New requirement:** Top-3 favorite Pokémon, selectable, shown on trainer card + (later, Phase F) public profile | P4 (schema/store/endpoint/`/me`), P5 (picker in onboarding), P6 (picker in Settings), P7 (`FavoritesStrip` on Home) | ✓ — Phase F's public-profile rendering of these same favorites is out of scope here (no `/u/:handle` route exists yet); this phase only guarantees the *data* (`user_favorites`, enriched in `/me`) and the *authenticated* display surface exist, ready for Phase F to read |
+| Custom profile URL/handle | *(not in this phase — Phase F, explicitly out of scope per the task)* | — |
+
+**Tables/columns added:** `users.gender` (text, nullable), `users.avatar_key` (text, nullable) — Task P1, migration `0007`. `user_favorites` (`id`, `user_id` FK→`users.id`, `species_id` FK→`species.id`, `slot`; unique on `(user_id, slot)` and `(user_id, species_id)`) — Task P4, migration `0008`.
+
+**Endpoints added:** `PUT /api/profile` (name+gender), `POST /api/profile/avatar` (multipart upload), `GET /api/profile/avatar/:userId` (public image serve), `PUT /api/profile/favorites` (top-3 species). `GET /api/auth/me` extended (not new) with `gender`, `hasAvatar`, `favorites`.
+
+**R2 approach:** reuse the existing `SPRITES` bucket binding (the only `r2_buckets` entry in `wrangler.jsonc`, already used by `routes/sprites.ts` and `routes/photo-import.ts`) under a new `avatars/{userId}` deterministic key prefix — no new bucket binding. Rationale spelled out in Task P3: one small object per user doesn't need bucket-level isolation, and a second binding means provisioning/binding a second bucket everywhere this repo runs (local `.wrangler` state, CI, deploy) for no real benefit. The deterministic (non-random) key means re-uploads overwrite in place, so Task P3 also adds a best-effort R2 delete of that key on `DELETE /api/auth/account` to avoid an orphaned object outliving the user.
+
+**Favorites data model:** a `user_favorites` table (`userId`, `speciesId`, `slot`), directly mirroring Phase D's `user_showcase` (`userId`, `ribbonId`, `slot`) rather than three nullable `favSpecies1/2/3` columns on `users` — see Task P4's write-up for the four-point justification (real FK to `species`, atomic wholesale-replace semantics, DB-enforced dedupe/cap via the two unique indexes, and keeping `users` from accumulating unrelated concerns). `getFavorites`/`setFavorites` in `src/worker/profile/favorites-store.ts` are near-verbatim structural twins of `getShowcase`/`setShowcase`; `getFavoritesEnriched` is the one addition beyond that pattern (joins against `species` for display, since unlike ribbons — which are computed catalog data already available client-side — species names/sprites live only in the DB).
+
+**Placeholder scan:** none — every step carries complete, runnable code and exact verification commands. Two deliberately-approximate migration indices (`0007` for Task P1, `0008` for Task P4) are explicitly flagged as "confirm against `migrations/meta/_journal.json` at execution time" rather than hard assumptions, matching how Phase D's plan handled the same uncertainty.
+
+**Type consistency:**
+- `CurrentUser` (`src/worker/auth/current-user.ts`) stays intentionally lean (`id, email, displayName, gender, hasAvatar`) — it's resolved on *every* authenticated request across the whole app (collection, boxes, ribbons, profile, etc. all call `requireUser`/`getCurrentUser`). `favorites` is deliberately **not** added there; it's only ever attached in the `GET /api/auth/me` route handler itself (one extra query, once per session hydration), so no other route pays for a favorites lookup it never needed.
+- `Gender` (`"boy" | "girl" | "ditto"`) is defined once server-side (`src/worker/profile/validate.ts`) and once client-side (`src/react-app/components/ProfileFields.tsx`, re-exported for `ProfileSetup.tsx`/`Settings.tsx`) as a literal union — not shared across the worker/client boundary (the two sides don't share a build target), but kept textually identical and cross-referenced in comments so a future edit to one is easy to spot needing the other.
+- `Settings.tsx` casts `user.gender as Gender | null` once, at the single point where a `string | null` (the wire type) needs to become the literal union for `ProfileFields`. This is safe in practice (the server only ever writes one of the three values) but is a cast, not a proof — flagged as risk 4 below.
+- `RibbonDto`-style additive-only discipline is mirrored for `UserDto`: `gender`, `hasAvatar`, `favorites` are all **added** fields; no existing `UserDto` consumer (there were none before this phase touching it beyond `AuthProvider`/`AccountMenu`/`Home`/`Settings`, all updated in-plan) breaks.
+- `FavoriteSpeciesPicker`'s `onSaved: (favorites: FavoriteDto[]) => void` is called with the server's authoritative enriched list after a save (never the picker's own optimistic `selected` state) — same "trust the server's response, not local state" posture as `ShowcasePicker`.
+
+**Determinism / idempotency:**
+- `setFavorites`/`setShowcase`-style "delete then insert" is not transactional (same house-style tradeoff already accepted and documented in Phase D's Self-Review risk 4) — a crash mid-write leaves favorites empty, not corrupted, and is trivially re-settable.
+- The avatar R2 key is deterministic (`avatars/{userId}`), so `POST /api/profile/avatar` is naturally idempotent-on-replace: no accumulation of orphaned objects from repeated uploads, verified by Task P3's "re-uploading replaces" test.
+- `needsOnboarding` is a pure function of `{displayName, gender}` only — recomputed fresh on every `App` render from whatever `AuthProvider` currently holds, so there's no stale cached "onboarded" flag that could get out of sync with the server.
+
+**Risks / open questions:**
+1. **No "remove photo" endpoint.** `POST /api/profile/avatar` uploads/replaces; there's no way to clear `avatarKey` back to `null` short of a support request. Scoped out deliberately (photo is additive and optional; removing one is a smaller, separable follow-up) but flagged here since a user who regrets a photo choice has no self-serve undo yet.
+2. **Avatar cache-control (`max-age=60`) is a short-but-nonzero window**, so a just-replaced photo can still show briefly (up to 60s) from a browser/CDN cache before the new one appears. Chosen over `immutable` (wrong, since the key is mutable) and over `no-store` (would make every avatar render a full network round-trip); 60s is a judgment call, not derived from a hard requirement.
+3. **`hasAvatar`/hand-cast `Gender`.** `Settings.tsx`'s `user.gender as Gender | null` cast (see Type Consistency above) would silently pass through a hypothetical future bad value rather than erroring at compile time — low risk today since only `validateProfileInput` (Task P2) ever writes `gender`, but worth a second look if this schema is ever written from a second code path (e.g. an admin tool).
+4. **Total favorite/onboarding load on `getCurrentUser`.** Deliberately did *not* add `favorites` to the hot-path `getCurrentUser`/`CurrentUser` (see Type Consistency) to avoid an extra query on every authenticated request; the tradeoff is that any *other* future route that wants a user's favorites must call `getFavoritesEnriched` itself rather than getting it "for free" off `requireUser` — acceptable, since only `/api/auth/me` needs it today.
+5. **`FavoriteSpeciesPicker` search results are capped at 20** (mirroring `SpeciesPicker`'s cap of 30) and re-query on every keystroke after a 200 ms debounce — fine for this app's ~1000-species catalog, not virtualized/paginated, consistent with the existing `SpeciesPicker`'s same tradeoff.
+6. **Onboarding's `ProfileSetup` renders without `TopBar`/`Footer`** (no navigation escape hatch), which also means no theme toggle or sign-out button are reachable from that screen — a user who signs in with the wrong account has to close the tab / clear cookies to escape rather than using an in-app "sign out." Deliberate (matches "cannot use the rest of the app until saved"), but worth a UX pass in a later phase if this friction proves annoying in practice.
+7. **R2 binding availability locally/in CI.** No new binding is introduced (reuses `SPRITES`, already exercised by `tests/worker/sprites.test.ts` and `tests/worker/photo-import.test.ts` today), so this phase carries no *new* local-simulator risk — flagged only to confirm the existing assumption still holds, not because anything here changes it.
+8. **Photo size/type validation is enforced server-side only** (`ALLOWED_AVATAR_TYPES`, `MAX_AVATAR_BYTES` in `routes/profile.ts`) — `ProfileFields`' `<input type="file" accept="...">` is a UX hint, not a guarantee (a user can still pick a 10 MB PNG and see the 400 only after choosing "Save"). Matches how `photo-import.ts`/`save-import.ts` already behave in this codebase (no client-side pre-validation there either), so this is consistent house style, not a regression.
+

@@ -8,6 +8,7 @@ import { createSession, deleteSession, SESSION_COOKIE } from "../auth/session";
 import { getCurrentUser, requireUser } from "../auth/current-user";
 import { getEmailSender } from "../auth/email";
 import { avatarKeyFor } from "./profile";
+import { getFavoritesEnriched } from "../profile/favorites-store";
 
 export const authRoutes = new Hono<{ Bindings: Env }>();
 
@@ -77,7 +78,10 @@ authRoutes.post("/logout", async (c) => {
 
 authRoutes.get("/me", async (c) => {
   const user = await getCurrentUser(c);
-  return c.json({ user });
+  if (!user) return c.json({ user: null });
+  const db = getDb(c.env.DB);
+  const favorites = await getFavoritesEnriched(db, user.id);
+  return c.json({ user: { ...user, favorites } });
 });
 
 authRoutes.delete("/account", async (c) => {

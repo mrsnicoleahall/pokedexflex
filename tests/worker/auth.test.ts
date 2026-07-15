@@ -96,4 +96,14 @@ describe("auth helpers", () => {
 
     expect(await env.SPRITES.get(`avatars/${userId}`)).toBeNull();
   });
+
+  it("/me includes an empty favorites array by default", async () => {
+    const r1 = await call("/api/auth/request-link", { method: "POST", headers: {"content-type":"application/json"}, body: JSON.stringify({ email: "favorites-fresh@x.com" }) });
+    const { devLink } = await r1.json() as any;
+    const path = new URL(devLink).pathname + new URL(devLink).search;
+    const verify = await call(path, { redirect: "manual" } as any);
+    const cookie = verify.headers.get("set-cookie")!.split(";")[0];
+    const me = await call("/api/auth/me", undefined, cookie);
+    expect((await me.json() as any).user.favorites).toEqual([]);
+  });
 });

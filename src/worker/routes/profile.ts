@@ -5,6 +5,7 @@ import { getDb } from "../db";
 import { users } from "../../db/schema";
 import { requireUser } from "../auth/current-user";
 import { validateProfileInput } from "../profile/validate";
+import { getFavoritesEnriched, setFavorites } from "../profile/favorites-store";
 
 export const profileRoutes = new Hono<{ Bindings: Env }>();
 
@@ -64,6 +65,22 @@ profileRoutes.post("/avatar", async (c: Context<{ Bindings: Env }>) => {
   await db.update(users).set({ avatarKey: key }).where(eq(users.id, user.id));
 
   return c.json({ hasAvatar: true });
+});
+
+profileRoutes.put("/favorites", async (c) => {
+  const user = await requireUser(c);
+  const db = getDb(c.env.DB);
+
+  const body = await c.req.json().catch(() => null);
+  const speciesIds = Array.isArray(body?.speciesIds) ? body.speciesIds : null;
+  if (!speciesIds || !speciesIds.every((id: unknown) => typeof id === "number" && Number.isInteger(id))) {
+    return c.json({ errors: ["speciesIds must be an array of integers"] }, 400);
+  }
+
+  const result = await setFavorites(db, user.id, speciesIds);
+  if (!result.ok) return c.json({ errors: result.errors }, 400);
+
+  return c.json({ favorites: await getFavoritesEnriched(db, user.id) });
 });
 
 profileRoutes.get("/avatar/:userId", async (c) => {

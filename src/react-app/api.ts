@@ -486,12 +486,19 @@ export async function exportCollection(): Promise<ExportResponse> {
 
 /* ---------- Auth ---------- */
 
+export type FavoriteDto = {
+	speciesId: number;
+	name: string;
+	homeId: number | null;
+};
+
 export type UserDto = {
 	id: string;
 	email: string;
 	displayName: string | null;
 	gender: string | null;
 	hasAvatar: boolean;
+	favorites: FavoriteDto[];
 };
 
 /**
@@ -521,6 +528,21 @@ export async function uploadAvatar(file: File): Promise<{ hasAvatar: boolean }> 
 	form.append("avatar", file);
 	const res = await fetch("/api/profile/avatar", { method: "POST", credentials: "include", body: form });
 	return handleJson<{ hasAvatar: boolean }>(res, "upload avatar");
+}
+
+/**
+ * Replaces the signed-in user's top-3 favorite species (array order = display
+ * order). Server validates each id is a real species, caps the list at 3, and
+ * rejects duplicates — surfaced as `ApiValidationError` by `handleJson`.
+ */
+export async function setFavoriteSpecies(speciesIds: number[]): Promise<{ favorites: FavoriteDto[] }> {
+	const res = await fetch("/api/profile/favorites", {
+		method: "PUT",
+		credentials: "include",
+		headers: { "Content-Type": "application/json" },
+		body: JSON.stringify({ speciesIds }),
+	});
+	return handleJson<{ favorites: FavoriteDto[] }>(res, "set favorite species");
 }
 
 export async function authRequestLink(

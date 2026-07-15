@@ -1,6 +1,16 @@
 import { env, createExecutionContext, waitOnExecutionContext } from "cloudflare:test";
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, beforeAll } from "vitest";
 import worker from "../../src/worker/index";
+import { getDb } from "../../src/worker/db";
+import { species } from "../../src/db/schema";
+
+beforeAll(async () => {
+  const db = getDb(env.DB);
+  await db.insert(species).values([
+    { id: 6001, name: "favroutea", generation: 1, types: JSON.stringify(["water"]), homeId: 6001 },
+    { id: 6002, name: "favrouteb", generation: 1, types: JSON.stringify(["grass"]), homeId: null },
+  ]);
+});
 
 const call = async (path: string, init?: RequestInit, cookie?: string) => {
   const ctx = createExecutionContext();
@@ -158,5 +168,48 @@ describe("avatar upload/serve", () => {
     const served = await call(`/api/profile/avatar/${userId}`);
     expect(served.headers.get("content-type")).toBe("image/jpeg");
     expect(new Uint8Array(await served.arrayBuffer())).toEqual(second);
+  });
+});
+
+describe("PUT /api/profile/favorites", () => {
+  it("rejects when not signed in (401)", async () => {
+    const res = await putJson("/api/profile/favorites", { speciesIds: [] });
+    expect(res.status).toBe(401);
+  });
+
+  it("pins up to 3 valid species and reflects them, enriched, on the response and on /me", async () => {
+    const cookie = await signIn("fav-owner@x.com");
+    const res = await putJson("/api/profile/favorites", { speciesIds: [6001, 6002] }, cookie);
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as any;
+    expect(body.favorites).toEqual([
+      { speciesId: 6001, name: "favroutea", homeId: 6001 },
+      { speciesId: 6002, name: "favrouteb", homeId: null },
+    ]);
+
+    const me = await call("/api/auth/me", undefined, cookie);
+    expect(((await me.json()) as any).user.favorites).toEqual(body.favorites);
+  });
+
+  it("rejects an unknown species id (400)", async () => {
+    const cookie = await signIn("fav-unknown@x.com");
+    const res = await putJson("/api/profile/favorites", { speciesIds: [999999] }, cookie);
+    expect(res.status).toBe(400);
+    const body = (await res.json()) as any;
+    expect(body.errors.join(" ")).toMatch(/unknown species/);
+  });
+
+  it("rejects more than 3 species ids (400)", async () => {
+    const cookie = await signIn("fav-overflow@x.com");
+    const res = await putJson("/api/profile/favorites", { speciesIds: [6001, 6002, 6001, 6002] }, cookie);
+    expect(res.status).toBe(400);
+  });
+});
+
+describe("GET /api/auth/me favorites default", () => {
+  it("is an empty array for a user who hasn't picked any favorites", async () => {
+    const cookie = await signIn("fav-none@x.com");
+    const me = await call("/api/auth/me", undefined, cookie);
+    expect(((await me.json()) as any).user.favorites).toEqual([]);
   });
 });

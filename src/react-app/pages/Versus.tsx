@@ -9,7 +9,8 @@
 
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { fetchVersus, type VersusDto, type VersusRoundDto, type VersusSideDto } from "../api";
+import { useAuth } from "../auth/AuthProvider";
+import { fetchVersus, saveRivalry, type VersusDto, type VersusRoundDto, type VersusSideDto } from "../api";
 import { Avatar } from "../components/Avatar";
 import { FavoritesStrip } from "../components/FavoritesStrip";
 import { RankBadge } from "../components/RankBadge";
@@ -18,6 +19,7 @@ import { TypeIcon } from "../components/TypeIcon";
 import { RibbonIcon } from "../ribbons/RibbonIcon";
 import { PATHS } from "../routes";
 import { typeColor } from "../theme";
+import { rivalTargetHandle } from "../versus/rivalTarget";
 import {
 	TYPE_ORDER,
 	GEN_ORDER,
@@ -106,6 +108,20 @@ function nameOf(side: VersusSideDto): string {
 function VersusBody({ versus }: { versus: VersusDto }) {
 	const { a, b, rounds, outcome, verdict } = versus;
 	const winnerName = outcome.winner === "a" ? nameOf(a) : outcome.winner === "b" ? nameOf(b) : null;
+	const { user } = useAuth();
+	const targetHandle = rivalTargetHandle({ viewerHandle: user?.handle ?? null, aHandle: a.handle, bHandle: b.handle });
+	const [saveState, setSaveState] = useState<"idle" | "saving" | "saved" | "error">("idle");
+
+	async function handleSaveRivalry() {
+		if (!targetHandle) return;
+		setSaveState("saving");
+		try {
+			await saveRivalry(targetHandle);
+			setSaveState("saved");
+		} catch {
+			setSaveState("error");
+		}
+	}
 
 	return (
 		<>
@@ -126,6 +142,17 @@ function VersusBody({ versus }: { versus: VersusDto }) {
 					) : (
 						<p className="versus-card__winner">It's a draw</p>
 					)}
+					{targetHandle && (
+						<button
+							type="button"
+							className="button versus-card__save"
+							onClick={handleSaveRivalry}
+							disabled={saveState === "saving" || saveState === "saved"}
+						>
+							{saveState === "saved" ? "Rivalry saved" : saveState === "saving" ? "Saving…" : "Save rivalry"}
+						</button>
+					)}
+					{saveState === "error" && <p className="state__hint">Couldn't save — try again.</p>}
 				</div>
 
 				<div className="versus-card__side">

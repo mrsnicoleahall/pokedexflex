@@ -2397,3 +2397,48 @@ a {
 		grid-template-columns: 1fr;
 	}
 }
+
+/* ---------- Rivals (Flex Phase G) ---------- */
+
+.public-profile__compare {
+	display: inline-block;
+	margin-top: 0.5rem;
+}
+
+.versus-card__save {
+	margin-top: 0.25rem;
+}
+
+.rivals {
+	margin-top: 1.5rem;
+}
+
+.rivals__compare {
+	display: flex;
+	gap: 0.5rem;
+	margin-bottom: 1rem;
+	max-width: 26rem;
+}
+
+.rivals__list {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
+}
+
+.rivals__item {
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
+}
+
+.rivals__name {
+	flex: 1;
+}
+
+.rivals__rematch {
+	white-space: nowrap;
+}

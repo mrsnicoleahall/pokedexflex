@@ -6,7 +6,8 @@
 // their collection and ribbons. Both states reuse the shared design tokens
 // and the type-aura visual language from theme.ts.
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import type { AccountView } from "../components/AccountMenu";
 import { Avatar } from "../components/Avatar";
 import { EarnMomentToast } from "../components/EarnMomentToast";
@@ -14,7 +15,9 @@ import { FavoritesStrip } from "../components/FavoritesStrip";
 import { RankBadge } from "../components/RankBadge";
 import { SignInPanel } from "../components/SignInPanel";
 import { useAuth } from "../auth/AuthProvider";
+import { listRivalries, deleteRivalry, type RivalryDto } from "../api";
 import { NAME_PLACEHOLDER } from "../profile/display";
+import { publicProfilePath, versusPath } from "../routes";
 import { NudgeList } from "../ribbons/NudgeList";
 import { TrophyWall } from "../ribbons/TrophyWall";
 import { useRibbonsData } from "../ribbons/useRibbonsData";
@@ -81,7 +84,88 @@ export function Home({ onBrowse, onNavigate }: HomeProps) {
 			{user && <FavoritesStrip favorites={user.favorites} />}
 			{user && <TrophyWall showcase={showcase} ribbons={ribbons} />}
 			{user && <NudgeList nearest={nearest} />}
+			{user && <Rivals />}
 			{signInOpen && <SignInPanel onClose={() => setSignInOpen(false)} />}
 		</div>
+	);
+}
+
+function Rivals() {
+	const navigate = useNavigate();
+	const { user } = useAuth();
+	const [rivals, setRivals] = useState<RivalryDto[]>([]);
+	const [handle, setHandle] = useState("");
+
+	useEffect(() => {
+		let cancelled = false;
+		listRivalries()
+			.then((r) => {
+				if (!cancelled) setRivals(r.rivalries);
+			})
+			.catch(() => {
+				/* non-fatal — the Rivals box is optional dashboard chrome */
+			});
+		return () => {
+			cancelled = true;
+		};
+	}, []);
+
+	function startCompare() {
+		const target = handle.trim().toLowerCase();
+		if (user?.handle && target) navigate(versusPath(user.handle, target));
+	}
+
+	async function remove(id: string) {
+		await deleteRivalry(id);
+		setRivals((prev) => prev.filter((r) => r.id !== id));
+	}
+
+	return (
+		<section className="rivals" aria-label="Rivals">
+			<h2 className="ribbon-section__title">Rivals</h2>
+
+			{user?.handle ? (
+				<div className="rivals__compare">
+					<input
+						className="input"
+						value={handle}
+						placeholder="a trainer's handle"
+						onChange={(e) => setHandle(e.target.value)}
+					/>
+					<button type="button" className="button button--primary" onClick={startCompare} disabled={!handle.trim()}>
+						Compare
+					</button>
+				</div>
+			) : (
+				<p className="state__hint">Set a public handle in Settings to compare with other trainers.</p>
+			)}
+
+			{rivals.length > 0 && (
+				<ul className="rivals__list">
+					{rivals.map((r) => (
+						<li className="rivals__item" key={r.id}>
+							<Avatar userId={r.opponentUserId} displayName={r.displayName} hasAvatar={r.hasAvatar} size="sm" />
+							<span className="rivals__name">
+								{r.handle ? (
+									<Link to={publicProfilePath(r.handle)}>{r.displayName ?? `@${r.handle}`}</Link>
+								) : (
+									(r.displayName ?? "Trainer")
+								)}
+							</span>
+							{user?.handle && r.handle && r.isPublic ? (
+								<Link className="button rivals__rematch" to={versusPath(user.handle, r.handle)}>
+									Rematch
+								</Link>
+							) : (
+								<span className="state__hint">unavailable</span>
+							)}
+							<button type="button" className="button" onClick={() => void remove(r.id)}>
+								Remove
+							</button>
+						</li>
+					))}
+				</ul>
+			)}
+		</section>
 	);
 }

@@ -10,13 +10,14 @@
 
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
+import { useAuth } from "../auth/AuthProvider";
 import { fetchPublicProfile, type PublicProfileDto } from "../api";
 import { Avatar } from "../components/Avatar";
 import { FavoritesStrip } from "../components/FavoritesStrip";
 import { RankBadge } from "../components/RankBadge";
 import { ThemeToggle } from "../components/ThemeToggle";
 import { RibbonIcon } from "../ribbons/RibbonIcon";
-import { PATHS } from "../routes";
+import { PATHS, versusPath } from "../routes";
 
 type LoadState =
 	| { status: "loading" }
@@ -91,6 +92,9 @@ export function PublicProfile() {
 }
 
 function PublicProfileBody({ profile }: { profile: PublicProfileDto }) {
+	const { user } = useAuth();
+	const canCompare = user?.handle != null && user.handle !== profile.handle;
+
 	return (
 		<>
 			<section className="public-profile__hero">
@@ -99,6 +103,11 @@ function PublicProfileBody({ profile }: { profile: PublicProfileDto }) {
 					<p className="hero__eyebrow">@{profile.handle}</p>
 					<h1 className="hero__title hero__title--slim">{profile.displayName ?? "Trainer"}</h1>
 					<RankBadge trainerScore={profile.trainerScore} rank={profile.rank} size="sm" />
+					{canCompare && (
+						<Link className="button button--primary public-profile__compare" to={versusPath(user!.handle!, profile.handle)}>
+							Compare with me
+						</Link>
+					)}
 				</div>
 			</section>
 

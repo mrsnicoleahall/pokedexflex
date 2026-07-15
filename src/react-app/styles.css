@@ -1784,3 +1784,58 @@ a {
 	color: var(--accent, #ff7a3c);
 	opacity: 1;
 }
+
+/* Earn-moment celebration toast (Flex Phase E, Task E4). */
+.earn-toast {
+	position: fixed;
+	inset: 0;
+	z-index: 50;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 24px;
+	background: color-mix(in srgb, var(--ink) 45%, transparent);
+}
+
+.earn-toast__panel {
+	width: min(480px, 100%);
+	border: 1px solid var(--hairline);
+	border-radius: var(--radius-card);
+	background: var(--surface);
+	box-shadow: var(--shadow-card-hover);
+	padding: 24px;
+	text-align: center;
+}
+
+.earn-toast__heading {
+	font-family: var(--font-display);
+	font-weight: 700;
+	font-size: 1.3rem;
+	margin-bottom: 16px;
+}
+
+.earn-toast__grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(88px, 1fr));
+	gap: 12px;
+	margin-bottom: 20px;
+	max-height: 320px;
+	overflow-y: auto;
+}
+
+.earn-toast__item {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 6px;
+}
+
+.earn-toast__name {
+	font-size: 0.72rem;
+	font-weight: 600;
+	line-height: 1.2;
+}
+
+.earn-toast__dismiss {
+	width: 100%;
+}

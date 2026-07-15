@@ -17,6 +17,7 @@
 import { useMemo } from "react";
 import type { RibbonDto } from "../api";
 import { useAuth } from "../auth/AuthProvider";
+import { EarnMomentToast } from "../components/EarnMomentToast";
 import { RankBadge } from "../components/RankBadge";
 import { formatRarityPct, isRareFlex } from "../ribbons/incentiveDisplay";
 import { RibbonIcon } from "../ribbons/RibbonIcon";
@@ -182,7 +183,7 @@ function RibbonSection({ category, ribbons }: { category: string; ribbons: Ribbo
 
 export function Ribbons() {
 	const { user } = useAuth();
-	const { ribbons, earnedCount, total, trainerScore, rank, loading, error } = useRibbonsData();
+	const { ribbons, earnedCount, total, trainerScore, rank, newlyEarned, ackSeen, loading, error } = useRibbonsData();
 
 	const grouped = useMemo(() => {
 		const byCategory = new Map<string, RibbonDto[]>();
@@ -202,6 +203,9 @@ export function Ribbons() {
 
 	return (
 		<div className="container page">
+			{newlyEarned.length > 0 && (
+				<EarnMomentToast ribbons={newlyEarned} onDismiss={() => void ackSeen()} />
+			)}
 			<div className="page__meta">
 				<h1 className="page__title">Ribbons</h1>
 				{user && <RankBadge trainerScore={trainerScore} rank={rank} />}

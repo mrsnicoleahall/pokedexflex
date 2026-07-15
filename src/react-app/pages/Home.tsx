@@ -8,6 +8,7 @@
 
 import { useState } from "react";
 import type { AccountView } from "../components/AccountMenu";
+import { EarnMomentToast } from "../components/EarnMomentToast";
 import { RankBadge } from "../components/RankBadge";
 import { SignInPanel } from "../components/SignInPanel";
 import { useAuth } from "../auth/AuthProvider";
@@ -22,10 +23,13 @@ type HomeProps = {
 export function Home({ onBrowse, onNavigate }: HomeProps) {
 	const { user } = useAuth();
 	const [signInOpen, setSignInOpen] = useState(false);
-	const { trainerScore, rank } = useRibbonsData();
+	const { trainerScore, rank, newlyEarned, ackSeen } = useRibbonsData();
 
 	return (
 		<div className="container page">
+			{user && newlyEarned.length > 0 && (
+				<EarnMomentToast ribbons={newlyEarned} onDismiss={() => void ackSeen()} />
+			)}
 			<section className="hero" style={{ background: heroAura() }}>
 				{user ? (
 					<div className="hero__welcome">

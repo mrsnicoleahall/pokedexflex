@@ -1,13 +1,15 @@
 // src/react-app/pages/Settings.tsx
 //
-// Signed-in-only settings view: shows the account email, a sign-out
-// button, and a destructive delete-account flow gated behind a typed
-// "delete" confirmation. Display-name editing is out of scope (no PATCH
-// endpoint yet).
+// Signed-in-only settings view: profile editing (name/gender/photo/top-3
+// favorites — Flex Phase P), the account email + sign-out, and a
+// destructive delete-account flow gated behind a typed "delete"
+// confirmation.
 
 import { useState } from "react";
-import { authDeleteAccount } from "../api";
+import { authDeleteAccount, updateProfile, uploadAvatar } from "../api";
 import { useAuth } from "../auth/AuthProvider";
+import { FavoriteSpeciesPicker } from "../components/FavoriteSpeciesPicker";
+import { ProfileFields, type Gender } from "../components/ProfileFields";
 
 type SettingsProps = {
 	onBack: () => void;
@@ -21,6 +23,16 @@ export function Settings({ onBack }: SettingsProps) {
 	const [deleting, setDeleting] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 
+	// Profile-editing local state, seeded from the current user (both are
+	// guaranteed non-null past onboarding, but Settings still guards below).
+	const [displayName, setDisplayName] = useState(user?.displayName ?? "");
+	const [gender, setGender] = useState<Gender | null>((user?.gender as Gender | null) ?? null);
+	const [file, setFile] = useState<File | null>(null);
+	const [localPreviewUrl, setLocalPreviewUrl] = useState<string | null>(null);
+	const [savingProfile, setSavingProfile] = useState(false);
+	const [profileError, setProfileError] = useState<string | null>(null);
+	const [profileSaved, setProfileSaved] = useState(false);
+
 	if (!user) {
 		return (
 			<div className="page container">
@@ -32,6 +44,36 @@ export function Settings({ onBack }: SettingsProps) {
 				</div>
 			</div>
 		);
+	}
+
+	function onFileSelected(f: File | null) {
+		setFile(f);
+		setLocalPreviewUrl((prev) => {
+			if (prev) URL.revokeObjectURL(prev);
+			return f ? URL.createObjectURL(f) : null;
+		});
+	}
+
+	async function handleSaveProfile() {
+		setProfileError(null);
+		setProfileSaved(false);
+		if (!displayName.trim() || !gender) {
+			setProfileError("A trainer name and a gender are both required.");
+			return;
+		}
+		setSavingProfile(true);
+		try {
+			await updateProfile({ displayName: displayName.trim(), gender });
+			if (file) await uploadAvatar(file);
+			await refresh();
+			setFile(null);
+			setLocalPreviewUrl(null);
+			setProfileSaved(true);
+		} catch (err) {
+			setProfileError(err instanceof Error ? err.message : String(err));
+		} finally {
+			setSavingProfile(false);
+		}
 	}
 
 	async function handleSignOut() {
@@ -60,6 +102,42 @@ export function Settings({ onBack }: SettingsProps) {
 				</button>
 			</div>
 			<h1 className="page__title">Settings</h1>
+
+			<section className="settings-section">
+				<h2 className="settings-section__title">Profile</h2>
+				{profileError && (
+					<p className="error-banner" role="alert">
+						{profileError}
+					</p>
+				)}
+				<ProfileFields
+					idPrefix="settings"
+					displayName={displayName}
+					onDisplayNameChange={(v) => {
+						setDisplayName(v);
+						setProfileSaved(false);
+					}}
+					gender={gender}
+					onGenderChange={(v) => {
+						setGender(v);
+						setProfileSaved(false);
+					}}
+					userId={user.id}
+					hasAvatar={user.hasAvatar}
+					localPreviewUrl={localPreviewUrl}
+					onFileSelected={onFileSelected}
+				/>
+				<button
+					type="button"
+					className="button button--primary"
+					onClick={handleSaveProfile}
+					disabled={savingProfile}
+				>
+					{savingProfile ? "Saving…" : profileSaved ? "Saved" : "Save profile"}
+				</button>
+			</section>
+
+			<FavoriteSpeciesPicker favorites={user.favorites} onSaved={() => void refresh()} />
 
 			<section className="settings-section">
 				<h2 className="settings-section__title">Account</h2>

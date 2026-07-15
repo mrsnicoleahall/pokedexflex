@@ -17,6 +17,7 @@ import { saveImportRoutes } from "./routes/save-import";
 import { publicProfileRoutes } from "./routes/public-profile";
 import { versusRoutes } from "./routes/versus";
 import { rivalryRoutes } from "./routes/rivalries";
+import { statsRoutes } from "./routes/stats";
 
 const app = new Hono<{ Bindings: Env }>();
 
@@ -36,6 +37,7 @@ app.route("/api/collection", collectionRoutes);
 app.route("/api/profile", profileRoutes);
 app.route("/api/boxes", boxRoutes);
 app.route("/api/ribbons", ribbonRoutes);
+app.route("/api/stats", statsRoutes);
 app.route("/api/import", importRoutes);
 app.route("/api/import/photo", photoImportRoutes);
 app.route("/api/import/save", saveImportRoutes);

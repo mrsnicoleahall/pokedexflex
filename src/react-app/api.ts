@@ -750,3 +750,47 @@ export async function deleteRivalry(id: string): Promise<void> {
 	});
 	await handleJson<{ ok: boolean }>(res, "delete rivalry");
 }
+
+/* ---------- Progress / Stats (Flex Phase H) ---------- */
+
+export type StatsCompletion = {
+	owned: number;
+	total: number;
+	/** 0..1 fraction — the client formats it as a whole percent (statsDisplay.formatPct). */
+	pct: number;
+};
+
+export type StatsDto = {
+	completion: StatsCompletion;
+	/** Owned distinct-species count per lowercase type (sparse — only present types). */
+	byType: Record<string, number>;
+	/** Reference-dex species count per lowercase type (the completion denominators). */
+	totalByType: Record<string, number>;
+	/** Owned distinct-species count per generation, keyed by the number as a string (sparse). */
+	byGen: Record<string, number>;
+	/** Reference-dex species count per generation. */
+	totalByGen: Record<string, number>;
+	shinySpeciesCount: number;
+	eventCount: number;
+	specimenCount: number;
+	boxCount: number;
+	megaFormCount: number;
+	gmaxFormCount: number;
+	/** Earned ribbon count. */
+	ribbonCount: number;
+	trainerScore: number;
+	rank: string;
+	/** Sum of points from earned rare-flex ribbons (Rarity Class / Grand / Collector). */
+	rarityScore: number;
+};
+
+/**
+ * Fetches the signed-in trainer's progress stats. Auth-scoped — sends the
+ * session cookie; a signed-out caller gets a 401 that `handleJson` surfaces as
+ * an error (the Progress page only calls this when a user is present).
+ */
+export async function fetchStats(): Promise<StatsDto> {
+	const res = await fetch("/api/stats", { credentials: "include" });
+	const body = await handleJson<{ stats: StatsDto }>(res, "fetch stats");
+	return body.stats;
+}

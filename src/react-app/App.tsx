@@ -4,6 +4,7 @@ import { useState } from "react";
 import type { AccountView } from "./components/AccountMenu";
 import { TopBar, type Tab } from "./components/TopBar";
 import { Footer } from "./components/Footer";
+import { ProfileSetup } from "./components/ProfileSetup";
 import { EventsCatalog } from "./pages/EventsCatalog";
 import { Home } from "./pages/Home";
 import { ImportExport } from "./pages/ImportExport";
@@ -12,6 +13,8 @@ import { Ribbons } from "./pages/Ribbons";
 import { Settings } from "./pages/Settings";
 import { SpeciesCatalog } from "./pages/SpeciesCatalog";
 import { RosetteSprite } from "./ribbons/RosetteSprite";
+import { useAuth } from "./auth/AuthProvider";
+import { needsOnboarding } from "./profile/display";
 
 type View = "home" | "catalog" | AccountView;
 
@@ -20,6 +23,7 @@ function App() {
 	const [q, setQ] = useState("");
 	const [gen, setGen] = useState<number | undefined>(undefined);
 	const [view, setView] = useState<View>("home");
+	const { user, loading } = useAuth();
 
 	const backToCatalog = () => setView("catalog");
 	const goHome = () => setView("home");
@@ -27,6 +31,14 @@ function App() {
 	function handleTabChange(next: Tab) {
 		setTab(next);
 		setView("catalog");
+	}
+
+	if (!loading && needsOnboarding(user)) {
+		return (
+			<div className="app">
+				<ProfileSetup />
+			</div>
+		);
 	}
 
 	return (

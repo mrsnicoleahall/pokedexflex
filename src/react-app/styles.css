@@ -2190,3 +2190,8 @@ a {
 .public-profile__showcase {
 	margin-top: 1.5rem;
 }
+
+.settings-section__handle-prefix {
+	color: var(--muted);
+	font-family: var(--font-mono);
+}

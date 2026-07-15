@@ -6,10 +6,11 @@
 // confirmation.
 
 import { useState } from "react";
-import { authDeleteAccount, updateProfile, uploadAvatar } from "../api";
+import { authDeleteAccount, setHandle, setProfileVisibility, updateProfile, uploadAvatar } from "../api";
 import { useAuth } from "../auth/AuthProvider";
 import { FavoriteSpeciesPicker } from "../components/FavoriteSpeciesPicker";
 import { ProfileFields, type Gender } from "../components/ProfileFields";
+import { publicProfilePath } from "../routes";
 
 type SettingsProps = {
 	onBack: () => void;
@@ -32,6 +33,13 @@ export function Settings({ onBack }: SettingsProps) {
 	const [savingProfile, setSavingProfile] = useState(false);
 	const [profileError, setProfileError] = useState<string | null>(null);
 	const [profileSaved, setProfileSaved] = useState(false);
+
+	const [handleInput, setHandleInput] = useState(user?.handle ?? "");
+	const [savingHandle, setSavingHandle] = useState(false);
+	const [handleError, setHandleError] = useState<string | null>(null);
+	const [handleSaved, setHandleSaved] = useState(false);
+	const [savingVisibility, setSavingVisibility] = useState(false);
+	const [copied, setCopied] = useState(false);
 
 	if (!user) {
 		return (
@@ -73,6 +81,44 @@ export function Settings({ onBack }: SettingsProps) {
 			setProfileError(err instanceof Error ? err.message : String(err));
 		} finally {
 			setSavingProfile(false);
+		}
+	}
+
+	async function handleSaveHandle() {
+		setHandleError(null);
+		setHandleSaved(false);
+		setSavingHandle(true);
+		try {
+			await setHandle(handleInput.trim());
+			await refresh();
+			setHandleSaved(true);
+		} catch (err) {
+			setHandleError(err instanceof Error ? err.message : String(err));
+		} finally {
+			setSavingHandle(false);
+		}
+	}
+
+	async function handleToggleVisibility() {
+		if (!user) return;
+		setSavingVisibility(true);
+		try {
+			await setProfileVisibility(!user.isPublic);
+			await refresh();
+		} finally {
+			setSavingVisibility(false);
+		}
+	}
+
+	async function copyShareLink() {
+		if (!user?.handle) return;
+		const url = `${window.location.origin}${publicProfilePath(user.handle)}`;
+		try {
+			await navigator.clipboard.writeText(url);
+			setCopied(true);
+			setTimeout(() => setCopied(false), 2000);
+		} catch {
+			setCopied(false);
 		}
 	}
 
@@ -138,6 +184,66 @@ export function Settings({ onBack }: SettingsProps) {
 			</section>
 
 			<FavoriteSpeciesPicker favorites={user.favorites} onSaved={() => void refresh()} />
+
+			<section className="settings-section">
+				<h2 className="settings-section__title">Public profile</h2>
+				<p className="settings-section__hint">
+					Your profile is visible at a public link when it's set to public. It shows your name,
+					avatar, favorites, ribbon showcase, and rank — never your email.
+				</p>
+
+				<label className="field-label" htmlFor="handle-input">
+					Your handle (the trailing part of your URL)
+				</label>
+				<div className="profile-fields__photo-row">
+					<span className="settings-section__handle-prefix">/u/</span>
+					<input
+						id="handle-input"
+						className="input input--full"
+						value={handleInput}
+						maxLength={30}
+						placeholder="ash-ketchum"
+						onChange={(e) => {
+							setHandleInput(e.target.value);
+							setHandleSaved(false);
+						}}
+					/>
+				</div>
+				{handleError && (
+					<p className="error-banner" role="alert">
+						{handleError}
+					</p>
+				)}
+				<button
+					type="button"
+					className="button button--primary"
+					onClick={handleSaveHandle}
+					disabled={savingHandle}
+				>
+					{savingHandle ? "Saving…" : handleSaved ? "Saved" : "Save handle"}
+				</button>
+
+				<p className="settings-section__row">
+					<span className="field-label">Visibility</span>
+					<span>{user.isPublic ? "Public" : "Private"}</span>
+				</p>
+				<button type="button" className="button" onClick={handleToggleVisibility} disabled={savingVisibility}>
+					{savingVisibility ? "Saving…" : user.isPublic ? "Make private" : "Make public"}
+				</button>
+
+				{user.handle && user.isPublic && (
+					<p className="settings-section__row">
+						<span className="field-label">Share link</span>
+						<span className="mono">
+							{window.location.origin}
+							{publicProfilePath(user.handle)}
+						</span>
+						<button type="button" className="button" onClick={copyShareLink}>
+							{copied ? "Copied!" : "Copy link"}
+						</button>
+					</p>
+				)}
+			</section>
 
 			<section className="settings-section">
 				<h2 className="settings-section__title">Account</h2>

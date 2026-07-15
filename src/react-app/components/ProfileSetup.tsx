@@ -60,8 +60,10 @@ export function ProfileSetup() {
 		<div className="page container profile-setup">
 			<h1 className="page__title">Welcome, Trainer!</h1>
 			<p className="profile-setup__hint">
-				Before you dive in, tell us a bit about yourself. Your name and gender are required; a photo and
-				favorites are optional and can be added later from Settings too.
+				Before you dive in, tell us a bit about yourself. Your name and gender are required; a
+				photo and favorites are optional and can be added later from Settings. We'll also set up a
+				public trainer page for you — you can customize its link or make it private anytime in
+				Settings.
 			</p>
 			{error && (
 				<p className="error-banner" role="alert">

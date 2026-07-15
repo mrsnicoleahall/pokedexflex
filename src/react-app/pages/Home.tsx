@@ -70,7 +70,7 @@ export function Home({ onBrowse, onNavigate }: HomeProps) {
 						<img src="/brand/icon-512.png" alt="" className="landing__emblem" />
 						<div className="hero__intro">
 							<p className="hero__eyebrow">PokéDexFlex</p>
-							<h1 className="hero__title">Catch &apos;em all. Then flex &apos;em.</h1>
+							<h1 className="hero__title">Catch &apos;em all. Then flex &apos;em all.</h1>
 							<p className="hero__subcopy">
 								Track every species, form, and event distribution. Build your living dex, earn 166
 								ribbons, climb the ranks — and go head-to-head with rival trainers.

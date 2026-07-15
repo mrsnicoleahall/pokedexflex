@@ -7,15 +7,13 @@
 	"name": "pokedexflex",
 	"account_id": "0e56605411ec369074bb375df1b3de9e",
 	"main": "./src/worker/index.ts",
-	// Deploy to the free *.workers.dev URL for now.
+	// Keep the *.workers.dev URL as a fallback alongside the custom domain.
 	"workers_dev": true,
-	// Custom domain: re-enable these ONCE pokedexflex.com's zone is ACTIVE in Cloudflare
-	// (nameservers propagated — check the dashboard shows the domain "Active"), then redeploy.
-	// They failed on first deploy only because the freshly-bought zone wasn't active yet.
-	// "routes": [
-	// 	{ "pattern": "pokedexflex.com", "custom_domain": true },
-	// 	{ "pattern": "www.pokedexflex.com", "custom_domain": true }
-	// ],
+	// Custom domain — pokedexflex.com is Active in Cloudflare, so deploy attaches these.
+	"routes": [
+		{ "pattern": "pokedexflex.com", "custom_domain": true },
+		{ "pattern": "www.pokedexflex.com", "custom_domain": true }
+	],
 	"compatibility_date": "2025-10-08",
 	"compatibility_flags": [
 		"nodejs_compat"

@@ -2478,8 +2478,8 @@ a {
 }
 
 .brandmark__icon {
-	height: 28px;
-	width: 28px;
+	height: 46px;
+	width: 46px;
 	object-fit: contain;
 	flex: none;
 }
@@ -2487,7 +2487,7 @@ a {
 .brandmark__text {
 	font-family: var(--font-display);
 	font-weight: 700;
-	font-size: 1.15rem;
+	font-size: 1.6rem;
 	letter-spacing: -0.01em;
 	background: var(--brand-grad);
 	-webkit-background-clip: text;
@@ -2529,7 +2529,10 @@ a {
 /* ---------- Hero brand treatment: always-dark, in both themes ---------- */
 
 .hero--brand {
-	background: var(--brand-glow);
+	/* Pokémon-collage backdrop under a dark blue overlay so the white hero text stays readable. */
+	background:
+		linear-gradient(160deg, rgba(9, 15, 28, 0.9) 0%, rgba(11, 26, 40, 0.78) 55%, rgba(9, 15, 28, 0.9) 100%),
+		url("/brand/hero-bg.jpg") center / cover no-repeat;
 	border-color: color-mix(in srgb, var(--brand-cyan) 30%, transparent);
 	color: #eef3f8;
 }
@@ -2571,7 +2574,7 @@ a {
 }
 
 .landing__emblem {
-	width: clamp(120px, 18vw, 200px);
+	width: clamp(80px, 11vw, 128px);
 	height: auto;
 	flex: none;
 }

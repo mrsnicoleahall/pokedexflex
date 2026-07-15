@@ -5,6 +5,7 @@ import {
 	publicProfilePath,
 	tabForPath,
 	showFiltersForPath,
+	versusPath,
 } from "../../src/react-app/routes";
 
 describe("PATHS", () => {
@@ -51,5 +52,11 @@ describe("showFiltersForPath", () => {
 		expect(showFiltersForPath("/events")).toBe(true);
 		expect(showFiltersForPath("/")).toBe(false);
 		expect(showFiltersForPath("/ribbons")).toBe(false);
+	});
+});
+
+describe("versusPath", () => {
+	it("builds the /versus/:a/:b path from two handles", () => {
+		expect(versusPath("ash-ketchum", "gary-oak")).toBe("/versus/ash-ketchum/gary-oak");
 	});
 });

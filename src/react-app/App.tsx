@@ -10,6 +10,7 @@
 import { Routes, Route, useNavigate, useOutletContext } from "react-router-dom";
 import { AppLayout, type LayoutContext } from "./components/AppLayout";
 import { PublicProfile } from "./pages/PublicProfile";
+import { Versus } from "./pages/Versus";
 import { EventsCatalog } from "./pages/EventsCatalog";
 import { Home } from "./pages/Home";
 import { ImportExport } from "./pages/ImportExport";
@@ -48,6 +49,7 @@ function App() {
 	return (
 		<Routes>
 			<Route path="/u/:handle" element={<PublicProfile />} />
+			<Route path="/versus/:a/:b" element={<Versus />} />
 			<Route element={<AppLayout />}>
 				<Route index element={<HomeRoute />} />
 				<Route path="species" element={<SpeciesRoute />} />

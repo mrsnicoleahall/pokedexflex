@@ -37,6 +37,11 @@ export function publicProfilePath(handle: string): string {
 	return `/u/${handle}`;
 }
 
+/** Head-to-head comparison path for two trainer handles. */
+export function versusPath(a: string, b: string): string {
+	return `/versus/${a}/${b}`;
+}
+
 /** Which catalog tab a path represents (drives TopBar's tab highlight). */
 export function tabForPath(pathname: string): "species" | "events" {
 	return pathname === PATHS.events ? "events" : "species";

@@ -1,5 +1,9 @@
 // src/react-app/api.ts
 
+import { buildSpeciesQueryString, type SpeciesQuery } from "./species/speciesFilters";
+
+export type { OwnedFilter, SpeciesSort, SpeciesQuery } from "./species/speciesFilters";
+
 export type FormDto = {
 	id: number;
 	name: string;
@@ -20,13 +24,9 @@ export type SpeciesDto = {
 };
 
 export async function fetchSpecies(
-	params: { q?: string; gen?: number; limit?: number; offset?: number } = {},
+	params: SpeciesQuery = {},
 ): Promise<{ items: SpeciesDto[]; total: number }> {
-	const qs = new URLSearchParams();
-	if (params.q) qs.set("q", params.q);
-	if (params.gen) qs.set("gen", String(params.gen));
-	if (params.limit != null) qs.set("limit", String(params.limit));
-	if (params.offset != null) qs.set("offset", String(params.offset));
+	const qs = buildSpeciesQueryString(params);
 	const res = await fetch(`/api/species?${qs}`);
 	if (!res.ok) throw new Error(`species fetch failed: ${res.status}`);
 	return res.json() as Promise<{ items: SpeciesDto[]; total: number }>;

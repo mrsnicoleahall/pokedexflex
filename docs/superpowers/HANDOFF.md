@@ -31,12 +31,14 @@ and (in progress) a public "flex" layer with rarity, stats, profiles, and Versus
 
 ### Phase P — Trainer Profile  ← DO THIS NEXT (it's a Phase F prerequisite)
 **Why:** the app shows the raw EMAIL as the display name ("this is simply not it"). Collect name + gender + photo + top-3 favorite mon.
-- **Plan:** `docs/superpowers/plans/2026-07-14-flex-P-trainer-profile.md` — **INCOMPLETE (WIP, commit 08f559d).** Has P1–P4:
-  - P1 migration+schema (`users.gender`, `users.avatar_key` via `drizzle-kit generate` → migration 0007) + extend `GET /api/auth/me` + client `UserDto`.
+- **Plan:** `docs/superpowers/plans/2026-07-14-flex-P-trainer-profile.md` — **COMPLETE (commit 08c6ba6), 7 tasks P1–P7 + Self-Review. Ready to execute** via subagent-driven-development (build gate is resolved, so react-app tests may import `api.ts` freely).
+  - P1 migration+schema (`users.gender`, `users.avatar_key` → migration 0007) + `GET /api/auth/me` + client `UserDto`.
   - P2 `PUT /api/profile` (displayName + gender validated to `boy|girl|ditto`).
-  - P3 avatar upload/serve (`POST /api/profile/avatar`, `GET /api/profile/avatar/:userId`) via R2.
-  - P4 **top-3 favorite Pokémon** (`user_favorites` table + `PUT /api/profile/favorites`, reuse `SpeciesPicker` + `Sprite`).
-- **STILL TO AUTHOR before executing:** (a) **required-onboarding gate** — block the app behind a mandatory profile-setup screen when a signed-in user lacks displayName OR gender (photo optional); wire via `AuthProvider`/`App.tsx`. (b) **Settings profile editor.** (c) **display wiring** — TopBar/AccountMenu/Home show name + avatar + favorites; email only as login identity, NEVER as the public name. (d) the **Self-Review** section. Finish the plan, then execute P1→end via subagent-driven-development.
+  - P3 avatar upload/serve (`POST /api/profile/avatar`, `GET /api/profile/avatar/:userId`) via R2 (`SPRITES` bucket, `avatars/{userId}` key).
+  - P4 **top-3 favorite Pokémon** (`user_favorites` table → migration 0008 + `PUT /api/profile/favorites`; reuses `SpeciesPicker`).
+  - P5 **required-onboarding gate** (`ProfileSetup`: name, gender, optional photo + favorites; wired via AuthProvider/App).
+  - P6 **Settings profile editor**. P7 **display wiring** — TopBar/AccountMenu/Home show avatar + name (never email); favorites on the trainer card.
+  - Plan risks to watch (from its Self-Review): no "remove photo" endpoint yet; 60s avatar cache-control → brief stale image after replace; a `Gender` cast in Settings relies on server validation; favorites kept out of the hot-path `CurrentUser`.
 - **DECISIONS (locked):** gender options = **Boy / Girl / Ditto**. Onboarding = **required first step**. `users.display_name` already exists. Photo optional (initials fallback). Photo → R2.
 
 ### Phase F — Public profiles + routing (includes the custom URL)

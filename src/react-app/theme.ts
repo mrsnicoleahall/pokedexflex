@@ -111,3 +111,11 @@ export function heroAura(): string {
 export function spriteUrl(homeId: number, shiny = false): string {
 	return shiny ? `/sprites/home/shiny/${homeId}` : `/sprites/home/${homeId}`;
 }
+
+/**
+ * URL for an alternate-form sprite (Forms gallery) via the 2D-default-set
+ * proxy route. `slug` is the PokeAPI sprite filename stem (e.g. "666-icy-snow").
+ */
+export function formSpriteUrl(slug: string): string {
+	return `/sprites/form/${slug}`;
+}

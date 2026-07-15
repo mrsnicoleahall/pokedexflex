@@ -772,18 +772,51 @@ a {
 .button {
 	appearance: none;
 	border: 1px solid var(--hairline);
-	background: var(--surface);
 	color: var(--ink);
 	border-radius: var(--radius-control);
 	padding: 9px 20px;
 	font-size: 0.9rem;
 	font-weight: 500;
 	cursor: pointer;
-	transition: background-color 0.15s ease, transform 0.15s ease;
+	/* Two background layers: a diagonal metallic sheen (top) that sweeps across
+	   on hover via background-position, over a base tint (bottom). Painting the
+	   sheen as a background keeps the label readable with no z-index games. */
+	background-color: var(--surface);
+	background-image: var(--btn-sheen), linear-gradient(120deg, var(--surface), var(--surface));
+	background-repeat: no-repeat;
+	background-size: 220% 100%, 100% 100%;
+	background-position: 165% 0, 0 0;
+	transition:
+		background-color 0.2s ease,
+		background-position 0.6s cubic-bezier(0.22, 0.61, 0.36, 1),
+		border-color 0.2s ease,
+		box-shadow 0.25s ease,
+		color 0.2s ease,
+		transform 0.15s ease;
+}
+
+/* Brand metallic sheen streak, reused by every button variant. */
+:root {
+	--btn-sheen: linear-gradient(
+		120deg,
+		transparent 34%,
+		color-mix(in srgb, white 60%, transparent) 50%,
+		transparent 66%
+	);
+	--btn-metallic: linear-gradient(
+		120deg,
+		color-mix(in srgb, var(--brand-blue) 20%, var(--surface)) 0%,
+		color-mix(in srgb, var(--brand-teal) 17%, var(--surface)) 52%,
+		color-mix(in srgb, var(--brand-green) 20%, var(--surface)) 100%
+	);
 }
 
 .button:hover:not(:disabled) {
-	background: var(--canvas);
+	background-image: var(--btn-sheen), var(--btn-metallic);
+	background-position: -65% 0, 0 0;
+	border-color: color-mix(in srgb, var(--brand-cyan) 55%, var(--hairline));
+	box-shadow: 0 3px 16px color-mix(in srgb, var(--accent) 26%, transparent);
+	color: var(--ink);
 }
 
 .button:disabled {
@@ -797,16 +830,31 @@ a {
 	}
 }
 
+/* Reduced motion: keep the color/tint change, drop the sweeping animation. */
+@media (prefers-reduced-motion: reduce) {
+	.button {
+		background-position: 0 0, 0 0;
+		transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.25s ease;
+	}
+	.button:hover:not(:disabled) {
+		background-position: 0 0, 0 0;
+	}
+}
+
 /* ---------- Buttons ---------- */
 
 .button--primary {
-	background: var(--brand-grad);
 	color: #ffffff;
 	border-color: transparent;
+	background-color: transparent;
+	background-image: var(--btn-sheen), var(--brand-grad);
 }
 
 .button--primary:hover:not(:disabled) {
-	filter: brightness(1.08);
+	background-image: var(--btn-sheen), var(--brand-grad);
+	background-position: -65% 0, 0 0;
+	border-color: transparent;
+	box-shadow: 0 4px 22px color-mix(in srgb, var(--brand-teal) 42%, transparent);
 }
 
 .button--primary:focus-visible {
@@ -2553,13 +2601,23 @@ a {
 }
 
 .hero--brand .button:not(.button--primary) {
-	background: color-mix(in srgb, white 10%, transparent);
+	background-color: color-mix(in srgb, white 10%, transparent);
 	color: #eef3f8;
 	border-color: color-mix(in srgb, white 35%, transparent);
 }
 
 .hero--brand .button:not(.button--primary):hover:not(:disabled) {
-	background: color-mix(in srgb, white 18%, transparent);
+	background-image: var(--btn-sheen),
+		linear-gradient(
+			120deg,
+			color-mix(in srgb, var(--brand-cyan) 30%, transparent),
+			color-mix(in srgb, var(--brand-teal) 26%, transparent),
+			color-mix(in srgb, var(--brand-green) 30%, transparent)
+		);
+	background-position: -65% 0, 0 0;
+	background-color: color-mix(in srgb, white 14%, transparent);
+	border-color: color-mix(in srgb, var(--brand-cyan) 70%, transparent);
+	color: #ffffff;
 }
 
 .hero--brand .rank-badge {
@@ -3072,4 +3130,150 @@ a {
 .leaderboard__note {
 	margin-top: 1rem;
 	font-size: 0.75rem;
+}
+
+/* ---------- Forms gallery ---------- */
+
+.forms__head {
+	margin-bottom: 0.25rem;
+}
+
+.forms__intro {
+	margin-top: 0.35rem;
+}
+
+.forms-tabs {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.4rem;
+	margin: 1rem 0 0.5rem;
+}
+
+.forms-tab {
+	appearance: none;
+	display: inline-flex;
+	align-items: center;
+	gap: 0.45rem;
+	border: 1px solid var(--hairline);
+	background: var(--surface);
+	color: var(--muted);
+	border-radius: 999px;
+	padding: 0.4rem 0.55rem 0.4rem 0.9rem;
+	font-size: 0.85rem;
+	font-weight: 600;
+	cursor: pointer;
+	transition: border-color 0.2s ease, color 0.2s ease, background-color 0.2s ease;
+}
+
+.forms-tab:hover:not([aria-selected="true"]) {
+	border-color: color-mix(in srgb, var(--brand-cyan) 55%, var(--hairline));
+	color: var(--ink);
+}
+
+.forms-tab__count {
+	font-size: 0.72rem;
+	font-weight: 700;
+	line-height: 1;
+	padding: 0.2rem 0.4rem;
+	border-radius: 999px;
+	background: color-mix(in srgb, var(--ink) 8%, transparent);
+	color: var(--muted);
+}
+
+.forms-tab[aria-selected="true"] {
+	color: #fff;
+	border-color: transparent;
+	background: var(--brand-grad);
+}
+
+.forms-tab[aria-selected="true"] .forms-tab__count {
+	background: color-mix(in srgb, white 26%, transparent);
+	color: #fff;
+}
+
+.forms__blurb {
+	color: var(--muted);
+	font-size: 0.9rem;
+	margin: 0.25rem 0 1.25rem;
+}
+
+.forms-grid {
+	list-style: none;
+	margin: 0 0 2rem;
+	padding: 0;
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(116px, 1fr));
+	gap: 0.75rem;
+}
+
+.forms-tile {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 0.4rem;
+	padding: 0.75rem 0.5rem;
+	border: 1px solid var(--hairline);
+	border-radius: 14px;
+	background: var(--surface);
+	transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.forms-tile:hover {
+	border-color: color-mix(in srgb, var(--brand-cyan) 45%, var(--hairline));
+	box-shadow: 0 4px 18px color-mix(in srgb, var(--accent) 18%, transparent);
+	transform: translateY(-2px);
+}
+
+.forms-tile__sprite {
+	position: relative;
+	width: 96px;
+	height: 96px;
+	display: grid;
+	place-items: center;
+	border-radius: 12px;
+}
+
+.forms-tile__sprite.is-loading {
+	background: color-mix(in srgb, var(--ink) 6%, transparent);
+}
+
+.forms-tile__img {
+	width: 96px;
+	height: 96px;
+	object-fit: contain;
+	image-rendering: pixelated;
+	opacity: 0;
+}
+
+.forms-tile__img.is-loaded {
+	opacity: 1;
+}
+
+.forms-tile__name {
+	font-size: 0.78rem;
+	font-weight: 500;
+	text-align: center;
+	color: var(--ink);
+	line-height: 1.25;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+	.forms-tile__img {
+		transition: opacity 0.35s ease;
+	}
+
+	.forms-tile__sprite.is-loading::after {
+		content: "";
+		position: absolute;
+		inset: 0;
+		border-radius: 12px;
+		background: linear-gradient(
+			100deg,
+			transparent 30%,
+			color-mix(in srgb, var(--ink) 9%, transparent) 50%,
+			transparent 70%
+		);
+		background-size: 200% 100%;
+		animation: sprite-shimmer 1.2s ease-in-out infinite;
+	}
 }

@@ -41,7 +41,9 @@ export function AppLayout() {
 			<RosetteSprite />
 			<TopBar
 				tab={tabForPath(location.pathname)}
-				onTabChange={(next) => navigate(next === "events" ? PATHS.events : PATHS.species)}
+				onTabChange={(next) =>
+					navigate(next === "events" ? PATHS.events : next === "forms" ? PATHS.forms : PATHS.species)
+				}
 				search={q}
 				onSearchChange={setQ}
 				gen={gen}

@@ -12,6 +12,7 @@ import { AppLayout, type LayoutContext } from "./components/AppLayout";
 import { PublicProfile } from "./pages/PublicProfile";
 import { Versus } from "./pages/Versus";
 import { EventsCatalog } from "./pages/EventsCatalog";
+import { Forms } from "./pages/Forms";
 import { Home } from "./pages/Home";
 import { ImportExport } from "./pages/ImportExport";
 import { Leaderboard } from "./pages/Leaderboard";
@@ -57,6 +58,7 @@ function App() {
 				<Route index element={<HomeRoute />} />
 				<Route path="species" element={<SpeciesRoute />} />
 				<Route path="events" element={<EventsRoute />} />
+				<Route path="forms" element={<Forms />} />
 				<Route path="collection" element={<CollectionRoute />} />
 				<Route path="ribbons" element={<Ribbons />} />
 				<Route path="progress" element={<Progress />} />

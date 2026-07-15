@@ -15,6 +15,7 @@ describe("PATHS", () => {
 			home: "/",
 			species: "/species",
 			events: "/events",
+			forms: "/forms",
 			collection: "/collection",
 			ribbons: "/ribbons",
 			progress: "/progress",
@@ -41,8 +42,9 @@ describe("publicProfilePath", () => {
 });
 
 describe("tabForPath", () => {
-	it("is 'events' only on the events path, 'species' everywhere else", () => {
+	it("maps events/forms to their tabs, 'species' everywhere else", () => {
 		expect(tabForPath("/events")).toBe("events");
+		expect(tabForPath("/forms")).toBe("forms");
 		expect(tabForPath("/species")).toBe("species");
 		expect(tabForPath("/")).toBe("species");
 		expect(tabForPath("/collection")).toBe("species");

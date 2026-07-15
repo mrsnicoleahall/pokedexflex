@@ -56,8 +56,14 @@ authRoutes.get("/verify", async (c) => {
   }
 
   const sid = await createSession(db, user.id);
+  // Secure only over HTTPS: production auth cookies must be Secure or Safari's
+  // ITP (and some proxy/browser combos) drop a SameSite=Lax cookie set during
+  // the cross-site email-link redirect. Kept off for http://localhost dev,
+  // where Secure cookies aren't stored in every browser.
+  const secure = new URL(c.req.url).protocol === "https:";
   await setSignedCookie(c, SESSION_COOKIE, sid, c.env.SESSION_SECRET, {
     httpOnly: true,
+    secure,
     sameSite: "Lax",
     path: "/",
     maxAge: 60 * 60 * 24 * 30,

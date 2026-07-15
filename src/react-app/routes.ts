@@ -11,6 +11,7 @@ export const PATHS = {
 	home: "/",
 	species: "/species",
 	events: "/events",
+	forms: "/forms",
 	collection: "/collection",
 	ribbons: "/ribbons",
 	progress: "/progress",
@@ -51,8 +52,10 @@ export function leaderboardPath(): string {
 }
 
 /** Which catalog tab a path represents (drives TopBar's tab highlight). */
-export function tabForPath(pathname: string): "species" | "events" {
-	return pathname === PATHS.events ? "events" : "species";
+export function tabForPath(pathname: string): "species" | "events" | "forms" {
+	if (pathname === PATHS.events) return "events";
+	if (pathname === PATHS.forms) return "forms";
+	return "species";
 }
 
 /** Whether the TopBar's search + generation filters apply on this path. */

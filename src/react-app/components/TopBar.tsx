@@ -3,7 +3,7 @@
 import { AccountMenu, type AccountView } from "./AccountMenu";
 import { ThemeToggle } from "./ThemeToggle";
 
-export type Tab = "species" | "events";
+export type Tab = "species" | "events" | "forms";
 
 const GENERATIONS = Array.from({ length: 9 }, (_, i) => i + 1);
 
@@ -56,6 +56,15 @@ export function TopBar({
 						onClick={() => onTabChange("events")}
 					>
 						Events
+					</button>
+					<button
+						type="button"
+						role="tab"
+						className="tab"
+						aria-selected={tab === "forms"}
+						onClick={() => onTabChange("forms")}
+					>
+						Forms
 					</button>
 				</nav>
 

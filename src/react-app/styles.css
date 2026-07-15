@@ -35,6 +35,8 @@
 	--brand-silver: #c6d2dc;
 	--brand-grad: linear-gradient(115deg, #2f6fb0 0%, #1f9a8a 52%, #33b06a 100%);
 	--brand-glow: radial-gradient(120% 120% at 15% 0%, #2f6fb0 0%, #133 60%, #0b1220 100%);
+	/* Single accent for active/highlight states — brand cyan-blue (replaces the stray orange fallback). */
+	--accent: #2f8fc9;
 
 	color-scheme: light dark;
 }

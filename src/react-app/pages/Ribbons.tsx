@@ -21,6 +21,7 @@ import { EarnMomentToast } from "../components/EarnMomentToast";
 import { RankBadge } from "../components/RankBadge";
 import { formatRarityPct, isRareFlex } from "../ribbons/incentiveDisplay";
 import { RibbonIcon } from "../ribbons/RibbonIcon";
+import { ShowcasePicker } from "../ribbons/ShowcasePicker";
 import { useRibbonsData } from "../ribbons/useRibbonsData";
 import { typeColor } from "../theme";
 
@@ -183,7 +184,9 @@ function RibbonSection({ category, ribbons }: { category: string; ribbons: Ribbo
 
 export function Ribbons() {
 	const { user } = useAuth();
-	const { ribbons, earnedCount, total, trainerScore, rank, newlyEarned, ackSeen, loading, error } = useRibbonsData();
+	const { ribbons, earnedCount, total, trainerScore, rank, showcase, newlyEarned, ackSeen, refetch, loading, error } =
+		useRibbonsData();
+	const earnedRibbons = useMemo(() => ribbons.filter((r) => r.earned), [ribbons]);
 
 	const grouped = useMemo(() => {
 		const byCategory = new Map<string, RibbonDto[]>();
@@ -250,6 +253,10 @@ export function Ribbons() {
 						</div>
 						{!user && <p className="ribbons-summary__note">Sign in and start collecting to earn these.</p>}
 					</div>
+
+					{user && (
+						<ShowcasePicker earnedRibbons={earnedRibbons} showcase={showcase} onSaved={refetch} />
+					)}
 
 					{grouped.map(({ category, ribbons: categoryRibbons }) => (
 						<RibbonSection key={category} category={category} ribbons={categoryRibbons} />

@@ -12,6 +12,7 @@ import { EarnMomentToast } from "../components/EarnMomentToast";
 import { RankBadge } from "../components/RankBadge";
 import { SignInPanel } from "../components/SignInPanel";
 import { useAuth } from "../auth/AuthProvider";
+import { TrophyWall } from "../ribbons/TrophyWall";
 import { useRibbonsData } from "../ribbons/useRibbonsData";
 import { heroAura } from "../theme";
 
@@ -23,7 +24,7 @@ type HomeProps = {
 export function Home({ onBrowse, onNavigate }: HomeProps) {
 	const { user } = useAuth();
 	const [signInOpen, setSignInOpen] = useState(false);
-	const { trainerScore, rank, newlyEarned, ackSeen } = useRibbonsData();
+	const { trainerScore, rank, showcase, ribbons, newlyEarned, ackSeen } = useRibbonsData();
 
 	return (
 		<div className="container page">
@@ -68,6 +69,7 @@ export function Home({ onBrowse, onNavigate }: HomeProps) {
 					</div>
 				)}
 			</section>
+			{user && <TrophyWall showcase={showcase} ribbons={ribbons} />}
 			{signInOpen && <SignInPanel onClose={() => setSignInOpen(false)} />}
 		</div>
 	);

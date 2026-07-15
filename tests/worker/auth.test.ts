@@ -74,4 +74,26 @@ describe("auth helpers", () => {
     expect(body.user.gender).toBeNull();
     expect(body.user.hasAvatar).toBe(false);
   });
+
+  it("deleting an account with an avatar also removes the R2 object (best-effort)", async () => {
+    const r1 = await call("/api/auth/request-link", { method: "POST", headers: {"content-type":"application/json"}, body: JSON.stringify({ email: "delete-with-avatar@x.com" }) });
+    const { devLink } = await r1.json() as any;
+    const verify = await call(new URL(devLink).pathname + new URL(devLink).search, { redirect: "manual" } as any);
+    const cookie = verify.headers.get("set-cookie")!.split(";")[0];
+    const me = await call("/api/auth/me", undefined, cookie);
+    const userId = ((await me.json()) as any).user.id;
+
+    const form = new FormData();
+    form.set("avatar", new Blob([new Uint8Array([1, 2, 3])], { type: "image/png" }), "a.png");
+    const ctx1 = createExecutionContext();
+    const h1 = new Headers({ Cookie: cookie });
+    await worker.fetch(new Request("http://x/api/profile/avatar", { method: "POST", headers: h1, body: form }), env, ctx1);
+    await waitOnExecutionContext(ctx1);
+
+    expect(await env.SPRITES.get(`avatars/${userId}`)).not.toBeNull();
+
+    await call("/api/auth/account", { method: "DELETE" }, cookie);
+
+    expect(await env.SPRITES.get(`avatars/${userId}`)).toBeNull();
+  });
 });

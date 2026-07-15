@@ -7,6 +7,7 @@ import { generateToken, hashToken } from "../auth/tokens";
 import { createSession, deleteSession, SESSION_COOKIE } from "../auth/session";
 import { getCurrentUser, requireUser } from "../auth/current-user";
 import { getEmailSender } from "../auth/email";
+import { avatarKeyFor } from "./profile";
 
 export const authRoutes = new Hono<{ Bindings: Env }>();
 
@@ -82,6 +83,11 @@ authRoutes.get("/me", async (c) => {
 authRoutes.delete("/account", async (c) => {
   const user = await requireUser(c);
   const db = getDb(c.env.DB);
+  try {
+    await c.env.SPRITES.delete(avatarKeyFor(user.id));
+  } catch (err) {
+    console.error("account deletion: failed to remove avatar from R2", err);
+  }
   await db.batch([
     db.delete(specimens).where(eq(specimens.userId, user.id)),
     db.delete(importJobs).where(eq(importJobs.userId, user.id)),

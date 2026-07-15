@@ -17,6 +17,19 @@ const postJson = (path: string, body: unknown, cookie?: string) =>
 const putJson = (path: string, body: unknown, cookie?: string) =>
   call(path, { method: "PUT", headers: { "content-type": "application/json" }, body: JSON.stringify(body) }, cookie);
 
+const postAvatar = async (path: string, bytes: Uint8Array, type: string, cookie?: string) => {
+  const form = new FormData();
+  form.set("avatar", new Blob([bytes], { type }), "avatar.png");
+  const ctx = createExecutionContext();
+  const headers = new Headers();
+  if (cookie) headers.set("Cookie", cookie);
+  const res = await worker.fetch(new Request(`http://x${path}`, { method: "POST", headers, body: form }), env, ctx);
+  await waitOnExecutionContext(ctx);
+  return res;
+};
+
+const FAKE_PNG = new Uint8Array([0x89, 0x50, 0x4e, 0x47, 1, 2, 3, 4]);
+
 /** Runs the real magic-link flow and returns the session cookie string for `email`. */
 const signIn = async (email: string): Promise<string> => {
   const r1 = await postJson("/api/auth/request-link", { email });
@@ -82,5 +95,68 @@ describe("PUT /api/profile", () => {
     expect(res.status).toBe(400);
     const body = (await res.json()) as any;
     expect(body.errors.join(" ")).toMatch(/nothing to update/);
+  });
+});
+
+describe("avatar upload/serve", () => {
+  it("rejects upload when not signed in (401)", async () => {
+    const res = await postAvatar("/api/profile/avatar", FAKE_PNG, "image/png");
+    expect(res.status).toBe(401);
+  });
+
+  it("rejects a disallowed content type (400)", async () => {
+    const cookie = await signIn("avatar-badtype@x.com");
+    const res = await postAvatar("/api/profile/avatar", new Uint8Array([1, 2, 3]), "text/plain", cookie);
+    expect(res.status).toBe(400);
+    const body = (await res.json()) as any;
+    expect(body.errors.join(" ")).toMatch(/unsupported/);
+  });
+
+  it("rejects a file over the 2 MiB cap (400)", async () => {
+    const cookie = await signIn("avatar-toobig@x.com");
+    const big = new Uint8Array(2 * 1024 * 1024 + 1);
+    const res = await postAvatar("/api/profile/avatar", big, "image/png", cookie);
+    expect(res.status).toBe(400);
+    const body = (await res.json()) as any;
+    expect(body.errors.join(" ")).toMatch(/too large/);
+  });
+
+  it("404s a userId with no avatar", async () => {
+    const res = await call("/api/profile/avatar/no-such-user");
+    expect(res.status).toBe(404);
+    expect(await res.json()).toEqual({ error: "not_found" });
+  });
+
+  it("uploads a valid image, flips hasAvatar, and serves the same bytes+type back — publicly, no cookie needed", async () => {
+    const cookie = await signIn("avatar-owner@x.com");
+    const me1 = await call("/api/auth/me", undefined, cookie);
+    const userId = ((await me1.json()) as any).user.id;
+
+    const upload = await postAvatar("/api/profile/avatar", FAKE_PNG, "image/png", cookie);
+    expect(upload.status).toBe(200);
+    expect((await upload.json()) as any).toEqual({ hasAvatar: true });
+
+    const me2 = await call("/api/auth/me", undefined, cookie);
+    expect(((await me2.json()) as any).user.hasAvatar).toBe(true);
+
+    const served = await call(`/api/profile/avatar/${userId}`); // no cookie — public read
+    expect(served.status).toBe(200);
+    expect(served.headers.get("content-type")).toBe("image/png");
+    const bytes = new Uint8Array(await served.arrayBuffer());
+    expect(bytes).toEqual(FAKE_PNG);
+  });
+
+  it("re-uploading replaces the avatar at the same key rather than accumulating objects", async () => {
+    const cookie = await signIn("avatar-replace@x.com");
+    const me1 = await call("/api/auth/me", undefined, cookie);
+    const userId = ((await me1.json()) as any).user.id;
+
+    await postAvatar("/api/profile/avatar", FAKE_PNG, "image/png", cookie);
+    const second = new Uint8Array([9, 9, 9]);
+    await postAvatar("/api/profile/avatar", second, "image/jpeg", cookie);
+
+    const served = await call(`/api/profile/avatar/${userId}`);
+    expect(served.headers.get("content-type")).toBe("image/jpeg");
+    expect(new Uint8Array(await served.arrayBuffer())).toEqual(second);
   });
 });

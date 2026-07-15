@@ -510,6 +510,19 @@ export async function updateProfile(input: { displayName?: string; gender?: stri
 	return handleJson<{ user: UserDto }>(res, "update profile");
 }
 
+/**
+ * Uploads (or replaces) the signed-in user's avatar photo. Server validates
+ * type (png/jpeg/webp) and a 2 MiB size cap; an invalid file throws
+ * `ApiValidationError` via `handleJson`. Photo is always optional — no
+ * caller is required to invoke this.
+ */
+export async function uploadAvatar(file: File): Promise<{ hasAvatar: boolean }> {
+	const form = new FormData();
+	form.append("avatar", file);
+	const res = await fetch("/api/profile/avatar", { method: "POST", credentials: "include", body: form });
+	return handleJson<{ hasAvatar: boolean }>(res, "upload avatar");
+}
+
 export async function authRequestLink(
 	email: string,
 ): Promise<{ ok: boolean; devLink?: string }> {

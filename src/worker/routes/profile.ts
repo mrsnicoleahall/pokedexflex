@@ -1,4 +1,5 @@
 import { Hono } from "hono";
+import type { Context } from "hono";
 import { eq } from "drizzle-orm";
 import { getDb } from "../db";
 import { users } from "../../db/schema";
@@ -6,6 +7,12 @@ import { requireUser } from "../auth/current-user";
 import { validateProfileInput } from "../profile/validate";
 
 export const profileRoutes = new Hono<{ Bindings: Env }>();
+
+const MAX_AVATAR_BYTES = 2 * 1024 * 1024; // 2 MiB — generous for a profile photo, small enough to stay cheap in R2.
+const ALLOWED_AVATAR_TYPES = new Set(["image/png", "image/jpeg", "image/webp"]);
+
+/** Deterministic R2 key for a user's avatar — re-uploading overwrites this same object, never accumulates. */
+export const avatarKeyFor = (userId: string) => `avatars/${userId}`;
 
 profileRoutes.put("/", async (c) => {
   const user = await requireUser(c);
@@ -28,6 +35,45 @@ profileRoutes.put("/", async (c) => {
       displayName: updated.displayName,
       gender: updated.gender,
       hasAvatar: updated.avatarKey !== null,
+    },
+  });
+});
+
+profileRoutes.post("/avatar", async (c: Context<{ Bindings: Env }>) => {
+  const user = await requireUser(c);
+
+  const contentType = c.req.header("content-type") ?? "";
+  if (!contentType.includes("multipart/form-data")) {
+    return c.json({ errors: ["expected multipart/form-data"] }, 400);
+  }
+  const form = await c.req.formData().catch(() => null);
+  const file = form?.get("avatar");
+  if (!(file instanceof Blob)) return c.json({ errors: ["missing avatar file"] }, 400);
+  if (!ALLOWED_AVATAR_TYPES.has(file.type)) {
+    return c.json({ errors: [`unsupported image type: ${file.type || "unknown"}`] }, 400);
+  }
+  if (file.size > MAX_AVATAR_BYTES) {
+    return c.json({ errors: [`image too large (max ${MAX_AVATAR_BYTES / (1024 * 1024)}MB)`] }, 400);
+  }
+
+  const bytes = await file.arrayBuffer();
+  const key = avatarKeyFor(user.id);
+  await c.env.SPRITES.put(key, bytes, { httpMetadata: { contentType: file.type } });
+
+  const db = getDb(c.env.DB);
+  await db.update(users).set({ avatarKey: key }).where(eq(users.id, user.id));
+
+  return c.json({ hasAvatar: true });
+});
+
+profileRoutes.get("/avatar/:userId", async (c) => {
+  const userId = c.req.param("userId");
+  const object = await c.env.SPRITES.get(avatarKeyFor(userId));
+  if (!object) return c.json({ error: "not_found" }, 404);
+  return new Response(object.body, {
+    headers: {
+      "content-type": object.httpMetadata?.contentType ?? "application/octet-stream",
+      "cache-control": "public, max-age=60",
     },
   });
 });

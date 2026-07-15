@@ -7,6 +7,12 @@
 	"name": "pokedexflex",
 	"account_id": "0e56605411ec369074bb375df1b3de9e",
 	"main": "./src/worker/index.ts",
+	// Custom domain — attaches the Worker to pokedexflex.com on deploy (zone already in this account).
+	// Remove/comment these two lines to deploy only to the *.workers.dev URL first for testing.
+	"routes": [
+		{ "pattern": "pokedexflex.com", "custom_domain": true },
+		{ "pattern": "www.pokedexflex.com", "custom_domain": true }
+	],
 	"compatibility_date": "2025-10-08",
 	"compatibility_flags": [
 		"nodejs_compat"
@@ -23,8 +29,7 @@
 		{
 			"binding": "DB",
 			"database_name": "pokedexflex",
-			// TODO: real id set at deploy
-			"database_id": "00000000-0000-0000-0000-000000000000",
+			"database_id": "a482c78f-4b7b-4d89-8083-6c69b87ddc2e",
 			"migrations_dir": "migrations"
 		}
 	],

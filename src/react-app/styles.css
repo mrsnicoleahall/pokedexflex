@@ -2195,3 +2195,205 @@ a {
 	color: var(--muted);
 	font-family: var(--font-mono);
 }
+
+/* ---------- Versus (Flex Phase G) ---------- */
+
+.versus-card {
+	display: grid;
+	grid-template-columns: 1fr auto 1fr;
+	align-items: center;
+	gap: 1rem;
+	padding: 1.25rem;
+	margin: 1rem 0 1.5rem;
+	border: 1px solid var(--hairline);
+	border-radius: var(--radius-card);
+	background: var(--surface);
+}
+
+.versus-card__side {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 0.5rem;
+	text-align: center;
+}
+
+.versus-card__name {
+	font-family: var(--font-display);
+	font-size: 1.1rem;
+	margin: 0;
+}
+
+.versus-card__wins {
+	color: var(--muted);
+	font-size: 0.85rem;
+	margin: 0;
+}
+
+.versus-card__center {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 0.5rem;
+	max-width: 20rem;
+	text-align: center;
+}
+
+.versus-card__vs {
+	font-family: var(--font-display);
+	font-weight: 700;
+	font-size: 1.5rem;
+	color: var(--muted);
+}
+
+.versus-card__verdict {
+	font-style: italic;
+	margin: 0;
+}
+
+.versus-card__winner {
+	font-weight: 600;
+	margin: 0;
+}
+
+.versus-round {
+	display: grid;
+	grid-template-columns: 1fr auto 1fr;
+	align-items: center;
+	gap: 0.75rem;
+	padding: 0.35rem 0;
+}
+
+.versus-round__label {
+	font-size: 0.8rem;
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+	color: var(--muted);
+	white-space: nowrap;
+}
+
+.versus-round__side {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+}
+
+.versus-round__side--a {
+	flex-direction: row-reverse;
+}
+
+.versus-round__value {
+	font-variant-numeric: tabular-nums;
+	min-width: 3ch;
+	font-weight: 600;
+}
+
+.versus-round__side.is-winner .versus-round__value {
+	color: var(--accent, #ff7a3c);
+}
+
+.versus-round__bar {
+	position: relative;
+	flex: 1;
+	height: 8px;
+	border-radius: 999px;
+	background: var(--hairline);
+	overflow: hidden;
+}
+
+.versus-round__fill {
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	border-radius: 999px;
+	background: var(--muted);
+}
+
+.versus-round__fill--a {
+	right: 0;
+}
+
+.versus-round__fill--b {
+	left: 0;
+}
+
+.versus-round__side--a.is-winner .versus-round__fill,
+.versus-round__side--b.is-winner .versus-round__fill {
+	background: var(--accent, #ff7a3c);
+}
+
+.versus-breakdown__rows {
+	display: flex;
+	flex-direction: column;
+	gap: 0.25rem;
+}
+
+.versus-breakdown__row {
+	display: grid;
+	grid-template-columns: 2ch 1fr auto 1fr 2ch;
+	align-items: center;
+	gap: 0.4rem;
+}
+
+.versus-breakdown__count {
+	font-variant-numeric: tabular-nums;
+	font-size: 0.8rem;
+	color: var(--muted);
+	text-align: center;
+}
+
+.versus-breakdown__bar {
+	position: relative;
+	height: 6px;
+	border-radius: 999px;
+	background: var(--hairline);
+	overflow: hidden;
+}
+
+.versus-breakdown__bar--a {
+	transform: scaleX(-1);
+}
+
+.versus-breakdown__fill {
+	position: absolute;
+	left: 0;
+	top: 0;
+	bottom: 0;
+	background: var(--accent, #ff7a3c);
+	border-radius: 999px;
+}
+
+.versus-breakdown__key {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	min-width: 24px;
+}
+
+.versus-breakdown__gen {
+	font-variant-numeric: tabular-nums;
+	font-size: 0.8rem;
+	color: var(--muted);
+}
+
+.versus-favorites__cols,
+.versus-showcase__cols {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 1rem;
+}
+
+.versus-showcase__name {
+	font-weight: 600;
+	margin: 0 0 0.5rem;
+}
+
+@media (max-width: 640px) {
+	.versus-card {
+		grid-template-columns: 1fr;
+	}
+	.versus-favorites__cols,
+	.versus-showcase__cols {
+		grid-template-columns: 1fr;
+	}
+}

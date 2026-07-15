@@ -8,8 +8,14 @@
 // leaderboard/ranking.ts; it cannot import across the worker/client boundary.)
 
 /** The metrics the public leaderboard can be ranked by. Trainer Score is primary/default. */
-export type LeaderboardMetric = "score" | "completion" | "shiny" | "rarity";
+export type LeaderboardMetric = "score" | "completion" | "shiny" | "rarity" | "ribbons";
 
-export const LEADERBOARD_METRICS: readonly LeaderboardMetric[] = ["score", "completion", "shiny", "rarity"];
+export const LEADERBOARD_METRICS: readonly LeaderboardMetric[] = [
+	"score",
+	"completion",
+	"shiny",
+	"rarity",
+	"ribbons",
+];
 
 export const DEFAULT_METRIC: LeaderboardMetric = "score";

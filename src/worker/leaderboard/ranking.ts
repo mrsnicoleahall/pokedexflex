@@ -9,9 +9,15 @@
  */
 
 /** The metrics the public leaderboard can be ranked by. Trainer Score is primary/default. */
-export type LeaderboardMetric = "score" | "completion" | "shiny" | "rarity";
+export type LeaderboardMetric = "score" | "completion" | "shiny" | "rarity" | "ribbons";
 
-export const LEADERBOARD_METRICS: readonly LeaderboardMetric[] = ["score", "completion", "shiny", "rarity"];
+export const LEADERBOARD_METRICS: readonly LeaderboardMetric[] = [
+  "score",
+  "completion",
+  "shiny",
+  "rarity",
+  "ribbons",
+];
 
 export const DEFAULT_METRIC: LeaderboardMetric = "score";
 
@@ -41,6 +47,8 @@ export type LeaderboardCandidate = {
   shinySpeciesCount: number;
   /** Sum of points from earned rare-flex ribbons (Rarity Class / Grand / Collector). */
   rarityScore: number;
+  /** Count of distinct EARNED ribbons (rows in `user_ribbons`) for this user. */
+  ribbonCount: number;
 };
 
 /** A ranked candidate: its 1-based `position` and the `value` of the metric it was ranked by. */
@@ -55,6 +63,8 @@ export function metricValue(c: LeaderboardCandidate, metric: LeaderboardMetric):
       return c.shinySpeciesCount;
     case "rarity":
       return c.rarityScore;
+    case "ribbons":
+      return c.ribbonCount;
     case "score":
     default:
       return c.trainerScore;

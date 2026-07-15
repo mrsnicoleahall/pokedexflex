@@ -821,6 +821,8 @@ export type LeaderboardEntryDto = {
 	shinySpeciesCount: number;
 	/** Sum of points from earned rare-flex ribbons (Rarity Class / Grand / Collector). */
 	rarityScore: number;
+	/** Count of distinct EARNED ribbons for this trainer. */
+	ribbonCount: number;
 	/** The value of the metric this row was ranked by. */
 	value: number;
 };

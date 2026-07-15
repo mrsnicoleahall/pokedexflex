@@ -21,6 +21,7 @@ const cand = (over: Partial<LeaderboardCandidate>): LeaderboardCandidate => ({
   completionPct: 0,
   shinySpeciesCount: 0,
   rarityScore: 0,
+  ribbonCount: 0,
   ...over,
 });
 
@@ -37,12 +38,19 @@ describe("parseMetric", () => {
 });
 
 describe("metricValue", () => {
-  const c = cand({ trainerScore: 140, completionOwned: 30, shinySpeciesCount: 7, rarityScore: 40 });
+  const c = cand({
+    trainerScore: 140,
+    completionOwned: 30,
+    shinySpeciesCount: 7,
+    rarityScore: 40,
+    ribbonCount: 12,
+  });
   it("selects the field the metric ranks by", () => {
     expect(metricValue(c, "score")).toBe(140);
     expect(metricValue(c, "completion")).toBe(30); // owned count, not pct
     expect(metricValue(c, "shiny")).toBe(7);
     expect(metricValue(c, "rarity")).toBe(40);
+    expect(metricValue(c, "ribbons")).toBe(12);
   });
 });
 
@@ -68,6 +76,16 @@ describe("rankLeaderboard", () => {
     ];
     expect(rankLeaderboard(input, "score").map((r) => r.userId)).toEqual(["a", "b"]);
     expect(rankLeaderboard(input, "shiny").map((r) => r.userId)).toEqual(["b", "a"]);
+  });
+
+  it("ranks by ribbons (earned-ribbon count) descending, value = ribbonCount", () => {
+    const input = [
+      cand({ userId: "a", trainerScore: 200, ribbonCount: 2 }),
+      cand({ userId: "b", trainerScore: 10, ribbonCount: 30 }),
+    ];
+    const rows = rankLeaderboard(input, "ribbons");
+    expect(rows.map((r) => r.userId)).toEqual(["b", "a"]);
+    expect(rows.map((r) => r.value)).toEqual([30, 2]);
   });
 
   it("breaks ties by trainerScore then userId (deterministic)", () => {

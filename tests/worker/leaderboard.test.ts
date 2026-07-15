@@ -114,6 +114,9 @@ describe("GET /api/leaderboard", () => {
     expect(alphaRow.shinySpeciesCount).toBe(1);
     expect(alphaRow.value).toBe(100); // ranked-by-score value
     expect(betaRow.trainerScore).toBe(5);
+    // ribbonCount is present on every metric's response: Alpha earned 3 ribbons, Beta earned 1.
+    expect(alphaRow.ribbonCount).toBe(3);
+    expect(betaRow.ribbonCount).toBe(1);
 
     // Completion metric: Alpha (2) before Beta (1); value = owned count.
     const compBody = (await (await call("/api/leaderboard?metric=completion")).json()) as any;
@@ -132,6 +135,17 @@ describe("GET /api/leaderboard", () => {
     const rarBody = (await (await call("/api/leaderboard?metric=rarity")).json()) as any;
     expect(rarBody.metric).toBe("rarity");
     expect(rarBody.entries.find((r: any) => r.handle === "lb-alpha").value).toBe(40);
+
+    // Ribbons metric: Alpha (3 earned ribbons) before Beta (1 earned ribbon); value = earned count.
+    const ribbonsBody = (await (await call("/api/leaderboard?metric=ribbons")).json()) as any;
+    expect(ribbonsBody.metric).toBe("ribbons");
+    const ribbonsAlpha = ribbonsBody.entries.find((r: any) => r.handle === "lb-alpha");
+    const ribbonsBeta = ribbonsBody.entries.find((r: any) => r.handle === "lb-beta");
+    expect(ribbonsAlpha.position).toBeLessThan(ribbonsBeta.position);
+    expect(ribbonsAlpha.value).toBe(3);
+    expect(ribbonsAlpha.ribbonCount).toBe(3);
+    expect(ribbonsBeta.value).toBe(1);
+    expect(ribbonsAlpha).not.toHaveProperty("email");
 
     // Unknown metric falls back to score.
     const junk = (await (await call("/api/leaderboard?metric=bogus")).json()) as any;

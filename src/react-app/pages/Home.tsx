@@ -8,10 +8,13 @@
 
 import { useState } from "react";
 import type { AccountView } from "../components/AccountMenu";
+import { Avatar } from "../components/Avatar";
 import { EarnMomentToast } from "../components/EarnMomentToast";
+import { FavoritesStrip } from "../components/FavoritesStrip";
 import { RankBadge } from "../components/RankBadge";
 import { SignInPanel } from "../components/SignInPanel";
 import { useAuth } from "../auth/AuthProvider";
+import { NAME_PLACEHOLDER } from "../profile/display";
 import { NudgeList } from "../ribbons/NudgeList";
 import { TrophyWall } from "../ribbons/TrophyWall";
 import { useRibbonsData } from "../ribbons/useRibbonsData";
@@ -35,8 +38,13 @@ export function Home({ onBrowse, onNavigate }: HomeProps) {
 			<section className="hero" style={{ background: heroAura() }}>
 				{user ? (
 					<div className="hero__welcome">
-						<p className="hero__eyebrow">Welcome back</p>
-						<h1 className="hero__title hero__title--slim">{user.displayName ?? user.email}</h1>
+						<div className="hero__identity">
+							<Avatar userId={user.id} displayName={user.displayName} hasAvatar={user.hasAvatar} size="lg" />
+							<div>
+								<p className="hero__eyebrow">Welcome back</p>
+								<h1 className="hero__title hero__title--slim">{user.displayName ?? NAME_PLACEHOLDER}</h1>
+							</div>
+						</div>
 						<RankBadge trainerScore={trainerScore} rank={rank} size="sm" />
 						<div className="hero__actions">
 							<button
@@ -70,6 +78,7 @@ export function Home({ onBrowse, onNavigate }: HomeProps) {
 					</div>
 				)}
 			</section>
+			{user && <FavoritesStrip favorites={user.favorites} />}
 			{user && <TrophyWall showcase={showcase} ribbons={ribbons} />}
 			{user && <NudgeList nearest={nearest} />}
 			{signInOpen && <SignInPanel onClose={() => setSignInOpen(false)} />}

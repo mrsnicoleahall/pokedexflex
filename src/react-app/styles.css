@@ -826,7 +826,13 @@ a {
 }
 
 .account-menu__trigger {
+	display: flex;
+	align-items: center;
+	gap: 8px;
 	max-width: 220px;
+}
+
+.account-menu__label {
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
@@ -2107,4 +2113,37 @@ a {
 .species-picker__item--picked {
 	outline: 2px solid var(--ink);
 	outline-offset: -2px;
+}
+
+/* ---------- Home hero identity + favorites strip ---------- */
+
+.hero__identity {
+	display: flex;
+	align-items: center;
+	gap: 1rem;
+	margin-bottom: 0.5rem;
+}
+
+.favorites-strip {
+	margin: 1.5rem 0;
+}
+
+.favorites-strip__title {
+	font-size: 1rem;
+	color: var(--muted);
+	margin-bottom: 0.75rem;
+}
+
+.favorites-strip__list {
+	display: flex;
+	gap: 1.5rem;
+	flex-wrap: wrap;
+}
+
+.favorites-strip__item {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 0.25rem;
+	font-size: 0.85rem;
 }

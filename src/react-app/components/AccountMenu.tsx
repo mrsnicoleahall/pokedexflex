@@ -2,12 +2,14 @@
 //
 // Lives in the TopBar's control cluster. Signed-out renders a "Sign in"
 // button that opens the SignInPanel modal. Signed-in renders a button
-// showing the user's email (or display name), which opens a menu with
-// links to the (placeholder) Collection/Ribbons views, Settings, and
-// Sign out.
+// showing the user's avatar + display name (never email — see
+// src/react-app/profile/display.ts's NAME_PLACEHOLDER), which opens a menu
+// with links to Collection/Ribbons/Import-Export/Settings and Sign out.
 
 import { useEffect, useRef, useState } from "react";
 import { useAuth } from "../auth/AuthProvider";
+import { Avatar } from "./Avatar";
+import { NAME_PLACEHOLDER } from "../profile/display";
 import { SignInPanel } from "./SignInPanel";
 
 export type AccountView = "collection" | "ribbons" | "importExport" | "settings";
@@ -75,7 +77,8 @@ export function AccountMenu({ onNavigate }: AccountMenuProps) {
 				aria-expanded={menuOpen}
 				onClick={() => setMenuOpen((open) => !open)}
 			>
-				{user.displayName ?? user.email}
+				<Avatar userId={user.id} displayName={user.displayName} hasAvatar={user.hasAvatar} size="sm" />
+				<span className="account-menu__label">{user.displayName ?? NAME_PLACEHOLDER}</span>
 			</button>
 			{menuOpen && (
 				<div className="account-menu__dropdown" role="menu">

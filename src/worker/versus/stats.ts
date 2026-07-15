@@ -9,6 +9,7 @@
  * global species/forms reference a single time. NEVER reads or returns email.
  */
 import { buildCollectionSummary, computeRibbons } from "../ribbons/collection-summary";
+import { buildOwnedBreakdown } from "../ribbons/breakdown";
 import { trainerScoreFor, rankFor, pointsForRibbon } from "../ribbons/scoring";
 import { getShowcase } from "../ribbons/incentive-store";
 import { getFavoritesEnriched } from "../profile/favorites-store";
@@ -64,21 +65,10 @@ export async function buildVersusStats(
     0,
   );
 
-  // Per-type / per-generation breakdown over the user's OWNED species,
-  // resolved against the shared reference data.
-  const speciesById = new Map(ref.species.map((s) => [s.id, s] as const));
-  const byType: Record<string, number> = {};
-  const byGen: Record<string, number> = {};
-  for (const speciesId of summary.speciesIds) {
-    const meta = speciesById.get(speciesId);
-    if (!meta) continue;
-    const genKey = String(meta.generation);
-    byGen[genKey] = (byGen[genKey] ?? 0) + 1;
-    for (const type of meta.types) {
-      const key = type.toLowerCase();
-      byType[key] = (byType[key] ?? 0) + 1;
-    }
-  }
+  // Per-type / per-generation breakdown over the user's OWNED species, via the
+  // shared helper (Flex Phase H) so Versus and the stats dashboard count the
+  // same way. `ref` is still shared across both sides by the caller.
+  const { byType, byGen } = buildOwnedBreakdown(summary.speciesIds, ref);
   const distinctTypes = Object.keys(byType).length;
   const distinctGens = Object.keys(byGen).length;
   const totalSpecies = ref.species.length;

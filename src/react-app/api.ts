@@ -612,3 +612,41 @@ export async function authDeleteAccount(): Promise<void> {
 	});
 	if (!res.ok) throw new Error(`delete account failed: ${res.status}`);
 }
+
+/* ---------- Public profile ---------- */
+
+export type PublicShowcaseRibbon = { id: string; name: string; category: string };
+
+export type PublicProfileStats = {
+	dexCount: number;
+	shinySpeciesCount: number;
+	specimenCount: number;
+	ribbonCount: number;
+};
+
+export type PublicProfileDto = {
+	/** Only used to build the public avatar URL (`avatarUrl(userId)`); no other user id is exposed. */
+	userId: string;
+	handle: string;
+	displayName: string | null;
+	gender: string | null;
+	hasAvatar: boolean;
+	favorites: FavoriteDto[];
+	showcase: PublicShowcaseRibbon[];
+	trainerScore: number;
+	rank: string;
+	stats: PublicProfileStats;
+};
+
+/**
+ * Fetches a trainer's PUBLIC profile by handle. Returns `null` for a 404 —
+ * which covers both an unknown handle and a private profile (the server makes
+ * the two indistinguishable on purpose). Never sends credentials; the endpoint
+ * is public and returns no account-private data.
+ */
+export async function fetchPublicProfile(handle: string): Promise<PublicProfileDto | null> {
+	const res = await fetch(`/api/u/${encodeURIComponent(handle)}`);
+	if (res.status === 404) return null;
+	const body = await handleJson<{ profile: PublicProfileDto }>(res, "fetch public profile");
+	return body.profile;
+}

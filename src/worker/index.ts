@@ -14,6 +14,7 @@ import { importRoutes } from "./routes/import";
 import { exportRoutes } from "./routes/export";
 import { photoImportRoutes } from "./routes/photo-import";
 import { saveImportRoutes } from "./routes/save-import";
+import { publicProfileRoutes } from "./routes/public-profile";
 
 const app = new Hono<{ Bindings: Env }>();
 
@@ -37,6 +38,7 @@ app.route("/api/import", importRoutes);
 app.route("/api/import/photo", photoImportRoutes);
 app.route("/api/import/save", saveImportRoutes);
 app.route("/api/export", exportRoutes);
+app.route("/api/u", publicProfileRoutes);
 app.route("/sprites", spriteRoutes);
 
 export default app;

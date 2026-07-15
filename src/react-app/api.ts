@@ -547,6 +547,33 @@ export async function setFavoriteSpecies(speciesIds: number[]): Promise<{ favori
 	return handleJson<{ favorites: FavoriteDto[] }>(res, "set favorite species");
 }
 
+/**
+ * Sets the signed-in user's public-profile handle. Server validates format
+ * (lowercase alnum + single hyphens, 3–30 chars, not reserved) and
+ * case-insensitive uniqueness; an invalid or taken handle throws
+ * `ApiValidationError` via `handleJson`.
+ */
+export async function setHandle(handle: string): Promise<{ user: UserDto }> {
+	const res = await fetch("/api/profile/handle", {
+		method: "PUT",
+		credentials: "include",
+		headers: { "Content-Type": "application/json" },
+		body: JSON.stringify({ handle }),
+	});
+	return handleJson<{ user: UserDto }>(res, "set handle");
+}
+
+/** Toggles whether the signed-in user's profile is publicly visible at `/u/:handle`. */
+export async function setProfileVisibility(isPublic: boolean): Promise<{ user: UserDto }> {
+	const res = await fetch("/api/profile/visibility", {
+		method: "PUT",
+		credentials: "include",
+		headers: { "Content-Type": "application/json" },
+		body: JSON.stringify({ isPublic }),
+	});
+	return handleJson<{ user: UserDto }>(res, "set profile visibility");
+}
+
 export async function authRequestLink(
 	email: string,
 ): Promise<{ ok: boolean; devLink?: string }> {

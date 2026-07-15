@@ -230,3 +230,95 @@ describe("GET /api/auth/me favorites default", () => {
     expect(((await me.json()) as any).user.favorites).toEqual([]);
   });
 });
+
+describe("PUT /api/profile/handle", () => {
+  it("rejects when not signed in (401)", async () => {
+    const res = await putJson("/api/profile/handle", { handle: "somebody" });
+    expect(res.status).toBe(401);
+  });
+
+  it("sets a valid handle and reflects it on /me", async () => {
+    const cookie = await signIn("handle-set@x.com");
+    const res = await putJson("/api/profile/handle", { handle: "Ash-Ketchum" }, cookie);
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as any;
+    expect(body.user.handle).toBe("ash-ketchum"); // normalized
+    expect(body.user.email).toBe("handle-set@x.com");
+
+    const me = await call("/api/auth/me", undefined, cookie);
+    expect(((await me.json()) as any).user.handle).toBe("ash-ketchum");
+  });
+
+  it("rejects an invalid handle (400) and does not persist it", async () => {
+    const cookie = await signIn("handle-bad@x.com");
+    const res = await putJson("/api/profile/handle", { handle: "no" }, cookie);
+    expect(res.status).toBe(400);
+    const body = (await res.json()) as any;
+    expect(body.errors.join(" ")).toMatch(/at least 3/);
+  });
+
+  it("rejects a reserved handle (400)", async () => {
+    const cookie = await signIn("handle-reserved@x.com");
+    const res = await putJson("/api/profile/handle", { handle: "admin" }, cookie);
+    expect(res.status).toBe(400);
+    const body = (await res.json()) as any;
+    expect(body.errors.join(" ")).toMatch(/reserved/);
+  });
+
+  it("rejects a handle already taken by another user (400)", async () => {
+    const a = await signIn("handle-owner-a@x.com");
+    await putJson("/api/profile/handle", { handle: "unique-target" }, a);
+
+    const b = await signIn("handle-owner-b@x.com");
+    const res = await putJson("/api/profile/handle", { handle: "unique-target" }, b);
+    expect(res.status).toBe(400);
+    const body = (await res.json()) as any;
+    expect(body.errors.join(" ")).toMatch(/taken/);
+  });
+
+  it("lets a user re-save their own current handle", async () => {
+    const cookie = await signIn("handle-resave@x.com");
+    await putJson("/api/profile/handle", { handle: "keep-mine" }, cookie);
+    const res = await putJson("/api/profile/handle", { handle: "keep-mine" }, cookie);
+    expect(res.status).toBe(200);
+  });
+});
+
+describe("PUT /api/profile/visibility", () => {
+  it("rejects when not signed in (401)", async () => {
+    const res = await putJson("/api/profile/visibility", { isPublic: false });
+    expect(res.status).toBe(401);
+  });
+
+  it("toggles isPublic and reflects it on /me", async () => {
+    const cookie = await signIn("vis-toggle@x.com");
+    const res = await putJson("/api/profile/visibility", { isPublic: false }, cookie);
+    expect(res.status).toBe(200);
+    expect(((await res.json()) as any).user.isPublic).toBe(false);
+
+    const me = await call("/api/auth/me", undefined, cookie);
+    expect(((await me.json()) as any).user.isPublic).toBe(false);
+  });
+
+  it("rejects a non-boolean isPublic (400)", async () => {
+    const cookie = await signIn("vis-bad@x.com");
+    const res = await putJson("/api/profile/visibility", { isPublic: "yes" }, cookie);
+    expect(res.status).toBe(400);
+  });
+});
+
+describe("PUT /api/profile handle backfill", () => {
+  it("assigns a handle derived from displayName the first time a name is set", async () => {
+    const cookie = await signIn("backfill-new@x.com");
+    const res = await putJson("/api/profile", { displayName: "Gary Oak", gender: "boy" }, cookie);
+    expect(res.status).toBe(200);
+    expect(((await res.json()) as any).user.handle).toBe("gary-oak");
+  });
+
+  it("does not overwrite a handle the user already set", async () => {
+    const cookie = await signIn("backfill-keep@x.com");
+    await putJson("/api/profile/handle", { handle: "chosen-one" }, cookie);
+    const res = await putJson("/api/profile", { displayName: "Totally Different Name" }, cookie);
+    expect(((await res.json()) as any).user.handle).toBe("chosen-one");
+  });
+});

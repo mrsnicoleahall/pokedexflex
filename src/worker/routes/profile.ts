@@ -6,6 +6,8 @@ import { users } from "../../db/schema";
 import { requireUser } from "../auth/current-user";
 import { validateProfileInput } from "../profile/validate";
 import { getFavoritesEnriched, setFavorites } from "../profile/favorites-store";
+import { validateHandle, suggestHandleBase } from "../profile/handle";
+import { isHandleTaken, generateUniqueHandle } from "../profile/handle-store";
 
 export const profileRoutes = new Hono<{ Bindings: Env }>();
 
@@ -14,6 +16,22 @@ const ALLOWED_AVATAR_TYPES = new Set(["image/png", "image/jpeg", "image/webp"]);
 
 /** Deterministic R2 key for a user's avatar — re-uploading overwrites this same object, never accumulates. */
 export const avatarKeyFor = (userId: string) => `avatars/${userId}`;
+
+/** Serializes a fresh `users` row into the exact `{user}` shape the client `UserDto` expects (never leaks columns beyond it). */
+async function serializeUser(db: ReturnType<typeof getDb>, userId: string) {
+  const rows = await db.select().from(users).where(eq(users.id, userId)).limit(1);
+  const u = rows[0];
+  return {
+    id: u.id,
+    email: u.email,
+    displayName: u.displayName,
+    gender: u.gender,
+    hasAvatar: u.avatarKey !== null,
+    favorites: await getFavoritesEnriched(db, u.id),
+    handle: u.handle,
+    isPublic: u.isPublic === 1,
+  };
+}
 
 profileRoutes.put("/", async (c) => {
   const user = await requireUser(c);
@@ -27,18 +45,40 @@ profileRoutes.put("/", async (c) => {
   const db = getDb(c.env.DB);
   await db.update(users).set(result.value).where(eq(users.id, user.id));
 
-  const rows = await db.select().from(users).where(eq(users.id, user.id)).limit(1);
-  const updated = rows[0];
-  return c.json({
-    user: {
-      id: updated.id,
-      email: updated.email,
-      displayName: updated.displayName,
-      gender: updated.gender,
-      hasAvatar: updated.avatarKey !== null,
-      favorites: await getFavoritesEnriched(db, updated.id),
-    },
-  });
+  // Backfill a public handle the first time a display name exists, so
+  // finishing onboarding makes the trainer publicly reachable. Never
+  // overwrites a handle the user already chose.
+  if (user.handle === null && result.value.displayName) {
+    const handle = await generateUniqueHandle(db, suggestHandleBase(result.value.displayName));
+    await db.update(users).set({ handle }).where(eq(users.id, user.id));
+  }
+
+  return c.json({ user: await serializeUser(db, user.id) });
+});
+
+profileRoutes.put("/handle", async (c) => {
+  const user = await requireUser(c);
+  const body = await c.req.json().catch(() => null);
+  const result = validateHandle((body as { handle?: unknown } | null)?.handle);
+  if (!result.ok) return c.json({ errors: result.errors }, 400);
+
+  const db = getDb(c.env.DB);
+  if (await isHandleTaken(db, result.value, user.id)) {
+    return c.json({ errors: ["that handle is already taken"] }, 400);
+  }
+  await db.update(users).set({ handle: result.value }).where(eq(users.id, user.id));
+  return c.json({ user: await serializeUser(db, user.id) });
+});
+
+profileRoutes.put("/visibility", async (c) => {
+  const user = await requireUser(c);
+  const body = await c.req.json().catch(() => null);
+  const isPublic = (body as { isPublic?: unknown } | null)?.isPublic;
+  if (typeof isPublic !== "boolean") return c.json({ errors: ["isPublic must be a boolean"] }, 400);
+
+  const db = getDb(c.env.DB);
+  await db.update(users).set({ isPublic: isPublic ? 1 : 0 }).where(eq(users.id, user.id));
+  return c.json({ user: await serializeUser(db, user.id) });
 });
 
 profileRoutes.post("/avatar", async (c: Context<{ Bindings: Env }>) => {

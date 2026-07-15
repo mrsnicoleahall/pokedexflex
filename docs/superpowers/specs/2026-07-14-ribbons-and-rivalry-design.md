@@ -1,4 +1,4 @@
-# PokeFlexDex — Ribbons & Rivalry Expansion Design Spec
+# PokeDexFlex — Ribbons & Rivalry Expansion Design Spec
 
 **Date:** 2026-07-14
 **Status:** Approved ("keep going — don't ask anymore"); build all sub-features.

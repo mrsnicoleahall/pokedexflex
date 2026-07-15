@@ -1,6 +1,6 @@
 {
-  "name": "pokeflexdex",
-  "description": "PokeFlexDex: a Vite + React + Hono app on Cloudflare Workers, with D1 and R2.",
+  "name": "pokedexflex",
+  "description": "PokeDexFlex: a Vite + React + Hono app on Cloudflare Workers, with D1 and R2.",
   "cloudflare": {
     "label": "Vite React Template",
     "products": [
@@ -45,7 +45,7 @@
     "build": "tsc -b && vite build",
     "cf-typegen": "wrangler types",
     "check": "tsc && vite build && wrangler deploy --dry-run",
-    "db:local": "wrangler d1 migrations apply pokeflexdex --local && wrangler d1 execute pokeflexdex --local --file=data/seed.sql && wrangler d1 execute pokeflexdex --local --file=data/events-seed.sql && wrangler d1 execute pokeflexdex --local --file=data/demo-seed.sql",
+    "db:local": "wrangler d1 migrations apply pokedexflex --local && wrangler d1 execute pokedexflex --local --file=data/seed.sql && wrangler d1 execute pokedexflex --local --file=data/events-seed.sql && wrangler d1 execute pokedexflex --local --file=data/demo-seed.sql",
     "deploy": "wrangler deploy",
     "dev": "vite",
     "lint": "eslint .",

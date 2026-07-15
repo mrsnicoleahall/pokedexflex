@@ -21,9 +21,9 @@ class ResendEmailSender implements EmailSender {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: "PokeFlexDex <login@pokeflexdex.example>",
+        from: "PokeDexFlex <login@pokedexflex.com>",
         to: [email],
-        subject: "Your PokeFlexDex login link",
+        subject: "Your PokeDexFlex login link",
         text: `Sign in: ${link}`,
       }),
     });

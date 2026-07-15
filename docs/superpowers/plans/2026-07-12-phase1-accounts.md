@@ -1,4 +1,4 @@
-# PokeFlexDex Phase 1 — Accounts + Homepage Implementation Plan
+# PokeDexFlex Phase 1 — Accounts + Homepage Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax.
 

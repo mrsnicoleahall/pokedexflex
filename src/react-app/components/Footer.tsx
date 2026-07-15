@@ -6,7 +6,7 @@
 export function Footer() {
 	return (
 		<footer className="app-footer">
-			<span className="app-footer__name">PokeFlexDex</span>
+			<span className="app-footer__name">PokeDexFlex</span>
 			<span className="app-footer__dot" aria-hidden="true">
 				·
 			</span>

@@ -29,7 +29,7 @@ function PublicHeader() {
 		<header className="toolbar public-profile__bar">
 			<div className="toolbar__inner container">
 				<Link className="wordmark" to={PATHS.home}>
-					PokeFlexDex
+					PokeDexFlex
 				</Link>
 				<div className="toolbar__controls">
 					<ThemeToggle />
@@ -70,7 +70,7 @@ export function PublicProfile() {
 						<p className="state__title">Trainer not found</p>
 						<p className="state__hint">
 							This profile doesn't exist or is private.{" "}
-							<Link to={PATHS.home}>Back to PokeFlexDex</Link>
+							<Link to={PATHS.home}>Back to PokeDexFlex</Link>
 						</p>
 					</div>
 				)}
@@ -79,7 +79,7 @@ export function PublicProfile() {
 					<div className="state">
 						<p className="state__title">Something went wrong</p>
 						<p className="state__hint">
-							Couldn't load this profile. <Link to={PATHS.home}>Back to PokeFlexDex</Link>
+							Couldn't load this profile. <Link to={PATHS.home}>Back to PokeDexFlex</Link>
 						</p>
 					</div>
 				)}

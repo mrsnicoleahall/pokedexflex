@@ -1,6 +1,6 @@
 /* src/react-app/styles.css
  *
- * Design system for the PokeFlexDex "living dex": CSS variables for the
+ * Design system for the PokeDexFlex "living dex": CSS variables for the
  * light/dark neutral palette, a minimal reset, and the toolbar/grid/card/
  * chip primitives used across the app. Type colors live in theme.ts and
  * are applied inline (per-species), not here.

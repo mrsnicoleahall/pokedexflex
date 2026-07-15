@@ -2,7 +2,7 @@
 //
 // Build-time Node script (NOT shipped to the Worker). Scrapes the Bulbapedia
 // "event Pokémon distribution" directory (MediaWiki API) into a normalized,
-// committed snapshot at data/events-snapshot.json, so PokeFlexDex can browse
+// committed snapshot at data/events-snapshot.json, so PokeDexFlex can browse
 // historical Mystery Gift / event distributions without re-scraping.
 //
 // Data source: Bulbapedia (https://bulbapedia.bulbagarden.net), text content
@@ -18,7 +18,7 @@ import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
 const API_BASE = "https://bulbapedia.bulbagarden.net/w/api.php";
-const USER_AGENT = "PokeFlexDex/0.1 (personal Pokedex project; contact NicoleHall@attorneyassistant.com)";
+const USER_AGENT = "PokeDexFlex/0.1 (personal Pokedex project; contact NicoleHall@attorneyassistant.com)";
 
 // ---------------------------------------------------------------------------
 // Target schema

@@ -17,7 +17,7 @@
 // form so a second import can start fresh.
 //
 // Export: one button downloads the whole collection as
-// `pokeflexdex-collection.json` via a Blob + temporary anchor — no server
+// `pokedexflex-collection.json` via a Blob + temporary anchor — no server
 // redirect needed.
 
 import { useEffect, useMemo, useState } from "react";
@@ -417,7 +417,7 @@ export function ImportExport() {
 			const url = URL.createObjectURL(blob);
 			const a = document.createElement("a");
 			a.href = url;
-			a.download = "pokeflexdex-collection.json";
+			a.download = "pokedexflex-collection.json";
 			document.body.appendChild(a);
 			a.click();
 			a.remove();
@@ -590,7 +590,7 @@ export function ImportExport() {
 			<section className="settings-section impexp-section">
 				<h2 className="settings-section__title">Import</h2>
 				<p className="settings-section__hint">
-					Bring in specimens from a CSV (e.g. exported from a spreadsheet) or a PokeFlexDex JSON export.
+					Bring in specimens from a CSV (e.g. exported from a spreadsheet) or a PokeDexFlex JSON export.
 				</p>
 
 				<div className="tabs" role="tablist" aria-label="Import format">
@@ -779,7 +779,7 @@ export function ImportExport() {
 
 				{photoVisionUnavailable && (
 					<p className="photo-import__unavailable" role="status">
-						📷 Photo recognition activates once PokeFlexDex is deployed with the AI service. For now, use
+						📷 Photo recognition activates once PokeDexFlex is deployed with the AI service. For now, use
 						CSV/JSON import or add Pokémon manually.
 					</p>
 				)}

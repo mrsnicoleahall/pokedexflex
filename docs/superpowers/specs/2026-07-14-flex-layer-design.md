@@ -1,11 +1,11 @@
-# PokeFlexDex — Flex Layer Design Spec
+# PokeDexFlex — Flex Layer Design Spec
 
 **Date:** 2026-07-14
 **Status:** Approved ("keep going"); build all sub-features.
 
 ## Summary
 
-Turn PokeFlexDex into something you show off. Add: a **scarcity-based rarity
+Turn PokeDexFlex into something you show off. Add: a **scarcity-based rarity
 engine** (Common→Legendary), a **stats dashboard** (WoW-pet-guide style: big
 numbers, donut charts, distributions, filterable table), **public profiles**
 at a shareable `/u/:handle` (with a private toggle), a **Versus** compare mode

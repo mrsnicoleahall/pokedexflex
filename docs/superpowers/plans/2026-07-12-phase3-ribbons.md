@@ -1,4 +1,4 @@
-# PokeFlexDex Phase 3 — Achievement Ribbons Implementation Plan
+# PokeDexFlex Phase 3 — Achievement Ribbons Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development. Steps use checkbox (`- [ ]`) syntax.
 

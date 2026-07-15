@@ -1,9 +1,9 @@
-# PokeFlexDex — Session Handoff (2026-07-15)
+# PokeDexFlex — Session Handoff (2026-07-15)
 
 Paste-able context for continuing in a new chat. Supersedes the 2026-07-14 handoff.
 
 ## What this is
-**PokeFlexDex** — a login-required web app to track your Pokémon collection: browse
+**PokeDexFlex** — a login-required web app to track your Pokémon collection: browse
 every species/form + event distribution, track your specimens, earn ribbons, import/export,
 and (in progress) a public "flex" layer with rarity, stats, profiles, and Versus.
 

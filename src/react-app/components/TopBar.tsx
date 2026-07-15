@@ -34,7 +34,7 @@ export function TopBar({
 		<header className="toolbar">
 			<div className="toolbar__inner container">
 				<button type="button" className="wordmark" onClick={onLogoClick}>
-					PokeFlexDex
+					PokeDexFlex
 				</button>
 
 				<nav className="tabs" role="tablist" aria-label="Sections">

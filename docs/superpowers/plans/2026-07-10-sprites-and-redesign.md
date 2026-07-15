@@ -1,4 +1,4 @@
-# PokeFlexDex Sprites & Visual Redesign Plan
+# PokeDexFlex Sprites & Visual Redesign Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development. Steps use checkbox (`- [ ]`) syntax.
 

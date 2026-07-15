@@ -1,4 +1,4 @@
-# PokeFlexDex Phase 5 — Photo / HOME Screenshot Import Implementation Plan
+# PokeDexFlex Phase 5 — Photo / HOME Screenshot Import Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development. Steps use checkbox (`- [ ]`) syntax.
 
@@ -61,7 +61,7 @@ tests/worker/vision.test.ts
 
 **Files:** Modify `src/react-app/pages/ImportExport.tsx`, `api.ts`, `styles.css`.
 
-**Interfaces:** `api.ts`: `photoPreview(image: File)` (multipart POST, credentials include) → the preview shape. UI: a "From a HOME / Scarlet-Violet screenshot" panel in the Import/Export page: an image file input (accept image/*) + a note ("Upload a box screenshot; we'll recognize the Pokémon for you to review"). On upload → `photoPreview` → show the recognized list as an editable/checkable preview (each: sprite once resolved, species name [editable], shiny toggle, ✓ include) → reuse the existing "Confirm import" → `importCommit` with `format:"json"` of the confirmed rows. Handle the `503 vision_unavailable` case with a friendly message ("Photo recognition activates once PokeFlexDex is deployed — for now use CSV/JSON or add manually.").
+**Interfaces:** `api.ts`: `photoPreview(image: File)` (multipart POST, credentials include) → the preview shape. UI: a "From a HOME / Scarlet-Violet screenshot" panel in the Import/Export page: an image file input (accept image/*) + a note ("Upload a box screenshot; we'll recognize the Pokémon for you to review"). On upload → `photoPreview` → show the recognized list as an editable/checkable preview (each: sprite once resolved, species name [editable], shiny toggle, ✓ include) → reuse the existing "Confirm import" → `importCommit` with `format:"json"` of the confirmed rows. Handle the `503 vision_unavailable` case with a friendly message ("Photo recognition activates once PokeDexFlex is deployed — for now use CSV/JSON or add manually.").
 
 - [ ] **Step 1:** `api.ts` `photoPreview`. 
 - [ ] **Step 2:** add the photo panel to ImportExport (upload → preview → edit → confirm), reusing preview-table styling; handle loading + the vision_unavailable message.

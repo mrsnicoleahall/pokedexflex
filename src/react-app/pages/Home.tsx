@@ -61,7 +61,7 @@ export function Home({ onBrowse, onNavigate }: HomeProps) {
 					</div>
 				) : (
 					<div className="hero__intro">
-						<p className="hero__eyebrow">PokeFlexDex</p>
+						<p className="hero__eyebrow">PokeDexFlex</p>
 						<h1 className="hero__title">Your whole Pokémon journey, in one dex.</h1>
 						<p className="hero__subcopy">
 							Browse every species, form, and event distribution for free. Sign in to build your

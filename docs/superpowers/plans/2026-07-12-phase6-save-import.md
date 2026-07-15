@@ -1,4 +1,4 @@
-# PokeFlexDex Phase 6 — USUM Save-File Import Implementation Plan
+# PokeDexFlex Phase 6 — USUM Save-File Import Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development. Steps use checkbox (`- [ ]`) syntax.
 

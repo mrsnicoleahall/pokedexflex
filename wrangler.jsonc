@@ -4,7 +4,7 @@
  */
 {
 	"$schema": "node_modules/wrangler/config-schema.json",
-	"name": "pokeflexdex",
+	"name": "pokedexflex",
 	"account_id": "0e56605411ec369074bb375df1b3de9e",
 	"main": "./src/worker/index.ts",
 	"compatibility_date": "2025-10-08",
@@ -22,7 +22,7 @@
 	"d1_databases": [
 		{
 			"binding": "DB",
-			"database_name": "pokeflexdex",
+			"database_name": "pokedexflex",
 			// TODO: real id set at deploy
 			"database_id": "00000000-0000-0000-0000-000000000000",
 			"migrations_dir": "migrations"
@@ -31,7 +31,7 @@
 	"r2_buckets": [
 		{
 			"binding": "SPRITES",
-			"bucket_name": "pokeflexdex-sprites"
+			"bucket_name": "pokedexflex-sprites"
 		}
 	],
 	"ai": {

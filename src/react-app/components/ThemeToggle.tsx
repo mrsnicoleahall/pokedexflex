@@ -8,7 +8,7 @@
 import { useEffect, useState } from "react";
 
 type Theme = "light" | "dark";
-const STORAGE_KEY = "pokeflexdex-theme";
+const STORAGE_KEY = "pokedexflex-theme";
 
 function prefersDark(): boolean {
 	return window.matchMedia?.("(prefers-color-scheme: dark)").matches ?? false;

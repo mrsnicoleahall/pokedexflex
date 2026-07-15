@@ -1,11 +1,11 @@
-# PokeFlexDex — Accounts, Collection & Achievement Ribbons Design
+# PokeDexFlex — Accounts, Collection & Achievement Ribbons Design
 
 **Date:** 2026-07-12
 **Status:** Approved (user thumbs-up); build all phases without check-in.
 
 ## Summary
 
-Turn PokeFlexDex from a beautiful browser into a real tracker. Add user
+Turn PokeDexFlex from a beautiful browser into a real tracker. Add user
 accounts (passwordless, dev-friendly), full per-user collection management
 (individual specimens with the complete detail set + boxes), and an
 achievement-ribbon system that rewards collection milestones. Plus a homepage
@@ -41,7 +41,7 @@ the same schema; re-seed idempotently via UNIQUE(slug).
 ## Homepage intro
 
 A landing section shown above the catalog (prominent for logged-out users):
-- Hero: wordmark + one-line tagline (what PokeFlexDex is).
+- Hero: wordmark + one-line tagline (what PokeDexFlex is).
 - Short intro: "Browse every Pokémon and event for free. Sign in to track your
   own living dex, box your collection, and earn ribbons." 
 - Primary CTAs: **Browse the Dex** (jump to catalog) and **Sign in** (opens

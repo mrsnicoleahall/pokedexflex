@@ -1,4 +1,4 @@
-# PokeFlexDex Phase 4 — Import & Export Implementation Plan
+# PokeDexFlex Phase 4 — Import & Export Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development. Steps use checkbox (`- [ ]`) syntax.
 

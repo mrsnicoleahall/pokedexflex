@@ -2,7 +2,7 @@ import { env } from "cloudflare:test";
 import { describe, it, expect } from "vitest";
 import { eq } from "drizzle-orm";
 import { getDb } from "../../src/worker/db";
-import { species, forms, users, boxes, specimens, events, userRibbons, userShowcase } from "../../src/db/schema";
+import { species, forms, users, boxes, specimens, events, userRibbons, userShowcase, userFavorites } from "../../src/db/schema";
 
 describe("reference schema", () => {
   it("inserts a species with a form", async () => {
@@ -200,5 +200,29 @@ describe("trainer profile schema", () => {
     const [after] = await db.select().from(users).where(eq(users.id, "prof1"));
     expect(after.gender).toBe("ditto");
     expect(after.avatarKey).toBe("avatars/prof1");
+  });
+});
+
+describe("favorites schema", () => {
+  it("user_favorites: inserts, reads, and enforces one species per slot and one slot per species", async () => {
+    const db = getDb(env.DB);
+    await db.insert(users).values({ id: "fav1", email: "fav1@x.com", createdAt: 1 });
+    await db.insert(species).values({ id: 4001, name: "favmon-a", generation: 1, types: JSON.stringify(["normal"]) });
+    await db.insert(species).values({ id: 4002, name: "favmon-b", generation: 1, types: JSON.stringify(["normal"]) });
+
+    await db.insert(userFavorites).values({ id: "uf1", userId: "fav1", speciesId: 4001, slot: 0 });
+    const rows = await db.select().from(userFavorites).where(eq(userFavorites.userId, "fav1"));
+    expect(rows).toHaveLength(1);
+    expect(rows[0].slot).toBe(0);
+
+    // Same user, same slot, different species -> blocked.
+    await expect(
+      db.insert(userFavorites).values({ id: "uf2", userId: "fav1", speciesId: 4002, slot: 0 }),
+    ).rejects.toThrow();
+
+    // Same user, same species, different slot -> blocked (a species occupies exactly one slot).
+    await expect(
+      db.insert(userFavorites).values({ id: "uf3", userId: "fav1", speciesId: 4001, slot: 1 }),
+    ).rejects.toThrow();
   });
 });

@@ -111,3 +111,25 @@ export const userShowcase = sqliteTable(
     unique("user_showcase_user_id_ribbon_id_unique").on(t.userId, t.ribbonId),
   ],
 );
+
+/**
+ * Up to 3 species a user has pinned as their "top 3 favorites" for their
+ * trainer card / public profile (Phase F shows these publicly), keyed by
+ * slot (0..2) — same shape and same validation posture as `userShowcase`:
+ * membership (the species must exist) is checked in the store function
+ * against the `species` table, not enforceable purely at the schema level
+ * beyond the FK itself.
+ */
+export const userFavorites = sqliteTable(
+  "user_favorites",
+  {
+    id: text("id").primaryKey(),
+    userId: text("user_id").notNull().references(() => users.id),
+    speciesId: integer("species_id").notNull().references(() => species.id),
+    slot: integer("slot").notNull(),
+  },
+  (t) => [
+    unique("user_favorites_user_id_slot_unique").on(t.userId, t.slot),
+    unique("user_favorites_user_id_species_id_unique").on(t.userId, t.speciesId),
+  ],
+);

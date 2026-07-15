@@ -13,16 +13,18 @@ export const PATHS = {
 	events: "/events",
 	collection: "/collection",
 	ribbons: "/ribbons",
+	progress: "/progress",
 	importExport: "/import-export",
 	settings: "/settings",
 } as const;
 
-/** The account-menu destinations (unchanged set from Phase P's AccountMenu). */
-export type AccountView = "collection" | "ribbons" | "importExport" | "settings";
+/** The account-menu destinations (unchanged set from Phase P's AccountMenu, plus Phase H's Progress dashboard). */
+export type AccountView = "collection" | "ribbons" | "progress" | "importExport" | "settings";
 
 const ACCOUNT_VIEW_PATHS: Record<AccountView, string> = {
 	collection: PATHS.collection,
 	ribbons: PATHS.ribbons,
+	progress: PATHS.progress,
 	importExport: PATHS.importExport,
 	settings: PATHS.settings,
 };

@@ -60,6 +60,9 @@ export function Home({ onBrowse, onNavigate }: HomeProps) {
 							<button type="button" className="button" onClick={() => onNavigate("ribbons")}>
 								Ribbons
 							</button>
+							<button type="button" className="button" onClick={() => onNavigate("progress")}>
+								Progress
+							</button>
 						</div>
 					</div>
 				) : (

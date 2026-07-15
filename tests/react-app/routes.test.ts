@@ -16,6 +16,7 @@ describe("PATHS", () => {
 			events: "/events",
 			collection: "/collection",
 			ribbons: "/ribbons",
+			progress: "/progress",
 			importExport: "/import-export",
 			settings: "/settings",
 		});
@@ -58,5 +59,15 @@ describe("showFiltersForPath", () => {
 describe("versusPath", () => {
 	it("builds the /versus/:a/:b path from two handles", () => {
 		expect(versusPath("ash-ketchum", "gary-oak")).toBe("/versus/ash-ketchum/gary-oak");
+	});
+});
+
+describe("progress path", () => {
+	it("exposes PATHS.progress", () => {
+		expect(PATHS.progress).toBe("/progress");
+	});
+
+	it("maps the 'progress' account view to /progress", () => {
+		expect(pathForAccountView("progress")).toBe("/progress");
 	});
 });

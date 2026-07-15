@@ -15,6 +15,7 @@ import { EventsCatalog } from "./pages/EventsCatalog";
 import { Home } from "./pages/Home";
 import { ImportExport } from "./pages/ImportExport";
 import { MyCollection } from "./pages/MyCollection";
+import { Progress } from "./pages/Progress";
 import { Ribbons } from "./pages/Ribbons";
 import { Settings } from "./pages/Settings";
 import { SpeciesCatalog } from "./pages/SpeciesCatalog";
@@ -56,6 +57,7 @@ function App() {
 				<Route path="events" element={<EventsRoute />} />
 				<Route path="collection" element={<CollectionRoute />} />
 				<Route path="ribbons" element={<Ribbons />} />
+				<Route path="progress" element={<Progress />} />
 				<Route path="import-export" element={<ImportExport />} />
 				<Route path="settings" element={<SettingsRoute />} />
 				<Route path="*" element={<HomeRoute />} />

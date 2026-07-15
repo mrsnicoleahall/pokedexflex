@@ -83,6 +83,9 @@ export function AccountMenu({ onNavigate }: AccountMenuProps) {
 			</button>
 			{menuOpen && (
 				<div className="account-menu__dropdown" role="menu">
+					<button type="button" role="menuitem" className="account-menu__item" onClick={() => go("progress")}>
+						Progress
+					</button>
 					<button type="button" role="menuitem" className="account-menu__item" onClick={() => go("collection")}>
 						My Collection
 					</button>

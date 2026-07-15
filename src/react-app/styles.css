@@ -24,6 +24,18 @@
 	--shadow-card-rest: 0 1px 2px rgba(20, 23, 31, 0.06);
 	--shadow-card-hover: 0 16px 32px rgba(20, 23, 31, 0.16);
 
+	/* Brand palette (derived from the logo's metallic holographic gradient).
+	   Fixed hex values — identical in both themes, not overridden below. */
+	--brand-navy: #0b1220;
+	--brand-blue-deep: #1c3a63;
+	--brand-blue: #2f6fb0;
+	--brand-cyan: #4aa8dd;
+	--brand-teal: #1f9a8a;
+	--brand-green: #33b06a;
+	--brand-silver: #c6d2dc;
+	--brand-grad: linear-gradient(115deg, #2f6fb0 0%, #1f9a8a 52%, #33b06a 100%);
+	--brand-glow: radial-gradient(120% 120% at 15% 0%, #2f6fb0 0%, #133 60%, #0b1220 100%);
+
 	color-scheme: light dark;
 }
 
@@ -786,13 +798,17 @@ a {
 /* ---------- Buttons ---------- */
 
 .button--primary {
-	background: var(--ink);
-	color: var(--canvas);
-	border-color: var(--ink);
+	background: var(--brand-grad);
+	color: #ffffff;
+	border-color: transparent;
 }
 
 .button--primary:hover:not(:disabled) {
-	background: color-mix(in srgb, var(--ink) 88%, transparent);
+	filter: brightness(1.08);
+}
+
+.button--primary:focus-visible {
+	outline-color: var(--brand-cyan);
 }
 
 .button--danger {
@@ -1425,7 +1441,7 @@ a {
 .ribbons-summary__fill {
 	height: 100%;
 	border-radius: 999px;
-	background: linear-gradient(90deg, #f6c64b, #ff7a3c);
+	background: var(--brand-grad);
 	transition: width 0.3s ease;
 }
 
@@ -1992,7 +2008,7 @@ a {
 .nudge-list__fill {
 	height: 100%;
 	border-radius: 999px;
-	background: linear-gradient(90deg, #f6c64b, #ff7a3c);
+	background: var(--brand-grad);
 	transition: width 0.3s ease;
 }
 
@@ -2441,4 +2457,304 @@ a {
 
 .rivals__rematch {
 	white-space: nowrap;
+}
+
+/* ============================================================
+   Brand redesign (flex-layer): signature gradient + landing page
+   ============================================================ */
+
+/* ---------- TopBar brandmark (icon + gradient-text wordmark) ---------- */
+
+.brandmark {
+	appearance: none;
+	border: none;
+	background: transparent;
+	padding: 0;
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	cursor: pointer;
+	white-space: nowrap;
+}
+
+.brandmark__icon {
+	height: 28px;
+	width: 28px;
+	object-fit: contain;
+	flex: none;
+}
+
+.brandmark__text {
+	font-family: var(--font-display);
+	font-weight: 700;
+	font-size: 1.15rem;
+	letter-spacing: -0.01em;
+	background: var(--brand-grad);
+	-webkit-background-clip: text;
+	background-clip: text;
+	color: transparent;
+}
+
+/* ---------- Brand accents on existing incentive UI (used sparingly) ---------- */
+
+.rank-badge {
+	background-image: var(--brand-grad), linear-gradient(var(--surface), var(--surface));
+	background-blend-mode: soft-light;
+}
+
+.trophy-wall,
+.rivals {
+	position: relative;
+	overflow: hidden;
+}
+
+.trophy-wall::before,
+.rivals::before {
+	content: "";
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	height: 3px;
+	background: var(--brand-grad);
+}
+
+.rivals__hint {
+	color: var(--muted);
+	font-size: 0.85rem;
+	margin: 4px 0 12px;
+	max-width: 60ch;
+}
+
+/* ---------- Hero brand treatment: always-dark, in both themes ---------- */
+
+.hero--brand {
+	background: var(--brand-glow);
+	border-color: color-mix(in srgb, var(--brand-cyan) 30%, transparent);
+	color: #eef3f8;
+}
+
+.hero--brand .hero__eyebrow {
+	color: color-mix(in srgb, var(--brand-silver) 85%, transparent);
+}
+
+.hero--brand .hero__title,
+.hero--brand .hero__title--slim {
+	color: #ffffff;
+}
+
+.hero--brand .hero__subcopy {
+	color: color-mix(in srgb, var(--brand-silver) 92%, transparent);
+}
+
+.hero--brand .button:not(.button--primary) {
+	background: color-mix(in srgb, white 10%, transparent);
+	color: #eef3f8;
+	border-color: color-mix(in srgb, white 35%, transparent);
+}
+
+.hero--brand .button:not(.button--primary):hover:not(:disabled) {
+	background: color-mix(in srgb, white 18%, transparent);
+}
+
+.hero--brand .rank-badge {
+	background-color: color-mix(in srgb, white 10%, transparent);
+}
+
+/* ---------- Landing page (signed-out home) ---------- */
+
+.landing__hero-inner {
+	display: flex;
+	align-items: center;
+	gap: 32px;
+	flex-wrap: wrap;
+}
+
+.landing__emblem {
+	width: clamp(120px, 18vw, 200px);
+	height: auto;
+	flex: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+	.landing__emblem {
+		animation: landing-emblem-sheen 6s ease-in-out infinite;
+	}
+}
+
+@keyframes landing-emblem-sheen {
+	0%,
+	100% {
+		filter: drop-shadow(0 0 0 transparent);
+	}
+	50% {
+		filter: drop-shadow(0 0 24px color-mix(in srgb, var(--brand-cyan) 55%, transparent));
+	}
+}
+
+.landing__stats {
+	display: flex;
+	gap: 16px;
+	flex-wrap: wrap;
+	margin-top: 32px;
+	padding-top: 28px;
+	border-top: 1px solid color-mix(in srgb, white 16%, transparent);
+}
+
+.landing__stat {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+	padding: 10px 18px;
+	border: 1px solid color-mix(in srgb, white 18%, transparent);
+	border-radius: var(--radius-control);
+	background: color-mix(in srgb, white 6%, transparent);
+}
+
+.landing__stat-value {
+	font-family: var(--font-display);
+	font-weight: 700;
+	font-size: 1.3rem;
+	background: var(--brand-grad);
+	-webkit-background-clip: text;
+	background-clip: text;
+	color: transparent;
+}
+
+.landing__stat-label {
+	font-size: 0.72rem;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	color: color-mix(in srgb, var(--brand-silver) 85%, transparent);
+}
+
+.landing__features {
+	display: grid;
+	grid-template-columns: repeat(3, 1fr);
+	gap: 16px;
+	margin: 28px 0;
+}
+
+.landing__feature-card {
+	position: relative;
+	overflow: hidden;
+	border: 1px solid var(--hairline);
+	border-radius: var(--radius-card);
+	background: var(--surface);
+	padding: 22px 20px;
+	box-shadow: var(--shadow-card-rest);
+}
+
+.landing__feature-card::before {
+	content: "";
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	height: 3px;
+	background: var(--brand-grad);
+}
+
+.landing__feature-title {
+	font-size: 1.05rem;
+	margin-bottom: 8px;
+}
+
+.landing__feature-copy {
+	color: var(--muted);
+	font-size: 0.9rem;
+	line-height: 1.5;
+}
+
+/* ---------- Versus CTA (priority section — head-to-head comparisons) ---------- */
+
+.versus-cta {
+	display: flex;
+	align-items: center;
+	gap: 32px;
+	flex-wrap: wrap;
+	margin: 32px 0;
+	padding: 32px;
+	border: 2px solid transparent;
+	border-radius: var(--radius-card);
+	background: var(--brand-glow) padding-box, var(--brand-grad) border-box;
+	color: #eef3f8;
+}
+
+.versus-cta__mock {
+	display: flex;
+	align-items: center;
+	gap: 16px;
+	flex: none;
+}
+
+.versus-cta__avatar {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 72px;
+	height: 72px;
+	border-radius: 50%;
+	font-family: var(--font-display);
+	font-weight: 700;
+	font-size: 0.85rem;
+	background: var(--brand-grad);
+	color: #fff;
+	border: 2px solid color-mix(in srgb, white 40%, transparent);
+}
+
+.versus-cta__avatar--rival {
+	background: color-mix(in srgb, white 12%, transparent);
+	color: color-mix(in srgb, var(--brand-silver) 90%, transparent);
+}
+
+.versus-cta__vs {
+	font-family: var(--font-display);
+	font-weight: 800;
+	font-size: 1.1rem;
+	color: color-mix(in srgb, var(--brand-silver) 90%, transparent);
+}
+
+.versus-cta__copy {
+	flex: 1;
+	min-width: 240px;
+}
+
+.versus-cta__title {
+	font-size: clamp(1.2rem, 2.4vw, 1.6rem);
+	margin-bottom: 10px;
+	color: #fff;
+}
+
+.versus-cta__copy p {
+	color: color-mix(in srgb, var(--brand-silver) 92%, transparent);
+	line-height: 1.55;
+	max-width: 56ch;
+	margin-bottom: 18px;
+}
+
+@media (max-width: 860px) {
+	.landing__features {
+		grid-template-columns: 1fr;
+	}
+
+	.versus-cta {
+		flex-direction: column;
+		align-items: flex-start;
+	}
+}
+
+@media (max-width: 640px) {
+	.landing__hero-inner {
+		flex-direction: column;
+		text-align: center;
+	}
+
+	.landing__stats {
+		justify-content: center;
+	}
+
+	.versus-cta__mock {
+		align-self: center;
+	}
 }

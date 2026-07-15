@@ -8,6 +8,7 @@
 // mount-time `refresh()` picks up the now-signed-in session.
 
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { useAuth } from "../auth/AuthProvider";
 
 type SignInPanelProps = {
@@ -67,7 +68,7 @@ export function SignInPanel({ onClose }: SignInPanelProps) {
 		}
 	}
 
-	return (
+	return createPortal(
 		<div className="modal-overlay" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
 			<div
 				className="modal"
@@ -129,6 +130,7 @@ export function SignInPanel({ onClose }: SignInPanelProps) {
 					</form>
 				)}
 			</div>
-		</div>
+		</div>,
+		document.body,
 	);
 }

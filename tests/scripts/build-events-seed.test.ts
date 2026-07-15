@@ -61,10 +61,39 @@ describe("eventsToSql", () => {
     expect(sql).toContain('Tom & Jerry <3 "test" \'\'quote\'\'');
   });
 
-  it("does not touch otId (not in the sanitize list)", () => {
+  it("decodes &nbsp; to a space (password fields)", () => {
+    const row: EventRow = { ...base, method: "Password: <code>B1G0&nbsp;006</code>" };
+    const sql = eventsToSql([row]);
+    expect(sql).toContain("Password: B1G0 006");
+    expect(sql).not.toContain("&nbsp;");
+    expect(sql).not.toContain("<code>");
+  });
+
+  it("strips leaked MediaWiki image markup and collapses the duplicated Battle Pass label", () => {
+    const row: EventRow = {
+      ...base,
+      name: "Meganium — 20px|link=Pokémon Champions Season M-1 Battle Pass Season M-1 Battle Pass (Lv. 25)",
+      method: "20px|link=Pokémon Champions Season M-1 Battle Pass Season M-1 Battle Pass (Lv. 25)",
+    };
+    const sql = eventsToSql([row]);
+    expect(sql).toContain("Meganium — Season M-1 Battle Pass (Lv. 25)");
+    expect(sql).not.toContain("20px|");
+    expect(sql).not.toContain("link=");
+    // the duplicated label is collapsed to a single occurrence
+    expect(sql).not.toMatch(/Battle Pass Season M-1 Battle Pass/);
+  });
+
+  it("leaves a plain otId unchanged (apart from SQL-escaping)", () => {
     const row: EventRow = { ...base, otId: "(Hatcher's)" };
     const sql = eventsToSql([row]);
     expect(sql).toContain("(Hatcher''s)");
+  });
+
+  it("turns <br>-joined multi-value otIds into a readable 'A / B / C'", () => {
+    const row: EventRow = { ...base, otId: "10123<br/>10014<br/>10015" };
+    const sql = eventsToSql([row]);
+    expect(sql).toContain("10123 / 10014 / 10015");
+    expect(sql).not.toContain("<br");
   });
 
   it("emits all 13 columns in the documented order, with no id column", () => {

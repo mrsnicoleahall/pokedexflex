@@ -26,13 +26,18 @@ const n = (v: number | null | undefined) => (v === null || v === undefined ? "NU
 // ---------------------------------------------------------------------------
 // Text sanitization.
 //
-// The Bulbapedia wikitext scrape (scripts/fetch-events.ts) leaves some raw
-// HTML behind (mostly stray `<br>` / `<br/>` line breaks from source tables)
-// and, potentially, HTML entities. Free-text columns get cleaned before
-// insertion: strip tags, decode the handful of entities MediaWiki commonly
-// emits, collapse whitespace runs (tags/entities often leave gaps behind),
-// and trim. Unicode/full-width characters are left untouched -- they're
-// legitimate content for Japanese-region events.
+// The Bulbapedia wikitext scrape (scripts/fetch-events.ts) leaves several kinds
+// of raw markup behind that must not reach the UI:
+//   - stray HTML tags (`<br>`, `<code>`, ...) from source tables
+//   - HTML entities MediaWiki emits (`&amp;`, `&nbsp;`, numeric, ...)
+//   - MediaWiki file/image directives that got merged into the text, e.g.
+//     "20px|link=Pokémon Champions Season M-1 Battle Pass Season M-1 Battle
+//     Pass (Lv. 25)" -- an image thumbnail whose link target and a duplicated
+//     label leaked into the visible string.
+// Free-text columns get cleaned before insertion: strip the wiki markup, strip
+// tags, decode entities, collapse the duplicated Battle Pass label and
+// whitespace runs, then trim. Unicode/full-width characters are left untouched
+// -- they're legitimate content for Japanese-region events.
 // ---------------------------------------------------------------------------
 
 const HTML_ENTITIES: Record<string, string> = {
@@ -41,12 +46,35 @@ const HTML_ENTITIES: Record<string, string> = {
   "&gt;": ">",
   "&#39;": "'",
   "&quot;": '"',
+  "&nbsp;": " ",
 };
+
+// otId is shown in the UI but is an ID rather than prose, so it gets a lighter
+// touch than sanitizeText: some rows carry several OT IDs the wiki table joined
+// with `<br>`, which we turn into a readable "A / B / C" instead of stripping to
+// a run-on. IDs without markup pass through unchanged.
+function sanitizeId(v: string | null): string | null {
+  if (v === null) return null;
+  let s = v.replace(/<br\s*\/?>/gi, " / "); // multiple OT IDs were <br>-joined
+  s = s.replace(/<[^>]+>/g, " ");
+  s = s.replace(/&amp;|&lt;|&gt;|&#39;|&quot;|&nbsp;/g, (m) => HTML_ENTITIES[m]);
+  s = s.replace(/\s+/g, " ").trim();
+  return s === "" ? null : s;
+}
 
 function sanitizeText(v: string | null): string | null {
   if (v === null) return null;
-  let s = v.replace(/<[^>]+>/g, " "); // strip HTML tags, e.g. <br>, <br/>
-  s = s.replace(/&amp;|&lt;|&gt;|&#39;|&quot;/g, (m) => HTML_ENTITIES[m]);
+  let s = v;
+  // Drop leaked MediaWiki file/image markup ("<n>px|link=<target>") plus the
+  // link target that got concatenated in front of the real label.
+  s = s.replace(/\d+px\|link=Pok[eé]mon Champions\s*/gi, "");
+  s = s.replace(/\[\[[^\]]*\]\]/g, " "); // any surviving [[...]] wiki links
+  s = s.replace(/\d+px\|link=/gi, ""); // any other stray image directive
+  s = s.replace(/<[^>]+>/g, " "); // strip HTML tags, e.g. <br>, <code>
+  s = s.replace(/&amp;|&lt;|&gt;|&#39;|&quot;|&nbsp;/g, (m) => HTML_ENTITIES[m]);
+  s = s.replace(/&#(\d+);/g, (_, code) => String.fromCharCode(Number(code))); // numeric entities
+  // Collapse the duplicated "Season M-N Battle Pass" label the source repeated.
+  s = s.replace(/(Season M-\d+ Battle Pass)(?:\s+Season M-\d+ Battle Pass)+/g, "$1");
   s = s.replace(/\s+/g, " ").trim();
   return s === "" ? null : s;
 }
@@ -68,7 +96,7 @@ export function eventsToSql(events: EventRow[]): string {
         q(sanitizeText(e.region)),
         q(sanitizeText(e.method)),
         q(sanitizeText(e.otName)),
-        q(e.otId), // otId is NOT sanitized -- it's an opaque ID, not display text.
+        q(sanitizeId(e.otId)), // light-touch: turns <br>-joined multi-IDs into "A / B".
         q(sanitizeText(e.ribbon)),
         n(e.isShiny),
         q(sanitizeText(e.notes)),

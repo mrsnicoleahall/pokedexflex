@@ -7,9 +7,22 @@ import {
 	deriveShowcaseSlots,
 	nudgePct,
 } from "../../src/react-app/ribbons/incentiveDisplay";
-import type { RibbonDto } from "../../src/react-app/api";
+// Local structural shape (mirrors the fields these pure helpers read) so the
+// tests project stays decoupled from the DOM-typed api.ts — deriveShowcaseSlots
+// is generic over `{ id }`, so a plain literal is all callers need here.
+type TestRibbon = {
+	id: string;
+	name: string;
+	description: string;
+	category: string;
+	earned: boolean;
+	progress: { current: number; total: number };
+	points: number;
+	rarityPct: number;
+	newlyEarned: boolean;
+};
 
-function ribbon(overrides: Partial<RibbonDto> = {}): RibbonDto {
+function ribbon(overrides: Partial<TestRibbon> = {}): TestRibbon {
 	return {
 		id: "x",
 		name: "X",

@@ -12,8 +12,6 @@
 // of truth). `rankColor` only maps an already-known rank title to a display
 // color; it has no opinion on score thresholds.
 
-import type { RibbonDto } from "../api";
-
 /** Rarities below this (but above zero) get a "rare flex" highlight on an earned card. */
 export const RARE_FLEX_THRESHOLD = 0.05;
 
@@ -51,11 +49,16 @@ export function rankColor(rank: string): string {
 
 /**
  * Maps the API's 6-slot `showcase` (ribbon ids, `null` for empty) onto full
- * `RibbonDto` objects for display, preserving slot order/length exactly.
- * An id with no matching ribbon in the current catalog (stale/renamed id)
- * resolves to `null` for that slot rather than throwing.
+ * ribbon objects for display, preserving slot order/length exactly. Generic
+ * over any `{ id }`-bearing ribbon shape (a `RibbonDto` in callers) so this
+ * pure module needs no dependency on the DOM-typed `api.ts`. An id with no
+ * matching ribbon in the current catalog (stale/renamed id) resolves to
+ * `null` for that slot rather than throwing.
  */
-export function deriveShowcaseSlots(showcase: (string | null)[], ribbons: RibbonDto[]): (RibbonDto | null)[] {
+export function deriveShowcaseSlots<T extends { id: string }>(
+	showcase: (string | null)[],
+	ribbons: T[],
+): (T | null)[] {
 	const byId = new Map(ribbons.map((r) => [r.id, r] as const));
 	return showcase.map((id) => (id ? (byId.get(id) ?? null) : null));
 }

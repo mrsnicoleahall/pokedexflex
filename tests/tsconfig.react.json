@@ -1,0 +1,18 @@
+{
+	// React-app unit tests (tests/react-app/**) type-check against the SAME
+	// DOM-libbed config as the app itself (tsconfig.app.json), NOT the
+	// Workers-only tests project. This lets them import real types/modules from
+	// src/react-app (e.g. RibbonDto from api.ts, whose fetch(credentials) calls
+	// only type-check under the DOM lib) without dragging DOM-typed source into
+	// the Workers-libbed tests project. Runtime is unaffected — vitest discovers
+	// and runs every tests/**/*.test.ts via esbuild regardless of tsconfig splits.
+	"extends": "../tsconfig.app.json",
+	"compilerOptions": {
+		"tsBuildInfoFile": "../node_modules/.tmp/tsconfig.tests-react.tsbuildinfo",
+		// The app picks up Vite's ambient module decls (e.g. `*.svg?raw`) from
+		// src/react-app/vite-env.d.ts, which its dir-wide include globs in. This
+		// project globs only tests/react-app, so declare vite/client directly.
+		"types": ["vite/client"]
+	},
+	"include": ["react-app"]
+}

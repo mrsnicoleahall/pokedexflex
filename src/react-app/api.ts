@@ -794,3 +794,52 @@ export async function fetchStats(): Promise<StatsDto> {
 	const body = await handleJson<{ stats: StatsDto }>(res, "fetch stats");
 	return body.stats;
 }
+
+/* ---------- Leaderboard (Flex Phase J) ---------- */
+
+import type { LeaderboardMetric } from "./leaderboard/leaderboardDisplay";
+export type { LeaderboardMetric };
+
+export type LeaderboardEntryDto = {
+	/** 1-based rank for the chosen metric. */
+	position: number;
+	/** ONLY used to build the public avatar URL (`avatarUrl(userId)`); no other user id is exposed. */
+	userId: string;
+	handle: string;
+	displayName: string | null;
+	hasAvatar: boolean;
+	trainerScore: number;
+	/** Trainer rank label derived from trainerScore. */
+	rank: string;
+	/** Distinct owned species. */
+	completionOwned: number;
+	/** Total species in the reference dex (completion denominator; same for every row). */
+	completionTotal: number;
+	/** completionOwned / completionTotal, 0..1. */
+	completionPct: number;
+	/** Distinct species the trainer owns at least one shiny of. */
+	shinySpeciesCount: number;
+	/** Sum of points from earned rare-flex ribbons (Rarity Class / Grand / Collector). */
+	rarityScore: number;
+	/** The value of the metric this row was ranked by. */
+	value: number;
+};
+
+export type LeaderboardResponse = {
+	metric: LeaderboardMetric;
+	/** Max rows returned (top-N cap). */
+	limit: number;
+	/** Total ranked public trainers before the cap — for a "Top N of TOTAL" label. */
+	total: number;
+	entries: LeaderboardEntryDto[];
+};
+
+/**
+ * Fetches the public leaderboard ranked by `metric`. Public read — no
+ * credentials sent; only PUBLIC trainers are ever included and no private
+ * field (email etc.) is returned.
+ */
+export async function fetchLeaderboard(metric: LeaderboardMetric): Promise<LeaderboardResponse> {
+	const res = await fetch(`/api/leaderboard?metric=${encodeURIComponent(metric)}`);
+	return handleJson<LeaderboardResponse>(res, "fetch leaderboard");
+}

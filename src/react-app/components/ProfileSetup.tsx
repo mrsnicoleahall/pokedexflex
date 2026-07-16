@@ -82,7 +82,12 @@ export function ProfileSetup() {
 				onFileSelected={onFileSelected}
 			/>
 			<FavoriteSpeciesPicker favorites={favorites} onSaved={setFavorites} />
-			<button type="button" className="button button--primary" onClick={handleSave} disabled={saving}>
+			<button
+				type="button"
+				className="button button--primary button--lg profile-setup__submit"
+				onClick={handleSave}
+				disabled={saving}
+			>
 				{saving ? "Saving…" : "Start exploring"}
 			</button>
 		</div>

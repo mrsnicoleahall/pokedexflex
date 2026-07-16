@@ -131,7 +131,7 @@ export function FavoriteSpeciesPicker({
 					);
 				})}
 			</div>
-			<button type="button" className="button button--primary" onClick={save} disabled={saving}>
+			<button type="button" className="button favorites-picker__save" onClick={save} disabled={saving}>
 				{saving ? "Saving…" : "Save favorites"}
 			</button>
 		</section>

@@ -34,7 +34,7 @@ describe("contact API", () => {
     const cookie = await signIn("contact-user@x.com");
     const res = await postJson("/api/contact", { message: "   " }, cookie);
     expect(res.status).toBe(400);
-    expect((await res.json()).error).toBe("message_required");
+    expect(((await res.json()) as any).error).toBe("message_required");
   });
 
   it("returns 503 when CONTACT_TO is not configured (no silent drop)", async () => {
@@ -43,6 +43,6 @@ describe("contact API", () => {
     const cookie = await signIn("contact-user2@x.com");
     const res = await postJson("/api/contact", { message: "real message" }, cookie);
     expect(res.status).toBe(503);
-    expect((await res.json()).error).toBe("contact_not_configured");
+    expect(((await res.json()) as any).error).toBe("contact_not_configured");
   });
 });

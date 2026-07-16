@@ -23,6 +23,7 @@ describe("PATHS", () => {
 			importExport: "/import-export",
 			settings: "/settings",
 			leaderboard: "/leaderboard",
+			contact: "/contact",
 		});
 	});
 });

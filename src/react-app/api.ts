@@ -40,6 +40,17 @@ export async function fetchSpeciesById(id: number): Promise<SpeciesDto> {
 	return res.json() as Promise<SpeciesDto>;
 }
 
+/** Sends a contact message to the admin (sign-in required server-side). */
+export async function sendContact(message: string): Promise<void> {
+	const res = await fetch("/api/contact", {
+		method: "POST",
+		credentials: "include",
+		headers: { "Content-Type": "application/json" },
+		body: JSON.stringify({ message }),
+	});
+	await handleJson(res, "send contact");
+}
+
 /** One species on the signed-in trainer's wanted (chase) list. */
 export type WantedItem = {
 	speciesId: number;

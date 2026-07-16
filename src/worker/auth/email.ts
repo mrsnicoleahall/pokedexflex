@@ -1,11 +1,27 @@
+export type ContactMessage = {
+  /** Admin recipient. */
+  to: string;
+  /** The sender's email, set as reply-to so the admin can just hit reply. */
+  replyTo: string;
+  /** The sender's trainer name (or null). */
+  replyName: string | null;
+  /** The message body. */
+  message: string;
+};
+
 export interface EmailSender {
   sendLoginLink(email: string, link: string): Promise<{ devLink?: string }>;
+  sendContactMessage(msg: ContactMessage): Promise<void>;
 }
 
 export class DevEmailSender implements EmailSender {
   async sendLoginLink(email: string, link: string): Promise<{ devLink?: string }> {
     console.log(`[dev email] login link for ${email}: ${link}`);
     return { devLink: link };
+  }
+
+  async sendContactMessage(msg: ContactMessage): Promise<void> {
+    console.log(`[dev email] contact → ${msg.to} (reply-to ${msg.replyTo}): ${msg.message}`);
   }
 }
 
@@ -42,6 +58,26 @@ class ResendEmailSender implements EmailSender {
       throw new Error(`email_send_failed: Resend returned ${res.status}`);
     }
     return {};
+  }
+
+  async sendContactMessage(msg: ContactMessage): Promise<void> {
+    const who = msg.replyName ? `${msg.replyName} <${msg.replyTo}>` : msg.replyTo;
+    const res = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${this.apiKey}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        from: this.from,
+        to: [msg.to],
+        reply_to: msg.replyTo,
+        subject: `PokéDexFlex contact from ${who}`,
+        text: `From: ${who}\n\n${msg.message}`,
+      }),
+    });
+    if (!res.ok) {
+      const detail = await res.text().catch(() => "");
+      console.error(`Resend contact send failed (${res.status}) to "${msg.to}": ${detail}`);
+      throw new Error(`email_send_failed: Resend returned ${res.status}`);
+    }
   }
 }
 

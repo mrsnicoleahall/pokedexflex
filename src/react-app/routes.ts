@@ -19,6 +19,7 @@ export const PATHS = {
 	importExport: "/import-export",
 	settings: "/settings",
 	leaderboard: "/leaderboard",
+	contact: "/contact",
 } as const;
 
 /** The account-menu destinations (unchanged set from Phase P's AccountMenu, plus Phase H's Progress dashboard). */

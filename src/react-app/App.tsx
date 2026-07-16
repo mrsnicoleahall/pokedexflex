@@ -20,6 +20,7 @@ import { Leaderboard } from "./pages/Leaderboard";
 import { MyCollection } from "./pages/MyCollection";
 import { SignInVerify } from "./pages/SignInVerify";
 import { Wanted } from "./pages/Wanted";
+import { Contact } from "./pages/Contact";
 import { Progress } from "./pages/Progress";
 import { Ribbons } from "./pages/Ribbons";
 import { Settings } from "./pages/Settings";
@@ -71,6 +72,7 @@ function App() {
 					<Route path="progress" element={<Progress />} />
 					<Route path="import-export" element={<ImportExport />} />
 					<Route path="settings" element={<SettingsRoute />} />
+				<Route path="contact" element={<Contact />} />
 					<Route path="*" element={<HomeRoute />} />
 				</Route>
 			</Routes>

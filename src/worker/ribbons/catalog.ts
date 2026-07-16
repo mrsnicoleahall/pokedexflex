@@ -136,6 +136,14 @@ const SPECIES_FUN_RIBBONS = [
   { id: "fun-bidoof", name: "Positive Outlook", description: "Own a Bidoof.", speciesId: 399, secret: true },
 ] as const;
 
+/**
+ * Species that get a dedicated, themed form ribbon instead of the generic
+ * auto-generated "Complete {Species} Forms" one (so they're not duplicated).
+ */
+const FURFROU_ID = 676;
+const FLOETTE_ID = 670;
+const DEDICATED_FORM_SPECIES = new Set<number>([FURFROU_ID, FLOETTE_ID]);
+
 /** Eevee and its eight evolutions, for the "Eeveelutionary" Fun ribbon. */
 const EEVEE_ID = 133;
 const EEVEELUTION_IDS = [134, 135, 136, 196, 197, 470, 471, 700] as const;
@@ -237,6 +245,19 @@ export function computeRibbons(summary: CollectionSummary, ref: ReferenceData): 
       category: "Grand",
       earned: total > 0 && current === total,
       progress: { current, total },
+    });
+  }
+
+  // grand-mythicals: own every Mythical Pokémon — the end-game collector flex.
+  {
+    const p = progressFor(summary.speciesIds, [...MYTHICAL_IDS]);
+    results.push({
+      id: "grand-mythicals",
+      name: "Mythical Master",
+      description: "Own every Mythical Pokémon — the end-game legend's collection.",
+      category: "Grand",
+      earned: p.earned,
+      progress: { current: p.current, total: p.total },
     });
   }
 
@@ -402,7 +423,7 @@ export function computeRibbons(summary: CollectionSummary, ref: ReferenceData): 
     else formIdsBySpecies.set(f.speciesId, [f.id]);
   }
   const formSetSpeciesIds = Array.from(formIdsBySpecies.entries())
-    .filter(([, ids]) => ids.length >= MIN_FORM_SET_SIZE)
+    .filter(([speciesId, ids]) => ids.length >= MIN_FORM_SET_SIZE && !DEDICATED_FORM_SPECIES.has(speciesId))
     .map(([speciesId]) => speciesId)
     .sort((a, b) => a - b);
   for (const speciesId of formSetSpeciesIds) {
@@ -414,6 +435,34 @@ export function computeRibbons(summary: CollectionSummary, ref: ReferenceData): 
       name: `Complete ${speciesName} Forms`,
       description: `Own every form of ${speciesName}.`,
       category: "Form Sets",
+      earned: p.earned,
+      progress: { current: p.current, total: p.total },
+    });
+  }
+
+  // Dedicated, themed form ribbons for a couple of fan-favourite cosmetic
+  // families (kept out of the generic form-set loop above so they're not
+  // duplicated). Own every form of the species.
+  {
+    const furfrouIds = ref.forms.filter((f) => f.speciesId === FURFROU_ID).map((f) => f.id);
+    const p = progressFor(summary.formIds, furfrouIds);
+    results.push({
+      id: "furfrou-fashionista",
+      name: "Furfrou Fashionista",
+      description: "Own every Furfrou trim.",
+      category: "Forms",
+      earned: p.earned,
+      progress: { current: p.current, total: p.total },
+    });
+  }
+  {
+    const floetteIds = ref.forms.filter((f) => f.speciesId === FLOETTE_ID).map((f) => f.id);
+    const p = progressFor(summary.formIds, floetteIds);
+    results.push({
+      id: "floette-florist",
+      name: "In Full Bloom",
+      description: "Own every Floette flower.",
+      category: "Forms",
       earned: p.earned,
       progress: { current: p.current, total: p.total },
     });

@@ -45,10 +45,24 @@ describe("resolveRibbonIcon", () => {
     expect(v.kind).toBe("rosette");
     if (v.kind === "rosette") expect(v.glyph).toEqual({ kind: "text", text: "III" });
   });
-  it("lower national-dex tiers use a rosette with a % text glyph", () => {
+  it("lower national-dex tiers use a rosette with the tier number (no %, for centering)", () => {
     const v = resolveRibbonIcon({ id: "national-dex-25", category: "Completion" });
     expect(v.kind).toBe("rosette");
-    if (v.kind === "rosette") expect(v.glyph).toEqual({ kind: "text", text: "25%" });
+    if (v.kind === "rosette") expect(v.glyph).toEqual({ kind: "text", text: "25" });
+  });
+
+  it("dedicated form + grand-mythical ribbons resolve to themed glyphs", () => {
+    expect(resolveRibbonIcon({ id: "furfrou-fashionista", category: "Forms" })).toMatchObject({
+      kind: "rosette",
+      glyph: { kind: "emoji", emoji: "✂️" },
+    });
+    expect(resolveRibbonIcon({ id: "floette-florist", category: "Forms" })).toMatchObject({
+      glyph: { kind: "emoji", emoji: "🌸" },
+    });
+    expect(resolveRibbonIcon({ id: "grand-mythicals", category: "Grand" })).toMatchObject({
+      kind: "rosette",
+      glyph: { kind: "emoji", emoji: "🌟" },
+    });
   });
   it("rarity-class ribbons use a metallic rosette + diamond emoji glyph", () => {
     const v = resolveRibbonIcon({ id: "rarity-legendaries", category: "Rarity Class" });

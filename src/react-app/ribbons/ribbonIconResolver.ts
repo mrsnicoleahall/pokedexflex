@@ -53,6 +53,8 @@ export function resolveRibbonIcon(ribbon: { id: string; category: string }): Rib
 	if (id === "complete-dex-forms") return { kind: "piece", piece: "diamond" };
 	if (id === "national-dex-100") return { kind: "piece", piece: "coin" };
 	if (id === "shiny-living-dex") return { kind: "piece", piece: "heart" };
+	// Grand mythical capstone — a distinct violet rosette with a star.
+	if (id === "grand-mythicals") return { kind: "rosette", baseColor: "#8b5cf6", glyph: { kind: "emoji", emoji: "🌟" } };
 
 	if (category === "Type" && id.startsWith("type-")) {
 		const type = id.slice("type-".length);
@@ -85,6 +87,8 @@ export function resolveRibbonIcon(ribbon: { id: string; category: string }): Rib
 	}
 
 	if (category === "Forms") {
+		if (id === "furfrou-fashionista") return { kind: "rosette", baseColor: BRAND.blue, glyph: { kind: "emoji", emoji: "✂️" } };
+		if (id === "floette-florist") return { kind: "rosette", baseColor: BRAND.green, glyph: { kind: "emoji", emoji: "🌸" } };
 		const key = id.replace("form-fanatic-", "");
 		return { kind: "rosette", baseColor: BRAND.blue, glyph: { kind: "emoji", emoji: FORM_EMOJI[key] ?? "✨" } };
 	}
@@ -100,8 +104,10 @@ export function resolveRibbonIcon(ribbon: { id: string; category: string }): Rib
 	}
 
 	if (category === "Completion" && id.startsWith("national-dex-")) {
+		// Just the number (no "%") so the digits sit dead-center in the rosette —
+		// the "%" made the label read right-heavy. The card title still says "25%".
 		const pct = id.slice("national-dex-".length);
-		return { kind: "rosette", baseColor: BRAND.deep, glyph: { kind: "text", text: `${pct}%` } };
+		return { kind: "rosette", baseColor: BRAND.deep, glyph: { kind: "text", text: pct } };
 	}
 
 	if (category === "Rarity Class") {

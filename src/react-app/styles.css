@@ -2030,6 +2030,8 @@ a {
 	border-radius: var(--radius-card);
 	padding: 20px;
 	margin-top: 20px;
+	/* Clip the ::before accent line to the card's rounded corners. */
+	overflow: hidden;
 }
 
 .trophy-wall__empty {
@@ -2544,7 +2546,13 @@ a {
 }
 
 .rivals {
-	margin-top: 1.5rem;
+	margin-top: 20px;
+	/* Match the Trophy Wall card: bordered + padded so content (and the compare
+	   input's focus ring) is inset from the edge and never clips against it. */
+	border: 1px solid var(--hairline);
+	border-radius: var(--radius-card);
+	padding: 20px;
+	overflow: hidden;
 }
 
 .rivals__compare {
@@ -2624,7 +2632,8 @@ a {
 .trophy-wall,
 .rivals {
 	position: relative;
-	overflow: hidden;
+	/* Each sets its own `overflow: hidden` alongside its padding, so the accent
+	   line clips to the rounded corners without cutting off inner focus rings. */
 	/* Clear the sticky toolbar when the hero "Versus" button scrolls here. */
 	scroll-margin-top: 84px;
 }

@@ -89,7 +89,10 @@ const DIRECT_MATCHES: Record<string, string> = {
   comment: "notes",
   comments: "notes",
 
-  box: "boxId",
+  // NOTE: a bare "box" column is deliberately NOT mapped — third-party catalogs
+  // use it for a physical box NUMBER (1, 2, 3…), but the app's boxId is a box
+  // UUID, so auto-mapping it made every such row fail the box-ownership check on
+  // commit. Only the app's own "boxId" (UUID) column maps.
   boxid: "boxId",
 
   moves: "moves",
@@ -158,7 +161,7 @@ const toBit = (value: string): 0 | 1 => {
 
 const splitList = (value: string): string[] =>
   value
-    .split(/[,/]/)
+    .split(/[,/|]/)
     .map((s) => s.trim())
     .filter((s) => s !== "");
 

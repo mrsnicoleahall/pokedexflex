@@ -61,6 +61,14 @@ describe("autoDetectMapping", () => {
     const mapping = autoDetectMapping(["Species", "Some Random Column"]);
     expect(mapping["Some Random Column"]).toBeNull();
   });
+
+  it("does NOT map a bare 'box' column (physical box number, not the app's box UUID)", () => {
+    // Third-party catalogs put a 1/2/3 box number in `box`; mapping it to boxId
+    // made every row fail the box-ownership check on commit. Only "boxId" maps.
+    const mapping = autoDetectMapping(["species", "box", "boxId"]);
+    expect(mapping["box"]).toBeNull();
+    expect(mapping["boxId"]).toBe("boxId");
+  });
 });
 
 describe("rowToInput", () => {
@@ -101,6 +109,14 @@ describe("rowToInput", () => {
     const { input, errors } = rowToInput(headers, row, mapping, resolveSpecies);
     expect(errors.some((e) => e.toLowerCase().includes("level"))).toBe(true);
     expect(input).toBeNull();
+  });
+
+  it("splits moves on pipes too (common export delimiter)", () => {
+    const headers = ["Species", "Moves"];
+    const mapping: Record<string, string | null> = { Species: "species", Moves: "moves" };
+    const row = ["Charizard", "assurance|super-fang|double-edge|endeavor"];
+    const { input } = rowToInput(headers, row, mapping, resolveSpecies);
+    expect(input?.moves).toEqual(["assurance", "super-fang", "double-edge", "endeavor"]);
   });
 
   it("splits moves and ribbons on commas or slashes", () => {

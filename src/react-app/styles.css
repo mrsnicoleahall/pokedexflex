@@ -196,9 +196,9 @@ a {
 .toolbar__inner {
 	display: flex;
 	align-items: center;
-	gap: 20px;
+	gap: 22px;
 	flex-wrap: wrap;
-	padding: 12px 20px;
+	padding: 14px 24px;
 }
 
 .wordmark {
@@ -217,11 +217,11 @@ a {
 
 .tabs {
 	display: flex;
-	gap: 4px;
-	background: var(--canvas);
-	border: 1px solid var(--hairline);
-	border-radius: var(--radius-control);
-	padding: 3px;
+	gap: 2px;
+	background: transparent;
+	border: none;
+	border-radius: 0;
+	padding: 0;
 }
 
 .tab {
@@ -230,22 +230,42 @@ a {
 	background: transparent;
 	color: var(--muted);
 	font-family: var(--font-body);
-	font-weight: 500;
-	font-size: 0.9rem;
-	padding: 6px 14px;
-	border-radius: 7px;
+	font-weight: 600;
+	font-size: 0.95rem;
+	padding: 8px 12px;
+	border-radius: 8px;
 	cursor: pointer;
-	transition: background-color 0.15s ease, color 0.15s ease;
+	position: relative;
+	transition: color 0.15s ease, background-color 0.15s ease;
+}
+
+/* Brand underline under the active tab (and a soft one on hover). */
+.tab::after {
+	content: "";
+	position: absolute;
+	left: 12px;
+	right: 12px;
+	bottom: 1px;
+	height: 2px;
+	border-radius: 2px;
+	background: transparent;
+	transition: background 0.15s ease;
 }
 
 .tab:hover {
 	color: var(--ink);
 }
 
+.tab:hover::after {
+	background: color-mix(in srgb, var(--brand-cyan) 40%, transparent);
+}
+
 .tab[aria-selected="true"] {
-	background: var(--surface);
 	color: var(--ink);
-	box-shadow: var(--shadow-card-rest);
+}
+
+.tab[aria-selected="true"]::after {
+	background: var(--brand-grad);
 }
 
 .toolbar__controls {

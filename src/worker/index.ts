@@ -27,6 +27,9 @@ app.onError((err, c) => {
   if (err instanceof HTTPException) {
     return c.json({ error: err.message }, err.status);
   }
+  // Surface unexpected errors to `wrangler tail` / dev logs instead of
+  // swallowing them behind an opaque 500.
+  console.error(`Unhandled error on ${c.req.method} ${new URL(c.req.url).pathname}:`, err);
   return c.json({ error: "internal_error" }, 500);
 });
 

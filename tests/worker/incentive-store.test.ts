@@ -37,6 +37,17 @@ describe("incentive-store: syncEarnedRibbons / loadUserRibbonRows", () => {
     await syncEarnedRibbons(db, "sync-u3", [], 1000);
     expect((await loadUserRibbonRows(db, "sync-u3")).size).toBe(0);
   });
+
+  it("chunks large earned-id lists under D1's 100-bound-parameter cap", async () => {
+    // A big collection can earn 100+ ribbons; a single INSERT (5 params/row)
+    // would exceed D1's limit and 500. All ids must still be inserted.
+    const db = getDb(env.DB);
+    await db.insert(users).values({ id: "sync-u4", email: "sync-u4@x.com", createdAt: 1 });
+    const ids = Array.from({ length: 130 }, (_, i) => `ribbon-${i}`);
+    await syncEarnedRibbons(db, "sync-u4", ids, 1000);
+    const rows = await loadUserRibbonRows(db, "sync-u4");
+    expect(rows.size).toBe(130);
+  });
 });
 
 describe("incentive-store: ribbonRarity", () => {

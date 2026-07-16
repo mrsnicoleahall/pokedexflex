@@ -25,10 +25,17 @@ export async function syncEarnedRibbons(
   now: number,
 ): Promise<void> {
   if (earnedIds.length === 0) return;
-  await db
-    .insert(userRibbons)
-    .values(earnedIds.map((ribbonId) => ({ id: crypto.randomUUID(), userId, ribbonId, earnedAt: now, seenAt: null })))
-    .onConflictDoNothing({ target: [userRibbons.userId, userRibbons.ribbonId] });
+  // D1 caps a query at 100 bound parameters. Each row here uses 5, so a trainer
+  // who has earned ~20+ ribbons (easy with a large collection) would blow the
+  // limit in a single INSERT. Chunk into batches of 20 rows (100 params).
+  const CHUNK = 20;
+  for (let i = 0; i < earnedIds.length; i += CHUNK) {
+    const slice = earnedIds.slice(i, i + CHUNK);
+    await db
+      .insert(userRibbons)
+      .values(slice.map((ribbonId) => ({ id: crypto.randomUUID(), userId, ribbonId, earnedAt: now, seenAt: null })))
+      .onConflictDoNothing({ target: [userRibbons.userId, userRibbons.ribbonId] });
+  }
 }
 
 /** Loads every `user_ribbons` row for a user, keyed by ribbonId. */

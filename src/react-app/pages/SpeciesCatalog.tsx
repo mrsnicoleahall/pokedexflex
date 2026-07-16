@@ -1,7 +1,7 @@
 // src/react-app/pages/SpeciesCatalog.tsx
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { fetchSpecies, type SpeciesDto } from "../api";
+import { addWanted, fetchSpecies, removeWanted, type SpeciesDto } from "../api";
 import { useAuth } from "../auth/AuthProvider";
 import { PokemonCard } from "../components/PokemonCard";
 import { SignInPanel } from "../components/SignInPanel";
@@ -112,6 +112,19 @@ export function SpeciesCatalog({ q, gen }: SpeciesCatalogProps) {
 			return;
 		}
 		setAddTarget(species);
+	}
+
+	function toggleWanted(species: SpeciesDto) {
+		if (!user) {
+			setSignInOpen(true);
+			return;
+		}
+		const next = !species.wanted;
+		// Optimistic flip; revert on failure.
+		setItems((prev) => prev.map((s) => (s.id === species.id ? { ...s, wanted: next } : s)));
+		(next ? addWanted(species.id) : removeWanted(species.id)).catch(() => {
+			setItems((prev) => prev.map((s) => (s.id === species.id ? { ...s, wanted: !next } : s)));
+		});
 	}
 
 	const filtersActive = hasActiveDexFilters({ type, owned, sort, region });
@@ -232,7 +245,12 @@ export function SpeciesCatalog({ q, gen }: SpeciesCatalogProps) {
 			{items.length > 0 && (
 				<div className="grid">
 					{items.map((species) => (
-						<PokemonCard key={species.id} species={species} onAdd={() => handleAddClick(species)} />
+						<PokemonCard
+							key={species.id}
+							species={species}
+							onAdd={() => handleAddClick(species)}
+							onToggleWanted={() => toggleWanted(species)}
+						/>
 					))}
 				</div>
 			)}

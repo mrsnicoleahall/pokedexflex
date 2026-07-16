@@ -21,6 +21,7 @@ export type SpeciesDto = {
 	homeId: number | null;
 	forms: FormDto[];
 	owned: boolean;
+	wanted: boolean;
 };
 
 export async function fetchSpecies(
@@ -37,6 +38,38 @@ export async function fetchSpeciesById(id: number): Promise<SpeciesDto> {
 	const res = await fetch(`/api/species/${id}`);
 	if (!res.ok) throw new Error(`species fetch failed: ${res.status}`);
 	return res.json() as Promise<SpeciesDto>;
+}
+
+/** One species on the signed-in trainer's wanted (chase) list. */
+export type WantedItem = {
+	speciesId: number;
+	name: string;
+	generation: number;
+	types: string[];
+	homeId: number | null;
+};
+
+/** The trainer's wanted list, most recently added first. */
+export async function fetchWanted(): Promise<{ items: WantedItem[] }> {
+	const res = await fetch("/api/wanted", { credentials: "include" });
+	return handleJson(res, "wanted fetch");
+}
+
+/** Add a species to the wanted list (idempotent). */
+export async function addWanted(speciesId: number): Promise<void> {
+	const res = await fetch("/api/wanted", {
+		method: "POST",
+		credentials: "include",
+		headers: { "Content-Type": "application/json" },
+		body: JSON.stringify({ speciesId }),
+	});
+	await handleJson(res, "add wanted");
+}
+
+/** Remove a species from the wanted list. */
+export async function removeWanted(speciesId: number): Promise<void> {
+	const res = await fetch(`/api/wanted/${speciesId}`, { method: "DELETE", credentials: "include" });
+	await handleJson(res, "remove wanted");
 }
 
 /** One alternate form as returned by GET /api/forms (Forms gallery). */

@@ -5,7 +5,15 @@ import { formatDexNumber, formatName, typeAura } from "../theme";
 import { Sprite } from "./Sprite";
 import { TypeChip } from "./TypeChip";
 
-export function PokemonCard({ species, onAdd }: { species: SpeciesDto; onAdd?: () => void }) {
+export function PokemonCard({
+	species,
+	onAdd,
+	onToggleWanted,
+}: {
+	species: SpeciesDto;
+	onAdd?: () => void;
+	onToggleWanted?: () => void;
+}) {
 	const name = formatName(species.name);
 	const homeId = species.homeId ?? species.id;
 
@@ -20,17 +28,36 @@ export function PokemonCard({ species, onAdd }: { species: SpeciesDto; onAdd?: (
 					<TypeChip key={type} type={type} />
 				))}
 			</div>
-			{onAdd && (
-				<button
-					type="button"
-					className="button button--primary card__add-button"
-					onClick={(e) => {
-						e.stopPropagation();
-						onAdd();
-					}}
-				>
-					＋ Add
-				</button>
+			{(onAdd || onToggleWanted) && (
+				<div className="card__actions">
+					{onToggleWanted && (
+						<button
+							type="button"
+							className={`card__want${species.wanted ? " is-wanted" : ""}`}
+							aria-pressed={species.wanted}
+							aria-label={species.wanted ? `Remove ${name} from wanted list` : `Add ${name} to wanted list`}
+							title={species.wanted ? "On your wanted list" : "Add to wanted list"}
+							onClick={(e) => {
+								e.stopPropagation();
+								onToggleWanted();
+							}}
+						>
+							{species.wanted ? "★" : "☆"}
+						</button>
+					)}
+					{onAdd && (
+						<button
+							type="button"
+							className="button button--primary card__add-button"
+							onClick={(e) => {
+								e.stopPropagation();
+								onAdd();
+							}}
+						>
+							＋ Add
+						</button>
+					)}
+				</div>
 			)}
 		</article>
 	);

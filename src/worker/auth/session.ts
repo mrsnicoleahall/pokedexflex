@@ -5,7 +5,9 @@ import { generateToken } from "./tokens";
 
 export const SESSION_COOKIE = "pfd_session";
 
-const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
+// Match the session cookie's lifetime (see auth.ts): 400 days, the max Max-Age
+// browsers honor. Keeps the server-side session valid as long as the cookie is.
+const SESSION_TTL_MS = 400 * 24 * 60 * 60 * 1000;
 
 type Db = ReturnType<typeof getDb>;
 
@@ -19,7 +21,7 @@ export const createSession = async (
     id,
     userId,
     createdAt: nowMs,
-    expiresAt: nowMs + THIRTY_DAYS_MS,
+    expiresAt: nowMs + SESSION_TTL_MS,
   });
   return id;
 };

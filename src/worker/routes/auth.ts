@@ -12,6 +12,19 @@ import { getFavoritesEnriched } from "../profile/favorites-store";
 
 export const authRoutes = new Hono<{ Bindings: Env }>();
 
+/**
+ * The public origin to build user-facing links from (magic links, redirects).
+ * Uses APP_BASE_URL when configured (set it to the friendly domain in
+ * production, e.g. "https://pokedexflex.com"), otherwise falls back to the
+ * request's own origin so local dev and previews just work. A trailing slash
+ * on the configured value is trimmed so we never emit a double slash.
+ */
+const appBaseUrl = (c: { env: Env; req: { url: string } }): string => {
+  const configured = (c.env as unknown as { APP_BASE_URL?: string }).APP_BASE_URL?.trim();
+  if (configured) return configured.replace(/\/+$/, "");
+  return new URL(c.req.url).origin;
+};
+
 authRoutes.post("/request-link", async (c) => {
   const body = await c.req.json<{ email?: string }>().catch(() => ({}) as { email?: string });
   const email = body.email?.trim().toLowerCase();
@@ -33,7 +46,12 @@ authRoutes.post("/request-link", async (c) => {
   // reliably persist the SameSite=Lax session cookie set on that navigation's
   // redirect. The /signin page instead completes sign-in with a SAME-ORIGIN
   // fetch to /api/auth/verify, which sets the cookie reliably.
-  const link = `${new URL(c.req.url).origin}/signin?token=${raw}`;
+  //
+  // Build the link from APP_BASE_URL (e.g. "https://pokedexflex.com") so emailed
+  // links always use the friendly domain, not whatever host served this request
+  // (a *.workers.dev URL, a preview alias, etc.). Falls back to the request
+  // origin when unset (local dev).
+  const link = `${appBaseUrl(c)}/signin?token=${raw}`;
   const { devLink } = await getEmailSender(c.env).sendLoginLink(email, link);
   return c.json({ ok: true, devLink });
 });
@@ -78,7 +96,10 @@ authRoutes.get("/verify", async (c) => {
     secure,
     sameSite: "Lax",
     path: "/",
-    maxAge: 60 * 60 * 24 * 30,
+    // Keep people signed in for as long as browsers allow: 400 days is the
+    // hard ceiling browsers clamp Max-Age to (RFC 6265bis / Chrome & Firefox).
+    // Anything larger is silently reduced, so this is the practical maximum.
+    maxAge: 60 * 60 * 24 * 400,
   });
 
   return c.redirect("/", 302);

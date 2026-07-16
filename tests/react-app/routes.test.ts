@@ -17,6 +17,7 @@ describe("PATHS", () => {
 			events: "/events",
 			forms: "/forms",
 			collection: "/collection",
+			wanted: "/wanted",
 			ribbons: "/ribbons",
 			progress: "/progress",
 			importExport: "/import-export",
@@ -29,6 +30,7 @@ describe("PATHS", () => {
 describe("pathForAccountView", () => {
 	it("maps each account view to its path", () => {
 		expect(pathForAccountView("collection")).toBe("/collection");
+		expect(pathForAccountView("wanted")).toBe("/wanted");
 		expect(pathForAccountView("ribbons")).toBe("/ribbons");
 		expect(pathForAccountView("importExport")).toBe("/import-export");
 		expect(pathForAccountView("settings")).toBe("/settings");

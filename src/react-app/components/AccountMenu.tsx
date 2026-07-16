@@ -89,6 +89,9 @@ export function AccountMenu({ onNavigate }: AccountMenuProps) {
 					<button type="button" role="menuitem" className="account-menu__item" onClick={() => go("collection")}>
 						My Collection
 					</button>
+					<button type="button" role="menuitem" className="account-menu__item" onClick={() => go("wanted")}>
+						Wanted
+					</button>
 					<button type="button" role="menuitem" className="account-menu__item" onClick={() => go("ribbons")}>
 						Ribbons
 					</button>

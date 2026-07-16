@@ -121,6 +121,38 @@ describe("auth helpers", () => {
     expect((await me.json() as any).user.favorites).toEqual([]);
   });
 
+  it("sets a long-lived (400-day) session cookie on verify", async () => {
+    const r1 = await call("/api/auth/request-link", { method: "POST", headers: {"content-type":"application/json"}, body: JSON.stringify({ email: "longcookie@x.com" }) });
+    const { devLink } = await r1.json() as any;
+    const verify = await call(verifyPath(devLink), { redirect: "manual" } as any);
+    const setCookie = verify.headers.get("set-cookie")!;
+    // 400 days in seconds — the max browsers honor. Locks in "stay signed in".
+    expect(setCookie).toContain(`Max-Age=${60 * 60 * 24 * 400}`);
+  });
+
+  it("builds the magic link from APP_BASE_URL when set (friendly domain), else the request origin", async () => {
+    // With APP_BASE_URL configured, emailed links use the friendly domain
+    // regardless of which host served the request.
+    const ctx1 = createExecutionContext();
+    const res1 = await worker.fetch(
+      new Request("http://x/api/auth/request-link", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ email: "friendly@x.com" }) }),
+      { ...env, APP_BASE_URL: "https://pokedexflex.com/" }, // trailing slash should be trimmed
+      ctx1,
+    );
+    await waitOnExecutionContext(ctx1);
+    expect(((await res1.json()) as any).devLink).toMatch(/^https:\/\/pokedexflex\.com\/signin\?token=/);
+
+    // With APP_BASE_URL empty (local dev), it falls back to the request origin.
+    const ctx2 = createExecutionContext();
+    const res2 = await worker.fetch(
+      new Request("http://x/api/auth/request-link", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ email: "origin@x.com" }) }),
+      { ...env, APP_BASE_URL: "" },
+      ctx2,
+    );
+    await waitOnExecutionContext(ctx2);
+    expect(((await res2.json()) as any).devLink).toMatch(/^http:\/\/x\/signin\?token=/);
+  });
+
   it("/me returns handle=null and isPublic=true for a freshly created user", async () => {
     const r1 = await call("/api/auth/request-link", { method: "POST", headers: {"content-type":"application/json"}, body: JSON.stringify({ email: "handle-fresh@x.com" }) });
     const { devLink } = await r1.json() as any;

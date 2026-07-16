@@ -78,6 +78,13 @@
       "when": 1784132098920,
       "tag": "0010_clear_warbird",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "6",
+      "when": 1784202133526,
+      "tag": "0011_sturdy_patriot",
+      "breakpoints": true
     }
   ]
 }

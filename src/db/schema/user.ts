@@ -154,3 +154,19 @@ export const rivalries = sqliteTable(
   },
   (t) => [unique("rivalries_user_id_opponent_user_id_unique").on(t.userId, t.opponentUserId)],
 );
+
+/**
+ * A signed-in user's "wanted" list — species they're chasing but don't own yet.
+ * Species-level (not per-form), unique per (user, species). Drives the ☆ toggle
+ * and the `wanted` flag in the species catalog, plus the Wanted list view.
+ */
+export const userWanted = sqliteTable(
+  "user_wanted",
+  {
+    id: text("id").primaryKey(),
+    userId: text("user_id").notNull().references(() => users.id),
+    speciesId: integer("species_id").notNull().references(() => species.id),
+    createdAt: integer("created_at").notNull(),
+  },
+  (t) => [unique("user_wanted_user_id_species_id_unique").on(t.userId, t.speciesId)],
+);

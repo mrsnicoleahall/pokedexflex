@@ -17,10 +17,28 @@ export type OwnedFilter = "all" | "owned" | "missing";
 /** Catalog sort order. "dex" (id asc) is the server default and never serialized. */
 export type SpeciesSort = "dex" | "name";
 
+/**
+ * The nine main-series regions, in order, each mapped to the generation whose
+ * dex it introduced. The Living Dex "Region" filter is a friendlier face on the
+ * generation filter; the server resolves the key to this generation number.
+ */
+export const REGIONS: ReadonlyArray<{ key: string; label: string; gen: number }> = [
+	{ key: "kanto", label: "Kanto", gen: 1 },
+	{ key: "johto", label: "Johto", gen: 2 },
+	{ key: "hoenn", label: "Hoenn", gen: 3 },
+	{ key: "sinnoh", label: "Sinnoh", gen: 4 },
+	{ key: "unova", label: "Unova", gen: 5 },
+	{ key: "kalos", label: "Kalos", gen: 6 },
+	{ key: "alola", label: "Alola", gen: 7 },
+	{ key: "galar", label: "Galar", gen: 8 },
+	{ key: "paldea", label: "Paldea", gen: 9 },
+];
+
 /** Every param `GET /api/species` understands. `q`/`gen`/`limit`/`offset` are the pre-Phase-I set. */
 export type SpeciesQuery = {
 	q?: string;
 	gen?: number;
+	region?: string;
 	type?: string;
 	owned?: OwnedFilter;
 	sort?: SpeciesSort;
@@ -38,6 +56,7 @@ export function buildSpeciesQueryString(params: SpeciesQuery): string {
 	const qs = new URLSearchParams();
 	if (params.q) qs.set("q", params.q);
 	if (params.gen) qs.set("gen", String(params.gen));
+	if (params.region) qs.set("region", params.region);
 	if (params.type) qs.set("type", params.type);
 	if (params.owned === "owned" || params.owned === "missing") qs.set("owned", params.owned);
 	if (params.sort === "name") qs.set("sort", params.sort);
@@ -47,6 +66,11 @@ export function buildSpeciesQueryString(params: SpeciesQuery): string {
 }
 
 /** True when any catalog filter differs from its default — drives the "Clear filters" affordance. */
-export function hasActiveDexFilters(f: { type: string; owned: OwnedFilter; sort: SpeciesSort }): boolean {
-	return f.type !== "" || f.owned !== "all" || f.sort !== "dex";
+export function hasActiveDexFilters(f: {
+	type: string;
+	owned: OwnedFilter;
+	sort: SpeciesSort;
+	region?: string;
+}): boolean {
+	return f.type !== "" || f.owned !== "all" || f.sort !== "dex" || (f.region ?? "") !== "";
 }

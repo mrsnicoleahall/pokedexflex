@@ -8,6 +8,11 @@ import type { RarityTier } from "../rarity/priors";
 
 export const speciesRoutes = new Hono<{ Bindings: Env }>();
 
+/** Region key → the generation whose dex that region introduced (Living Dex region filter). */
+const REGION_GENERATION: Record<string, number> = {
+  kanto: 1, johto: 2, hoenn: 3, sinnoh: 4, unova: 5, kalos: 6, alola: 7, galar: 8, paldea: 9,
+};
+
 const shape = (s: any, f: any[], owned: boolean, rarity: RarityTier) => ({
   id: s.id, name: s.name, generation: s.generation,
   types: JSON.parse(s.types), spriteUrl: s.spriteUrl, homeId: s.homeId,
@@ -33,6 +38,7 @@ speciesRoutes.get("/species", async (c) => {
   const db = getDb(c.env.DB);
   const q = c.req.query("q");
   const gen = c.req.query("gen");
+  const region = c.req.query("region");
   const type = c.req.query("type");
   const ownedFilter = c.req.query("owned"); // "owned" | "missing" | (else = all)
   const sort = c.req.query("sort"); // "name" | (else = "dex", id asc)
@@ -46,6 +52,7 @@ speciesRoutes.get("/species", async (c) => {
   const conds = [];
   if (q) conds.push(like(species.name, `%${q.toLowerCase()}%`));
   if (gen) conds.push(eq(species.generation, Number(gen)));
+  if (region && REGION_GENERATION[region]) conds.push(eq(species.generation, REGION_GENERATION[region]));
   // `types` is a JSON text array like ["fire","flying"]. Match the QUOTED slug
   // so a type can't partial-match another; the 18 type tokens are mutually
   // non-substring, so this LIKE is exact enough. Part of the shared WHERE, so

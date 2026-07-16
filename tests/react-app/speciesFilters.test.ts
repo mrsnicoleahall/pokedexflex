@@ -30,14 +30,21 @@ describe("buildSpeciesQueryString", () => {
 		expect(new URLSearchParams(buildSpeciesQueryString({ sort: "name" })).get("sort")).toBe("name");
 		expect(buildSpeciesQueryString({ sort: "dex", owned: "all" })).toBe("");
 	});
+
+	it("serializes the region filter when set", () => {
+		expect(new URLSearchParams(buildSpeciesQueryString({ region: "kanto" })).get("region")).toBe("kanto");
+		expect(buildSpeciesQueryString({ region: "" })).toBe("");
+	});
 });
 
 describe("hasActiveDexFilters", () => {
-	it("is false only for the default type/owned/sort", () => {
+	it("is false only for the default type/owned/sort/region", () => {
 		expect(hasActiveDexFilters({ type: "", owned: "all", sort: "dex" })).toBe(false);
+		expect(hasActiveDexFilters({ type: "", owned: "all", sort: "dex", region: "" })).toBe(false);
 		expect(hasActiveDexFilters({ type: "fire", owned: "all", sort: "dex" })).toBe(true);
 		expect(hasActiveDexFilters({ type: "", owned: "missing", sort: "dex" })).toBe(true);
 		expect(hasActiveDexFilters({ type: "", owned: "all", sort: "name" })).toBe(true);
+		expect(hasActiveDexFilters({ type: "", owned: "all", sort: "dex", region: "hoenn" })).toBe(true);
 	});
 });
 

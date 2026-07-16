@@ -7,6 +7,8 @@ import { validateSpecimen, type SpecimenInput } from "../collection/validate";
 import { parseCsv } from "../import/csv";
 import { autoDetectMapping, rowToInput, type FieldMapping } from "../import/map";
 import { toStorage, type SpecimenRow } from "./collection";
+import { buildCollectionSummary, buildReferenceData, computeRibbons } from "../ribbons/collection-summary";
+import { syncEarnedRibbons } from "../ribbons/incentive-store";
 
 export const importRoutes = new Hono<{ Bindings: Env }>();
 
@@ -334,5 +336,23 @@ importRoutes.post("/commit", async (c) => {
     if (group.length === 0) continue;
     await db.batch(group as [InsertStatement, ...InsertStatement[]]);
   }
+
+  // Sync earned ribbons so the trainer's score / rarity reflect the freshly
+  // imported collection immediately. The leaderboard reads each trainer's last
+  // synced ribbons, so without this a big import would show 0 pts until the user
+  // opened their Ribbons page. Non-fatal: the import already succeeded.
+  if (rowsToInsert.length > 0) {
+    try {
+      const summary = await buildCollectionSummary(db, user.id);
+      const ref = await buildReferenceData(db);
+      const earnedIds = computeRibbons(summary, ref)
+        .filter((r) => r.earned)
+        .map((r) => r.id);
+      await syncEarnedRibbons(db, user.id, earnedIds, now);
+    } catch (err) {
+      console.error("post-import ribbon sync failed (non-fatal):", err);
+    }
+  }
+
   return c.json({ created: rowsToInsert.length, skipped });
 });

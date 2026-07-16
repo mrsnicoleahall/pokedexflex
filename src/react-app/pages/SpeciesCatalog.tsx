@@ -10,6 +10,7 @@ import { TypeIcon } from "../components/TypeIcon";
 import { typeColor } from "../theme";
 import {
 	TYPE_ORDER,
+	REGIONS,
 	hasActiveDexFilters,
 	type OwnedFilter,
 	type SpeciesSort,
@@ -36,6 +37,7 @@ export function SpeciesCatalog({ q, gen }: SpeciesCatalogProps) {
 
 	// Catalog-specific filters (species-only, so they live here, not in the TopBar).
 	const [type, setType] = useState("");
+	const [region, setRegion] = useState("");
 	const [owned, setOwned] = useState<OwnedFilter>("all");
 	const [sort, setSort] = useState<SpeciesSort>("dex");
 
@@ -51,7 +53,7 @@ export function SpeciesCatalog({ q, gen }: SpeciesCatalogProps) {
 		let cancelled = false;
 		const t = setTimeout(() => {
 			setLoading(true);
-			fetchSpecies({ q, gen, type, owned: effectiveOwned, sort, limit: PAGE_SIZE, offset: 0 })
+			fetchSpecies({ q, gen, region, type, owned: effectiveOwned, sort, limit: PAGE_SIZE, offset: 0 })
 				.then((r) => {
 					if (cancelled) return;
 					setItems(r.items);
@@ -70,7 +72,7 @@ export function SpeciesCatalog({ q, gen }: SpeciesCatalogProps) {
 			cancelled = true;
 			clearTimeout(t);
 		};
-	}, [q, gen, type, effectiveOwned, sort, refreshKey]);
+	}, [q, gen, region, type, effectiveOwned, sort, refreshKey]);
 
 	const hasMore = total !== null && items.length < total;
 
@@ -78,7 +80,7 @@ export function SpeciesCatalog({ q, gen }: SpeciesCatalogProps) {
 		if (loadingMoreRef.current || total === null || items.length >= total) return;
 		loadingMoreRef.current = true;
 		setLoadingMore(true);
-		fetchSpecies({ q, gen, type, owned: effectiveOwned, sort, limit: PAGE_SIZE, offset: items.length })
+		fetchSpecies({ q, gen, region, type, owned: effectiveOwned, sort, limit: PAGE_SIZE, offset: items.length })
 			.then((r) => setItems((prev) => [...prev, ...r.items]))
 			.catch(() => {
 				/* keep what's loaded; the sentinel stays and can retry on next scroll */
@@ -87,7 +89,7 @@ export function SpeciesCatalog({ q, gen }: SpeciesCatalogProps) {
 				loadingMoreRef.current = false;
 				setLoadingMore(false);
 			});
-	}, [q, gen, type, effectiveOwned, sort, items.length, total]);
+	}, [q, gen, region, type, effectiveOwned, sort, items.length, total]);
 
 	// Auto-load the next page when the sentinel scrolls into view.
 	useEffect(() => {
@@ -112,9 +114,10 @@ export function SpeciesCatalog({ q, gen }: SpeciesCatalogProps) {
 		setAddTarget(species);
 	}
 
-	const filtersActive = hasActiveDexFilters({ type, owned, sort });
+	const filtersActive = hasActiveDexFilters({ type, owned, sort, region });
 	function clearFilters() {
 		setType("");
+		setRegion("");
 		setOwned("all");
 		setSort("dex");
 	}
@@ -171,6 +174,23 @@ export function SpeciesCatalog({ q, gen }: SpeciesCatalogProps) {
 							))}
 						</div>
 					)}
+
+					<label className="dex-sort">
+						<span className="dex-sort__label">Region</span>
+						<select
+							className="select"
+							value={region}
+							onChange={(e) => setRegion(e.target.value)}
+							aria-label="Filter by region"
+						>
+							<option value="">All regions</option>
+							{REGIONS.map((r) => (
+								<option key={r.key} value={r.key}>
+									{r.label}
+								</option>
+							))}
+						</select>
+					</label>
 
 					<label className="dex-sort">
 						<span className="dex-sort__label">Sort</span>

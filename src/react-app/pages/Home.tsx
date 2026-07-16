@@ -88,8 +88,8 @@ export function Home({ onBrowse, onNavigate }: HomeProps) {
 								Then flex &apos;em all.
 							</h1>
 							<p className="hero__subcopy">
-								Track every species, form, and event distribution. Build your living dex, earn 166
-								ribbons, climb the ranks, then go head-to-head with rival trainers.
+								A living-dex tracker for serious collectors. Log every Pokémon you own, earn ribbons
+								for your collection, and show it off against other trainers. Free to use.
 							</p>
 							<div className="hero__actions">
 								<button type="button" className="button button--primary" onClick={onBrowse}>
@@ -127,31 +127,31 @@ export function Home({ onBrowse, onNavigate }: HomeProps) {
 				<>
 					<section className="landing__features" aria-label="Features">
 						<div className="landing__feature-card">
-							<h3 className="landing__feature-title">Living Dex</h3>
+							<h3 className="landing__feature-title">Track your collection</h3>
 							<p className="landing__feature-copy">
-								Track every specimen you own (IVs, nature, OT, shiny status) organized into boxes
-								just like the games.
+								Log every Pokémon you own with full detail (form, shiny, IVs, nature, OT), sorted
+								into boxes just like the games. See at a glance what you still need.
 							</p>
 						</div>
 						<div className="landing__feature-card">
-							<h3 className="landing__feature-title">166 Ribbons to chase</h3>
+							<h3 className="landing__feature-title">Earn 166 ribbons</h3>
 							<p className="landing__feature-copy">
-								Ribbons are the flex. Earn them for completion milestones, rare catches, and shiny
-								hunts, then show off your rarest on your trophy wall and climb the ribbon leaderboard.
+								Your collection unlocks ribbons for completion milestones, rare catches, and shiny
+								hunts. Pin your best to a trophy wall and build a Trainer Score.
 							</p>
 						</div>
 						<div className="landing__feature-card">
 							<h3 className="landing__feature-title">Import in seconds</h3>
 							<p className="landing__feature-copy">
-								Already have a collection? Upload a CSV, snap a screenshot of your Pokémon Home
-								boxes, or drop in an Ultra Sun / Ultra Moon save file.
+								Already have a collection? Bring it in from a CSV, a photo of your Pokémon HOME
+								boxes, or an Ultra Sun / Ultra Moon save file.
 							</p>
 						</div>
 						<div className="landing__feature-card">
-							<h3 className="landing__feature-title">Rank &amp; Rarity</h3>
+							<h3 className="landing__feature-title">Compete with trainers</h3>
 							<p className="landing__feature-copy">
-								Every catch feeds your Trainer Score. See exactly how rare your ribbons are compared
-								to every other trainer.
+								Go head-to-head with any public trainer across six scored rounds, climb the
+								leaderboard, and see how rare your collection really is.
 							</p>
 						</div>
 					</section>

@@ -156,6 +156,21 @@ export const rivalries = sqliteTable(
 );
 
 /**
+ * Trainer-wall posts: a public guestbook on each trainer's profile. `wallUserId`
+ * is whose wall it's on; `authorUserId` is who wrote it. Posting requires
+ * sign-in; a post can be deleted by its author OR by the wall's owner
+ * (basic moderation). Author/owner display fields are joined from `users` at
+ * read time so renames are reflected.
+ */
+export const wallPosts = sqliteTable("wall_posts", {
+  id: text("id").primaryKey(),
+  wallUserId: text("wall_user_id").notNull().references(() => users.id),
+  authorUserId: text("author_user_id").notNull().references(() => users.id),
+  body: text("body").notNull(),
+  createdAt: integer("created_at").notNull(),
+});
+
+/**
  * A signed-in user's "wanted" list — species they're chasing but don't own yet.
  * Species-level (not per-form), unique per (user, species). Drives the ☆ toggle
  * and the `wanted` flag in the species catalog, plus the Wanted list view.

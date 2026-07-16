@@ -11,13 +11,20 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useAuth } from "../auth/AuthProvider";
-import { fetchPublicProfile, type PublicProfileDto } from "../api";
+import {
+	deleteWallPost,
+	fetchPublicProfile,
+	fetchWall,
+	postToWall,
+	type PublicProfileDto,
+	type WallPost,
+} from "../api";
 import { Avatar } from "../components/Avatar";
 import { FavoritesStrip } from "../components/FavoritesStrip";
 import { RankBadge } from "../components/RankBadge";
 import { PublicHeader } from "../components/PublicHeader";
 import { RibbonIcon } from "../ribbons/RibbonIcon";
-import { PATHS, versusPath } from "../routes";
+import { PATHS, publicProfilePath, versusPath } from "../routes";
 
 type LoadState =
 	| { status: "loading" }
@@ -118,7 +125,135 @@ function PublicProfileBody({ profile }: { profile: PublicProfileDto }) {
 					</div>
 				</section>
 			)}
+
+			<TrainerWall handle={profile.handle} trainerName={profile.displayName ?? `@${profile.handle}`} />
 		</>
+	);
+}
+
+function relativeTime(ts: number, now: number): string {
+	const s = Math.max(1, Math.round((now - ts) / 1000));
+	if (s < 60) return "just now";
+	const m = Math.round(s / 60);
+	if (m < 60) return `${m}m ago`;
+	const h = Math.round(m / 60);
+	if (h < 24) return `${h}h ago`;
+	const d = Math.round(h / 24);
+	return d < 7 ? `${d}d ago` : new Date(ts).toLocaleDateString();
+}
+
+function TrainerWall({ handle, trainerName }: { handle: string; trainerName: string }) {
+	const { user } = useAuth();
+	const [posts, setPosts] = useState<WallPost[]>([]);
+	const [loaded, setLoaded] = useState(false);
+	const [body, setBody] = useState("");
+	const [posting, setPosting] = useState(false);
+	const now = Date.now();
+
+	useEffect(() => {
+		let cancelled = false;
+		fetchWall(handle)
+			.then((r) => {
+				if (!cancelled) setPosts(r.posts);
+			})
+			.catch(() => {
+				/* wall is optional chrome; ignore load errors */
+			})
+			.finally(() => {
+				if (!cancelled) setLoaded(true);
+			});
+		return () => {
+			cancelled = true;
+		};
+	}, [handle]);
+
+	async function submit(e: React.FormEvent) {
+		e.preventDefault();
+		const text = body.trim();
+		if (!text) return;
+		setPosting(true);
+		try {
+			await postToWall(handle, text);
+			setBody("");
+			const r = await fetchWall(handle);
+			setPosts(r.posts);
+		} catch {
+			/* leave the text so the user can retry */
+		} finally {
+			setPosting(false);
+		}
+	}
+
+	async function remove(id: string) {
+		const prev = posts;
+		setPosts((p) => p.filter((x) => x.id !== id));
+		deleteWallPost(id).catch(() => setPosts(prev));
+	}
+
+	return (
+		<section className="wall" aria-label={`${trainerName}'s wall`}>
+			<h2 className="ribbon-section__title">Wall</h2>
+
+			{user ? (
+				<form className="wall__compose" onSubmit={submit}>
+					<textarea
+						className="input input--full wall__input"
+						rows={2}
+						maxLength={500}
+						placeholder={`Leave ${trainerName} a message…`}
+						value={body}
+						onChange={(e) => setBody(e.target.value)}
+						aria-label="Write a wall post"
+					/>
+					<button type="submit" className="button button--primary" disabled={posting || !body.trim()}>
+						{posting ? "Posting…" : "Post"}
+					</button>
+				</form>
+			) : (
+				<p className="state__hint">Sign in to leave a message on this wall.</p>
+			)}
+
+			{loaded && posts.length === 0 && (
+				<p className="state__hint wall__empty">No posts yet. Be the first to say something.</p>
+			)}
+
+			<ul className="wall__list">
+				{posts.map((p) => (
+					<li className="wall__item" key={p.id}>
+						<Avatar
+							userId={p.authorUserId}
+							displayName={p.authorName}
+							hasAvatar={p.authorHasAvatar}
+							size="sm"
+						/>
+						<div className="wall__body">
+							<p className="wall__meta">
+								{p.authorHandle ? (
+									<Link className="wall__author" to={publicProfilePath(p.authorHandle)}>
+										{p.authorName ?? `@${p.authorHandle}`}
+									</Link>
+								) : (
+									<span className="wall__author">{p.authorName ?? "Trainer"}</span>
+								)}
+								<span className="wall__time">{relativeTime(p.createdAt, now)}</span>
+								{p.canDelete && (
+									<button
+										type="button"
+										className="wall__delete"
+										aria-label="Delete post"
+										title="Delete"
+										onClick={() => remove(p.id)}
+									>
+										✕
+									</button>
+								)}
+							</p>
+							<p className="wall__text">{p.body}</p>
+						</div>
+					</li>
+				))}
+			</ul>
+		</section>
 	);
 }
 

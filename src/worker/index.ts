@@ -22,6 +22,7 @@ import { leaderboardRoutes } from "./routes/leaderboard";
 import { formsRoutes } from "./routes/forms";
 import { wantedRoutes } from "./routes/wanted";
 import { contactRoutes } from "./routes/contact";
+import { wallRoutes } from "./routes/wall";
 
 const app = new Hono<{ Bindings: Env }>();
 
@@ -49,6 +50,7 @@ app.route("/api/leaderboard", leaderboardRoutes);
 app.route("/api/forms", formsRoutes);
 app.route("/api/wanted", wantedRoutes);
 app.route("/api/contact", contactRoutes);
+app.route("/api/wall", wallRoutes);
 app.route("/api/import", importRoutes);
 app.route("/api/import/photo", photoImportRoutes);
 app.route("/api/import/save", saveImportRoutes);

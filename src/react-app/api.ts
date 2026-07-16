@@ -40,6 +40,41 @@ export async function fetchSpeciesById(id: number): Promise<SpeciesDto> {
 	return res.json() as Promise<SpeciesDto>;
 }
 
+/** One post on a trainer's wall (guestbook). */
+export type WallPost = {
+	id: string;
+	body: string;
+	createdAt: number;
+	authorUserId: string;
+	authorHandle: string | null;
+	authorName: string | null;
+	authorHasAvatar: boolean;
+	canDelete: boolean;
+};
+
+/** Reads a trainer's wall by handle (public). `isOwner` is true if the viewer owns this wall. */
+export async function fetchWall(handle: string): Promise<{ posts: WallPost[]; isOwner: boolean }> {
+	const res = await fetch(`/api/wall/${handle}`, { credentials: "include" });
+	return handleJson(res, "wall fetch");
+}
+
+/** Posts to a trainer's wall (sign-in required server-side). */
+export async function postToWall(handle: string, body: string): Promise<void> {
+	const res = await fetch(`/api/wall/${handle}`, {
+		method: "POST",
+		credentials: "include",
+		headers: { "Content-Type": "application/json" },
+		body: JSON.stringify({ body }),
+	});
+	await handleJson(res, "wall post");
+}
+
+/** Deletes a wall post (author or wall owner). */
+export async function deleteWallPost(postId: string): Promise<void> {
+	const res = await fetch(`/api/wall/post/${postId}`, { method: "DELETE", credentials: "include" });
+	await handleJson(res, "wall delete");
+}
+
 /** Sends a contact message to the admin (sign-in required server-side). */
 export async function sendContact(message: string): Promise<void> {
 	const res = await fetch("/api/contact", {
